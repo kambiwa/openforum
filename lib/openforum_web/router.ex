@@ -47,11 +47,16 @@ defmodule OpenforumWeb.Router do
 
   ## Authentication routes
 
-  scope "/", OpenforumWeb do
+  scope "/admin", OpenforumWeb.Auth do
     pipe_through [:browser, :require_authenticated_user]
 
     live_session :require_authenticated_user,
       on_mount: [{OpenforumWeb.UserAuth, :require_authenticated}] do
+      live "/dashboard", Dashboard.Index, :index
+
+      live "/users", Users.Index, :index
+      live "/working_areas", WorkingAreas.Index, :index
+
       live "/users/settings", UserLive.Settings, :edit
       live "/users/settings/confirm-email/:token", UserLive.Settings, :confirm_email
     end

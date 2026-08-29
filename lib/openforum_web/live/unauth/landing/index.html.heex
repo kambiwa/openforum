@@ -1,0 +1,340 @@
+<div class="openforum-landing">
+  <Layouts.unauth_app
+    flash={@flash}
+    current_scope={@current_scope}
+    mobile_menu_open={@mobile_menu_open}
+  >
+    <main class="bg-[#FAFAF7]">
+      <%!-- ============ SECTION 1 — HERO ============ --%>
+      <section class="relative overflow-hidden bg-[#FAFAF7]">
+        <%!-- soft decorative blue field, kept behind content --%>
+        <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+          <div class="absolute -right-24 top-10 h-[420px] w-[420px] rounded-full bg-[#EAF3F8]">
+          </div>
+          <div class="absolute right-40 top-40 h-40 w-40 rounded-full border border-[#4F7FA8]/20">
+          </div>
+        </div>
+
+        <div class="relative mx-auto grid max-w-[1280px] grid-cols-1 items-center gap-12 px-6 py-20 sm:px-8 lg:grid-cols-2 lg:gap-16 lg:py-28">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.14em] text-[#1769AA]">
+              New Apostolic Church Knowledge Platform
+            </p>
+            <h1 class="mt-5 text-4xl font-semibold leading-[1.1] tracking-tight text-[#0B2E4F] sm:text-5xl lg:text-[3.25rem]">
+              Learn. Understand.<br class="hidden sm:block" /> Grow in Faith.
+            </h1>
+            <p class="mt-6 max-w-lg text-base leading-relaxed text-[#6B7280] sm:text-lg">
+              OpenForum brings together trusted biblical knowledge, New Apostolic Church
+              doctrine, Catechism, questions and answers, audio, video and other approved
+              learning resources in one accessible platform.
+            </p>
+
+            <div class="mt-9 flex flex-wrap items-center gap-4">
+              <.link
+                navigate={~p"/knowledge"}
+                class="inline-flex items-center justify-center rounded-md bg-[#1769AA] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#0B2E4F]"
+              >
+                Explore Knowledge
+              </.link>
+              <.link
+                navigate={~p"/learn"}
+                class="inline-flex items-center justify-center rounded-md border border-[#4F7FA8]/40 bg-white px-6 py-3 text-sm font-medium text-[#0B2E4F] transition-colors hover:bg-[#EAF3F8]"
+              >
+                Start Learning
+              </.link>
+            </div>
+          </div>
+
+          <%!-- right-side visual: open book / soft light composition, built from
+               layered shapes + a heroicon rather than a generic stock photo --%>
+          <div class="relative mx-auto flex h-[360px] w-full max-w-md items-center justify-center sm:h-[420px]">
+            <div class="absolute h-72 w-72 rounded-full bg-gradient-to-b from-[#EAF3F8] to-transparent sm:h-80 sm:w-80">
+            </div>
+            <div class="absolute top-6 h-40 w-px bg-gradient-to-b from-[#4F7FA8]/0 via-[#4F7FA8]/40 to-[#4F7FA8]/0">
+            </div>
+
+            <div class="relative flex flex-col items-center">
+              <svg
+                viewBox="0 0 220 140"
+                class="h-auto w-64 drop-shadow-sm sm:w-72"
+                aria-hidden="true"
+              >
+                <path
+                  d="M10 30 C 60 10, 100 10, 110 28 L 110 120 C 100 104, 60 104, 10 122 Z"
+                  fill="#0B2E4F"
+                />
+                <path
+                  d="M210 30 C 160 10, 120 10, 110 28 L 110 120 C 120 104, 160 104, 210 122 Z"
+                  fill="#1769AA"
+                />
+                <line x1="110" y1="28" x2="110" y2="120" stroke="#FAFAF7" stroke-width="1.5" />
+              </svg>
+              <div class="mt-6 flex items-center gap-2 rounded-full border border-[#4F7FA8]/20 bg-white px-4 py-2 shadow-sm">
+                <.icon name="hero-sparkles" class="h-4 w-4 text-[#B8964F]" />
+                <span class="text-xs font-medium text-[#6B7280]">Guided, trusted study</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <%!-- ============ SECTION 2 — EXPLORE KNOWLEDGE ============ --%>
+      <section class="mx-auto max-w-[1280px] px-6 py-20 sm:px-8">
+        <div class="mx-auto max-w-2xl text-center">
+          <h2 class="text-3xl font-semibold tracking-tight text-[#0B2E4F]">Explore Knowledge</h2>
+          <p class="mt-4 text-base leading-relaxed text-[#6B7280]">
+            Access trusted resources designed to support understanding, teaching and spiritual growth.
+          </p>
+        </div>
+
+        <div class="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-5">
+          <div
+            :for={category <- @knowledge_categories}
+            class="group rounded-xl border border-[#E5E7EB] bg-white p-6 transition-all hover:border-[#4F7FA8]/30 hover:bg-[#EAF3F8]/40 hover:shadow-md"
+          >
+            <div class="flex h-11 w-11 items-center justify-center rounded-lg bg-[#EAF3F8]">
+              <.icon name={category.icon} class="h-5 w-5 text-[#1769AA]" />
+            </div>
+            <h3 class="mt-4 text-base font-semibold text-[#0B2E4F]">{category.title}</h3>
+            <p class="mt-2 text-sm leading-relaxed text-[#6B7280]">{category.description}</p>
+          </div>
+        </div>
+      </section>
+
+      <%!-- ============ SECTION 3 — FEATURED LEARNING ============ --%>
+      <section class="bg-[#EAF3F8]">
+        <div class="mx-auto max-w-[1280px] px-6 py-20 sm:px-8">
+          <div class="mx-auto max-w-2xl text-center">
+            <h2 class="text-3xl font-semibold tracking-tight text-[#0B2E4F]">
+              Learn at Your Own Pace
+            </h2>
+          </div>
+
+          <div class="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <article
+              :for={topic <- @featured_topics}
+              class="rounded-xl border border-[#E5E7EB] bg-white p-6 transition-shadow hover:shadow-md"
+            >
+              <span class="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#B8964F]">
+                {topic.label}
+              </span>
+              <h3 class="mt-3 text-lg font-semibold text-[#0B2E4F]">{topic.title}</h3>
+              <p class="mt-2 text-sm leading-relaxed text-[#6B7280]">{topic.description}</p>
+              <div class="mt-5 flex items-center justify-between border-t border-[#E5E7EB] pt-4">
+                <span class="text-xs text-[#6B7280]">{topic.duration}</span>
+                <.link
+                  navigate={~p"/knowledge"}
+                  class="inline-flex items-center gap-1 text-sm font-medium text-[#1769AA] hover:text-[#0B2E4F]"
+                >
+                  Explore Topic <.icon name="hero-arrow-right" class="h-3.5 w-3.5" />
+                </.link>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <%!-- ============ SECTION 4 — HOW OPENFORUM WORKS ============ --%>
+      <section class="mx-auto max-w-[1280px] px-6 py-20 sm:px-8">
+        <div class="mx-auto max-w-2xl text-center">
+          <h2 class="text-3xl font-semibold tracking-tight text-[#0B2E4F]">
+            Knowledge You Can Trust
+          </h2>
+          <p class="mt-4 text-base leading-relaxed text-[#6B7280]">
+            OpenForum ensures that church learning content follows a structured and configurable
+            review and approval process before publication.
+          </p>
+        </div>
+
+        <div class="mt-14 hidden lg:block">
+          <div class="grid grid-cols-5 items-start gap-4">
+            <div
+              :for={{step, index} <- Enum.with_index(@approval_steps, 1)}
+              class="relative flex flex-col items-center text-center"
+            >
+              <div
+                :if={index < length(@approval_steps)}
+                class="absolute left-1/2 top-6 h-px w-full bg-[#4F7FA8]/25"
+              >
+              </div>
+              <div class="relative z-10 flex h-12 w-12 items-center justify-center rounded-full bg-[#0B2E4F] text-sm font-semibold text-white">
+                {index}
+              </div>
+              <.icon name={step.icon} class="mt-3 h-5 w-5 text-[#1769AA]" />
+              <p class="mt-2 max-w-[9rem] text-sm font-medium text-[#0B2E4F]">{step.title}</p>
+            </div>
+          </div>
+        </div>
+
+        <%!-- mobile: stacked vertical workflow --%>
+        <div class="mt-10 space-y-6 lg:hidden">
+          <div
+            :for={{step, index} <- Enum.with_index(@approval_steps, 1)}
+            class="flex items-center gap-4"
+          >
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#0B2E4F] text-sm font-semibold text-white">
+              {index}
+            </div>
+            <.icon name={step.icon} class="h-5 w-5 shrink-0 text-[#1769AA]" />
+            <p class="text-sm font-medium text-[#0B2E4F]">{step.title}</p>
+          </div>
+        </div>
+
+        <p class="mx-auto mt-12 max-w-2xl text-center text-sm leading-relaxed text-[#6B7280]">
+          Configurable approval levels help ensure that published content is accurate, trusted
+          and aligned with approved church teachings.
+        </p>
+      </section>
+
+      <%!-- ============ SECTION 5 — MULTIMEDIA LEARNING ============ --%>
+      <section class="bg-[#F4F8FB]">
+        <div class="mx-auto max-w-[1280px] px-6 py-20 sm:px-8">
+          <div class="mx-auto max-w-2xl text-center">
+            <h2 class="text-3xl font-semibold tracking-tight text-[#0B2E4F]">
+              Learn Beyond the Written Word
+            </h2>
+            <p class="mt-4 text-base leading-relaxed text-[#6B7280]">
+              Access approved teachings and learning resources through video, audio and other engaging formats.
+            </p>
+          </div>
+
+          <div class="mt-12 grid grid-cols-1 gap-8 lg:grid-cols-2">
+            <div class="overflow-hidden rounded-xl border border-[#E5E7EB] bg-white">
+              <div class="relative flex h-56 items-center justify-center bg-[#0B2E4F] sm:h-64">
+                <button
+                  type="button"
+                  class="flex h-14 w-14 items-center justify-center rounded-full bg-white/90 transition-transform hover:scale-105"
+                  aria-label="Play featured teaching"
+                >
+                  <.icon name="hero-play" class="h-6 w-6 text-[#0B2E4F]" />
+                </button>
+              </div>
+              <div class="p-6">
+                <span class="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#B8964F]">Featured Teaching</span>
+                <h3 class="mt-2 text-lg font-semibold text-[#0B2E4F]">
+                  Understanding Faith and the New Apostolic Church
+                </h3>
+                <p class="mt-1 text-xs text-[#6B7280]">28 min</p>
+              </div>
+            </div>
+
+            <div class="flex flex-col divide-y divide-[#E5E7EB] rounded-xl border border-[#E5E7EB] bg-white">
+              <div :for={resource <- @media_resources} class="flex items-center gap-4 px-6 py-5">
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#EAF3F8]">
+                  <.icon name="hero-musical-note" class="h-4 w-4 text-[#1769AA]" />
+                </div>
+                <div class="min-w-0 flex-1">
+                  <p class="truncate text-sm font-medium text-[#0B2E4F]">{resource.title}</p>
+                  <p class="text-xs text-[#6B7280]">{resource.category} · {resource.duration}</p>
+                </div>
+                <button
+                  type="button"
+                  class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#4F7FA8]/30 text-[#1769AA] transition-colors hover:bg-[#EAF3F8]"
+                  aria-label={"Play " <> resource.title}
+                >
+                  <.icon name="hero-play" class="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <%!-- ============ SECTION 6 — OPEN AND ACCESSIBLE ============ --%>
+      <section class="bg-white">
+        <div class="mx-auto max-w-[1280px] px-6 py-20 text-center sm:px-8">
+          <h2 class="text-3xl font-semibold tracking-tight text-[#0B2E4F]">
+            Open Knowledge for Everyone
+          </h2>
+          <p class="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-[#6B7280]">
+            OpenForum makes selected Bible, doctrine, Catechism, questions and answers, audio and
+            video resources available to everyone. No registration is required to begin exploring
+            and learning.
+          </p>
+
+          <div class="mx-auto mt-12 grid max-w-3xl grid-cols-1 gap-8 sm:grid-cols-3">
+            <div :for={benefit <- @access_benefits} class="flex flex-col items-center">
+              <.icon name={benefit.icon} class="h-6 w-6 text-[#1769AA]" />
+              <p class="mt-3 text-sm font-semibold text-[#0B2E4F]">{benefit.title}</p>
+              <p class="mt-1 text-xs leading-relaxed text-[#6B7280]">{benefit.description}</p>
+            </div>
+          </div>
+
+          <.link
+            navigate={~p"/knowledge"}
+            class="mt-12 inline-flex items-center justify-center rounded-md bg-[#1769AA] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#0B2E4F]"
+          >
+            Begin Exploring OpenForum
+          </.link>
+        </div>
+      </section>
+
+      <%!-- ============ SECTION 7 — CONTRIBUTORS ============ --%>
+      <section class="bg-[#EAF3F8]">
+        <div class="mx-auto max-w-[1280px] px-6 py-20 sm:px-8">
+          <div class="mx-auto max-w-2xl text-center">
+            <h2 class="text-3xl font-semibold tracking-tight text-[#0B2E4F]">
+              Contribute to the Conversation
+            </h2>
+            <p class="mt-4 text-base leading-relaxed text-[#6B7280]">
+              Authorized users can create and submit learning content, including documents,
+              images, audio and video, for review through the configured OpenForum approval workflow.
+            </p>
+          </div>
+
+          <div class="mt-12 flex flex-wrap items-center justify-center gap-x-3 gap-y-4">
+            <div
+              :for={{step, index} <- Enum.with_index(@contributor_steps)}
+              class="flex items-center gap-3"
+            >
+              <span class="rounded-full border border-[#4F7FA8]/30 bg-white px-4 py-2 text-sm font-medium text-[#0B2E4F]">
+                {step}
+              </span>
+              <.icon
+                :if={index < length(@contributor_steps) - 1}
+                name="hero-arrow-right"
+                class="h-4 w-4 text-[#4F7FA8]"
+              />
+            </div>
+          </div>
+
+          <div class="mt-10 text-center">
+            <.link
+              navigate={~p"/users/log-in"}
+              class="inline-flex items-center justify-center rounded-md bg-[#0B2E4F] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#1769AA]"
+            >
+              Sign In to Contribute
+            </.link>
+          </div>
+        </div>
+      </section>
+
+      <%!-- ============ SECTION 8 — FINAL CTA ============ --%>
+      <section class="bg-[#0B2E4F]">
+        <div class="mx-auto max-w-[1280px] px-6 py-20 text-center sm:px-8">
+          <h2 class="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+            Explore. Learn. Grow.
+          </h2>
+          <p class="mx-auto mt-4 max-w-xl text-base leading-relaxed text-white/75">
+            Discover trusted resources that support faith, understanding and lifelong learning.
+          </p>
+
+          <div class="mt-9 flex flex-wrap items-center justify-center gap-4">
+            <.link
+              navigate={~p"/knowledge"}
+              class="inline-flex items-center justify-center rounded-md bg-white px-6 py-3 text-sm font-medium text-[#0B2E4F] transition-colors hover:bg-[#EAF3F8]"
+            >
+              Explore OpenForum
+            </.link>
+            <.link
+              navigate={~p"/users/register"}
+              class="inline-flex items-center justify-center rounded-md border border-white/30 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-white/10"
+            >
+              Create an Account
+            </.link>
+          </div>
+        </div>
+      </section>
+    </main>
+  </Layouts.unauth_app>
+</div>

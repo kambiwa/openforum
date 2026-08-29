@@ -1,95 +1,91 @@
 defmodule OpenforumWeb.UserLive.Login do
   use OpenforumWeb, :live_view
 
-  alias Openforum.Accounts
-
   @impl true
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope}>
-      <div class="mx-auto max-w-sm space-y-4">
-        <div class="text-center">
-          <.header>
-            <p>Log in</p>
-            <:subtitle>
+      <div class="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-[#FAFAF7] px-6 py-16">
+        <div class="w-full max-w-sm">
+          <div class="text-center">
+            <p class="text-xs font-semibold uppercase tracking-[0.14em] text-[#1769AA]">
+              OpenForum
+            </p>
+            <h1 class="mt-3 text-2xl font-semibold tracking-tight text-[#0B2E4F]">
+              Sign in to continue
+            </h1>
+            <p class="mt-2 text-sm leading-relaxed text-[#6B7280]">
               <%= if @current_scope do %>
                 You need to reauthenticate to perform sensitive actions on your account.
               <% else %>
-                Don't have an account? <.link
+                Don't have an account?
+                <.link
                   navigate={~p"/users/register"}
-                  class="font-semibold text-brand hover:underline"
-                  phx-no-format
-                >Sign up</.link> for an account now.
+                  class="font-medium text-[#1769AA] hover:text-[#0B2E4F] hover:underline"
+                >
+                  Sign up
+                </.link>
+                to get started.
               <% end %>
-            </:subtitle>
-          </.header>
-        </div>
-
-        <div :if={local_mail_adapter?()} class="alert alert-info">
-          <.icon name="hero-information-circle" class="size-6 shrink-0" />
-          <div>
-            <p>You are running the local mail adapter.</p>
-            <p>
-              To see sent emails, visit <.link href="/dev/mailbox" class="underline">the mailbox page</.link>.
             </p>
           </div>
+
+          <div class="mt-8 rounded-xl border border-[#E5E7EB] bg-white p-8 shadow-sm">
+            <.form
+              :let={f}
+              for={@form}
+              id="login_form_password"
+              action={~p"/users/log-in"}
+              phx-submit="submit_password"
+              phx-trigger-action={@trigger_submit}
+              class="space-y-5"
+            >
+              <.input
+                readonly={!!@current_scope}
+                field={f[:email]}
+                type="email"
+                label="Email"
+                autocomplete="username"
+                spellcheck="false"
+                required
+                phx-mounted={JS.focus()}
+              />
+              <.input
+                field={@form[:password]}
+                type="password"
+                label="Password"
+                autocomplete="current-password"
+                spellcheck="false"
+              />
+
+              <div class="space-y-3 pt-1">
+                <button
+                  type="submit"
+                  name={@form[:remember_me].name}
+                  value="true"
+                  class="inline-flex w-full items-center justify-center rounded-md bg-[#1769AA] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#0B2E4F]"
+                >
+                  Log in and stay logged in <span class="ml-1" aria-hidden="true">→</span>
+                </button>
+                <button
+                  type="submit"
+                  class="inline-flex w-full items-center justify-center rounded-md border border-[#4F7FA8]/40 bg-white px-6 py-3 text-sm font-medium text-[#0B2E4F] transition-colors hover:bg-[#EAF3F8]"
+                >
+                  Log in only this time
+                </button>
+              </div>
+            </.form>
+          </div>
+
+          <p class="mt-6 text-center text-xs text-[#6B7280]">
+            <.link
+              navigate={~p"/users/reset-password"}
+              class="font-medium text-[#1769AA] hover:text-[#0B2E4F] hover:underline"
+            >
+              Forgot your password?
+            </.link>
+          </p>
         </div>
-
-        <.form
-          :let={f}
-          for={@form}
-          id="login_form_magic"
-          action={~p"/users/log-in"}
-          phx-submit="submit_magic"
-        >
-          <.input
-            readonly={!!@current_scope}
-            field={f[:email]}
-            type="email"
-            label="Email"
-            autocomplete="username"
-            spellcheck="false"
-            required
-            phx-mounted={JS.focus()}
-          />
-          <.button class="btn btn-primary w-full">
-            Log in with email <span aria-hidden="true">→</span>
-          </.button>
-        </.form>
-
-        <div class="divider">or</div>
-
-        <.form
-          :let={f}
-          for={@form}
-          id="login_form_password"
-          action={~p"/users/log-in"}
-          phx-submit="submit_password"
-          phx-trigger-action={@trigger_submit}
-        >
-          <.input
-            readonly={!!@current_scope}
-            field={f[:email]}
-            type="email"
-            label="Email"
-            autocomplete="username"
-            spellcheck="false"
-            required
-          />
-          <.input
-            field={@form[:password]}
-            type="password"
-            label="Password"
-            autocomplete="current-password"
-            spellcheck="false"
-          />
-          <.button class="btn btn-primary w-full" name={@form[:remember_me].name} value="true">
-            Log in and stay logged in <span aria-hidden="true">→</span>
-          </.button>
-          <.button class="btn btn-primary btn-soft w-full mt-2">
-            Log in only this time
-          </.button>
-        </.form>
       </div>
     </Layouts.app>
     """
@@ -109,26 +105,5 @@ defmodule OpenforumWeb.UserLive.Login do
   @impl true
   def handle_event("submit_password", _params, socket) do
     {:noreply, assign(socket, :trigger_submit, true)}
-  end
-
-  def handle_event("submit_magic", %{"user" => %{"email" => email}}, socket) do
-    if user = Accounts.get_user_by_email(email) do
-      Accounts.deliver_login_instructions(
-        user,
-        &url(~p"/users/log-in/#{&1}")
-      )
-    end
-
-    info =
-      "If your email is in our system, you will receive instructions for logging in shortly."
-
-    {:noreply,
-     socket
-     |> put_flash(:info, info)
-     |> push_navigate(to: ~p"/users/log-in")}
-  end
-
-  defp local_mail_adapter? do
-    Application.get_env(:openforum, Openforum.Mailer)[:adapter] == Swoosh.Adapters.Local
   end
 end

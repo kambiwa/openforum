@@ -1,0 +1,103 @@
+<Layouts.admin_app
+  flash={@flash}
+  current_scope={@current_scope}
+  mobile_menu_open={@mobile_menu_open}
+  current_page={@current_page}
+  page_title={@page_title}
+>
+  <div class="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8">
+    <%!-- ============ WELCOME ============ --%>
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <h2 class="text-xl font-semibold tracking-tight text-[#0B2E4F]">Welcome back</h2>
+        <p class="mt-1 text-sm text-[#6B7280]">Here's what's happening across OpenForum today.</p>
+      </div>
+      <.link
+        navigate={~p"/admin/approval-queue"}
+        class="inline-flex items-center gap-1.5 rounded-md bg-[#1769AA] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#0B2E4F]"
+      >
+        <.icon name="hero-clock" class="size-4" /> Review Approval Queue
+      </.link>
+    </div>
+
+    <%!-- ============ STAT CARDS ============ --%>
+    <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div :for={stat <- @stats} class="rounded-xl border border-[#E5E7EB] bg-white p-5">
+        <div class="flex items-center justify-between">
+          <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-[#EAF3F8]">
+            <.icon name={stat.icon} class="size-4.5 text-[#1769AA]" />
+          </div>
+        </div>
+        <p class="mt-4 text-2xl font-semibold text-[#0B2E4F]">{stat.value}</p>
+        <p class="mt-0.5 text-sm text-[#6B7280]">{stat.label}</p>
+        <p class="mt-2 text-xs font-medium text-[#1769AA]">{stat.change}</p>
+      </div>
+    </div>
+
+    <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <%!-- ============ PENDING APPROVALS ============ --%>
+      <div class="lg:col-span-2 rounded-xl border border-[#E5E7EB] bg-white">
+        <div class="flex items-center justify-between border-b border-[#E5E7EB] px-5 py-4">
+          <h3 class="text-sm font-semibold text-[#0B2E4F]">Pending Approval</h3>
+          <.link
+            navigate={~p"/admin/approval-queue"}
+            class="text-xs font-medium text-[#1769AA] hover:text-[#0B2E4F]"
+          >
+            View all
+          </.link>
+        </div>
+
+        <ul class="divide-y divide-[#E5E7EB]">
+          <li :for={item <- @pending_approvals} class="flex items-center gap-4 px-5 py-4">
+            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#F4F8FB]">
+              <.icon name="hero-document-text" class="size-4 text-[#4F7FA8]" />
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="truncate text-sm font-medium text-[#0B2E4F]">{item.title}</p>
+              <p class="mt-0.5 text-xs text-[#6B7280]">
+                {item.category} · Submitted by {item.submitted_by} · {item.submitted_at}
+              </p>
+            </div>
+            <span class="shrink-0 rounded-full border border-[#4F7FA8]/30 bg-[#EAF3F8] px-2.5 py-1 text-[0.68rem] font-medium text-[#0B2E4F]">
+              {item.level}
+            </span>
+          </li>
+        </ul>
+      </div>
+
+      <%!-- ============ QUICK ACTIONS + RECENT ACTIVITY ============ --%>
+      <div class="space-y-6">
+        <div class="rounded-xl border border-[#E5E7EB] bg-white p-5">
+          <h3 class="text-sm font-semibold text-[#0B2E4F]">Quick Actions</h3>
+          <div class="mt-3 grid grid-cols-2 gap-2">
+            <.link
+              :for={action <- @quick_actions}
+              navigate={action.href}
+              class="flex flex-col items-start gap-2 rounded-lg border border-[#E5E7EB] p-3 text-left transition-colors hover:border-[#4F7FA8]/40 hover:bg-[#EAF3F8]/40"
+            >
+              <.icon name={action.icon} class="size-4 text-[#1769AA]" />
+              <span class="text-xs font-medium text-[#0B2E4F]">{action.label}</span>
+            </.link>
+          </div>
+        </div>
+
+        <div class="rounded-xl border border-[#E5E7EB] bg-white p-5">
+          <h3 class="text-sm font-semibold text-[#0B2E4F]">Recent Activity</h3>
+          <ul class="mt-3 space-y-4">
+            <li :for={activity <- @recent_activity} class="flex gap-3">
+              <div class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#F4F8FB]">
+                <.icon name={activity.icon} class="size-3.5 text-[#4F7FA8]" />
+              </div>
+              <div class="min-w-0">
+                <p class="text-xs leading-relaxed text-[#252525]">{activity.message}</p>
+                <p class="mt-0.5 text-[0.68rem] text-[#9CA3AF]">
+                  {activity.actor} · {activity.timestamp}
+                </p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layouts.admin_app>

@@ -22,11 +22,9 @@ defmodule OpenforumWeb.Layouts do
   def unauth_app(assigns) do
     ~H"""
     <div class="min-h-screen flex flex-col bg-[#FAFAF7] text-[#252525]">
-
       <%!-- PUBLIC NAVIGATION --%>
       <header class="fixed top-0 inset-x-0 z-50 bg-white/95 backdrop-blur-md border-b border-[#E5E7EB]">
         <nav class="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-
           <%!-- BRAND --%>
           <a href={~p"/"} class="flex items-center gap-3 shrink-0">
             <span class="w-10 h-10 rounded-lg bg-[#0B2E4F] text-white flex items-center justify-center shadow-sm">
@@ -234,10 +232,8 @@ defmodule OpenforumWeb.Layouts do
 
       <%!-- MAIN CONTENT AREA --%>
       <div class="drawer-content flex flex-col min-w-0">
-
         <%!-- TOP BAR --%>
         <header class="sticky top-0 z-30 h-16 px-4 sm:px-6 bg-white border-b border-[#E5E7EB] shadow-sm flex items-center">
-
           <label
             for="admin-sidebar"
             class="lg:hidden w-9 h-9 mr-3 rounded-lg border border-[#E5E7EB] text-[#0B2E4F] flex items-center justify-center cursor-pointer hover:bg-[#EAF3F8] transition-colors"
@@ -255,7 +251,6 @@ defmodule OpenforumWeb.Layouts do
 
           <%!-- TOP ACTIONS --%>
           <div class="flex items-center gap-2">
-
             <button
               aria-label="Notifications"
               class="relative w-9 h-9 rounded-lg text-[#6B7280] flex items-center justify-center hover:bg-[#EAF3F8] hover:text-[#1769AA] transition-colors"
@@ -323,8 +318,7 @@ defmodule OpenforumWeb.Layouts do
                     method="delete"
                     class="flex items-center gap-2 px-3 py-2 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
                   >
-                    <.icon name="hero-arrow-right-on-rectangle" class="size-4" />
-                    Log out
+                    <.icon name="hero-arrow-right-on-rectangle" class="size-4" /> Log out
                   </.link>
                 </li>
               </ul>
@@ -345,11 +339,9 @@ defmodule OpenforumWeb.Layouts do
           for="admin-sidebar"
           aria-label="Close sidebar"
           class="drawer-overlay"
-        >
-        </label>
+        ></label>
 
         <aside class="min-h-full w-72 bg-white border-r border-[#E5E7EB] flex flex-col">
-
           <%!-- ADMIN BRAND --%>
           <div class="h-16 px-5 flex items-center gap-3 border-b border-[#E5E7EB] shrink-0">
             <div class="w-9 h-9 rounded-lg bg-[#0B2E4F] text-white flex items-center justify-center">
@@ -369,7 +361,6 @@ defmodule OpenforumWeb.Layouts do
 
           <%!-- SIDEBAR NAVIGATION --%>
           <nav class="flex-1 px-3 py-5 overflow-y-auto">
-
             <.sidebar_group label="Overview" />
 
             <.sidebar_link
@@ -483,10 +474,10 @@ defmodule OpenforumWeb.Layouts do
             <.sidebar_group label="Organisation" />
 
             <.sidebar_link
-              href={~p"/admin/organisational-units"}
+              href={~p"/admin/working_areas"}
               icon="hero-building-office-2"
-              label="Organisational Units"
-              active={@current_page == :organisational_units}
+              label="Working Areas"
+              active={@current_page == :working_areas}
             />
 
             <.sidebar_link
@@ -629,9 +620,7 @@ defmodule OpenforumWeb.Layouts do
     ~H"""
     <footer class="bg-[#0B2E4F] text-white">
       <div class="mx-auto max-w-7xl px-6 lg:px-8 py-14">
-
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
-
           <%!-- BRAND --%>
           <div class="lg:col-span-2">
             <div class="flex items-center gap-3">
@@ -930,8 +919,7 @@ defmodule OpenforumWeb.Layouts do
         "flex items-center gap-3 px-3 py-2.5 rounded-lg text-[0.82rem] border-l-[3px] transition-colors mb-1",
         if(
           @active,
-          do:
-            "font-semibold text-[#0B2E4F] bg-[#EAF3F8] border-[#1769AA]",
+          do: "font-semibold text-[#0B2E4F] bg-[#EAF3F8] border-[#1769AA]",
           else:
             "font-medium text-[#4B5563] border-transparent hover:bg-[#F4F8FB] hover:text-[#1769AA]"
         )

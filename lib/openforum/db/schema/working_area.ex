@@ -11,9 +11,10 @@ defmodule OpenforumWeb.Schema.WorkingArea do
   end
 
   @doc false
-  def changeset(working_area, attrs) do
-    working_area
-    |> cast(attrs, [:name, :area_lead, :description])
-    |> validate_required([:name])
-  end
+    def changeset(working_area, attrs) do
+      working_area
+      |> cast(attrs, [:name, :description])
+      |> validate_required([:name])
+      |> cast_assoc(:area_lead)
+    end
 end

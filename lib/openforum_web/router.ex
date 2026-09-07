@@ -56,6 +56,16 @@ defmodule OpenforumWeb.Router do
 
       live "/users", Users.Index, :index
       live "/working_areas", WorkingAreas.Index, :index
+      live "/work_flows", WorkFlowLive.Index, :index
+      live "/work_flows/new", WorkFlowLive.Index, :new
+      live "/work_flows/:id/edit", WorkFlowLive.Index, :edit
+
+      live "/area_leads", AreaLeadLive.Index, :index
+
+      live "/work_flows/:work_flow_id/steps", WorkFlowStepLive.Index, :index
+      live "/work_flows/:work_flow_id/steps/new", WorkFlowStepLive.Index, :new
+      live "/work_flows/:work_flow_id/steps/:id/edit", WorkFlowStepLive.Index, :edit
+      live "/roles", RolesPermissions.Index, :index
 
       live "/users/settings", UserLive.Settings, :edit
       live "/users/settings/confirm-email/:token", UserLive.Settings, :confirm_email

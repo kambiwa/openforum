@@ -1,14 +1,15 @@
-defmodule OpenForum.Context.AreaLeads do
-  alias OpenForumWeb.Schema.AreaLead
-  alias OpenForumWeb.Repo
+defmodule Openforum.Context.AreaLeads do
+  alias OpenforumWeb.Schema.AreaLead
+  alias OpenforumWeb.Pagination
+  alias Openforum.Repo
 
   import Ecto.Query, warn: false
 
   # ── Paginated list (used by the LiveView index) ──────────────────────
 
   def list_area_leads(table_params \\ %{}, filters \\ %{}) do
-    page = OpenForum.Pagination.param_value(table_params, "page", 1)
-    page_size = OpenForum.Pagination.param_value(table_params, "page_size", 10)
+    page = Pagination.param_value(table_params, "page", 1)
+    page_size = Pagination.param_value(table_params, "page_size", 10)
     order_by = table_params["order_by"] || %{"sort_field" => "id", "sort_direction" => "desc"}
     search = get_in(table_params, ["filter", "isearch"]) || ""
     status = filters[:status_filter] || filters["status_filter"] || ""

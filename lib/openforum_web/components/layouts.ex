@@ -450,7 +450,7 @@ defmodule OpenforumWeb.Layouts do
             <.sidebar_group label="Workflow" />
 
             <.sidebar_link
-              href={~p"/admin/workflows"}
+              href={~p"/admin/work_flows"}
               icon="hero-arrows-right-left"
               label="Approval Workflows"
               active={@current_page == :workflows}
@@ -478,6 +478,12 @@ defmodule OpenforumWeb.Layouts do
               icon="hero-building-office-2"
               label="Working Areas"
               active={@current_page == :working_areas}
+            />
+            <.sidebar_link
+              href={~p"/admin/area_leads"}
+              icon="hero-users"
+              label="Area Leads"
+              active={@current_page == :area_lead}
             />
 
             <.sidebar_link

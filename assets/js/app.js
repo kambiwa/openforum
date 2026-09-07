@@ -26,10 +26,31 @@ import {hooks as colocatedHooks} from "phoenix-colocated/openforum"
 import topbar from "../vendor/topbar"
 
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
+
+const Hooks = {
+  ...colocatedHooks,
+
+  FlashTimer: {
+    mounted() {
+      const duration = 3000
+
+      this.timer = setTimeout(() => {
+        this.el.click()
+      }, duration)
+    },
+
+    destroyed() {
+      if (this.timer) {
+        clearTimeout(this.timer)
+      }
+    }
+  }
+}
+
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
-  hooks: {...colocatedHooks},
+  hooks: Hooks,
 })
 
 // Show progress bar on live navigation and form submits

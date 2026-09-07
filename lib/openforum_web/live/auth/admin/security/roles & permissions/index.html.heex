@@ -1,0 +1,185 @@
+<Layouts.admin_app
+    flash={@flash}
+    current_scope={@current_scope}
+    mobile_menu_open={@mobile_menu_open}
+    current_page={@current_page}
+    page_title={@page_title}
+    >
+    <div class="mx-auto max-w-7xl px-6 py-6">
+        <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold tracking-tight text-[#0B2E4F]">Roles & Permissions</h1>
+            <p class="mt-1 text-sm text-[#5B6B7C]">Manage admin roles, permissions, and user assignments</p>
+        </div>
+      <.button
+        phx-click="new_role"
+        class="inline-flex items-center gap-1.5 rounded-md bg-[#1769AA] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#125E93]"
+      >
+        <.icon name="hero-plus" class="h-4 w-4" /> Create Role
+      </.button>
+     </div>
+    </div>
+
+
+    <div class="mt-6 grid grid-cols-[320px_1fr] gap-6">
+    <!-- ── Role list ─────────────────────────────────────────── -->
+    <div>
+      <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-[#5B6B7C]">All Roles</p>
+
+      <div class="space-y-3">
+        <div
+          :for={role <- @roles}
+          phx-click="select_role"
+          phx-value-id={role.id}
+          class={[
+            "cursor-pointer rounded-lg border p-4 transition-colors",
+            if(role.id == @selected_role.id,
+              do: "border-[#1769AA] bg-[#EAF3F8]",
+              else: "border-[#E5E7EB] bg-white hover:border-[#4F7FA8]/50"
+            )
+          ]}
+        >
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-3">
+              <div class="flex h-9 w-9 items-center justify-center rounded-md bg-[#0B2E4F] text-sm font-semibold text-white">
+                {role.initial}
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-[#0B2E4F]">{role.name}</p>
+                <p class="text-xs text-[#5B6B7C]">
+                  {role.user_count} {if role.user_count == 1, do: "user", else: "users"}
+                </p>
+              </div>
+            </div>
+            <.icon name="hero-chevron-right" class="h-4 w-4 text-[#9AA6B2]" />
+          </div>
+          <p class="mt-2 text-xs text-[#5B6B7C]">{role.description}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Detail panel ──────────────────────────────────────── -->
+    <div class="overflow-hidden rounded-lg border border-[#E5E7EB] bg-white">
+      <div class="flex items-center justify-between bg-[#0B2E4F] px-6 py-5">
+        <div class="flex items-center gap-3">
+          <div class="flex h-10 w-10 items-center justify-center rounded-md bg-white/10">
+            <.icon name="hero-shield-check" class="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <p class="text-base font-semibold text-white">{@selected_role.name}</p>
+            <p class="text-xs text-white/70">{@selected_role.description}</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <.button
+            phx-click="assign_user"
+            class="inline-flex items-center gap-1.5 rounded-md border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-medium text-white hover:bg-white/20"
+          >
+            <.icon name="hero-user-plus" class="h-4 w-4" /> Assign Another User
+          </.button>
+          <.button
+            phx-click="edit_role"
+            class="inline-flex items-center gap-1.5 rounded-md border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-medium text-white hover:bg-white/20"
+          >
+            <.icon name="hero-pencil-square" class="h-4 w-4" /> Edit
+          </.button>
+          <.button
+            phx-click="delete_role"
+            data-confirm="Delete this role? This cannot be undone."
+            class="inline-flex items-center gap-1.5 rounded-md border border-red-300/30 bg-red-500/10 px-3.5 py-2 text-xs font-medium text-red-100 hover:bg-red-500/20"
+          >
+            <.icon name="hero-trash" class="h-4 w-4" /> Delete
+          </.button>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="flex items-center gap-6 border-b border-[#E5E7EB] px-6">
+        <button
+          phx-click="switch_tab"
+          phx-value-tab="permissions"
+          class={[
+            "border-b-2 py-3 text-sm font-medium transition-colors",
+            if(@active_tab == :permissions,
+              do: "border-[#1769AA] text-[#0B2E4F]",
+              else: "border-transparent text-[#5B6B7C] hover:text-[#0B2E4F]"
+            )
+          ]}
+        >
+          Permissions
+        </button>
+        <button
+          phx-click="switch_tab"
+          phx-value-tab="assigned_users"
+          class={[
+            "flex items-center gap-1.5 border-b-2 py-3 text-sm font-medium transition-colors",
+            if(@active_tab == :assigned_users,
+              do: "border-[#1769AA] text-[#0B2E4F]",
+              else: "border-transparent text-[#5B6B7C] hover:text-[#0B2E4F]"
+            )
+          ]}
+        >
+          Assigned Users
+          <span class="rounded-full bg-[#EAF3F8] px-2 py-0.5 text-xs font-medium text-[#1769AA]">
+            {@selected_role.user_count}
+          </span>
+        </button>
+      </div>
+
+      <div :if={@active_tab == :permissions} class="p-6">
+        <p class="mb-5 text-sm text-[#5B6B7C]">
+          Toggle permissions for <span class="font-semibold text-[#0B2E4F]">{@selected_role.name}</span>. Changes are saved immediately.
+        </p>
+
+        <div class="divide-y divide-[#E5E7EB]">
+          <div :for={{category, actions} <- @selected_role.permissions} class="py-5 first:pt-0">
+            <div class="flex items-center justify-between">
+              <p class="text-sm font-semibold text-[#0B2E4F]">{category}</p>
+              <span class="rounded-full bg-[#EAF3F8] px-2.5 py-1 text-xs font-medium text-[#1769AA]">
+                {Enum.count(actions, fn {_a, enabled} -> enabled end)}/{length(actions)} enabled
+              </span>
+            </div>
+
+            <div class="mt-3 flex flex-wrap gap-2">
+              <button
+                :for={{action, enabled} <- actions}
+                phx-click="toggle_permission"
+                phx-value-category={category}
+                phx-value-action={action}
+                class={[
+                  "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
+                  if(enabled,
+                    do: "border-[#1769AA] bg-[#1769AA] text-white",
+                    else: "border-[#D6DBE1] bg-white text-[#5B6B7C] hover:border-[#4F7FA8]/50"
+                  )
+                ]}
+              >
+                <.icon name={if enabled, do: "hero-check", else: "hero-plus"} class="h-3.5 w-3.5" />
+                {action}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div :if={@active_tab == :assigned_users} class="p-6">
+        <div :if={@selected_role.assigned_users == []} class="py-10 text-center text-sm text-[#5B6B7C]">
+          No users assigned to this role yet.
+        </div>
+        <div :for={user <- @selected_role.assigned_users} class="flex items-center justify-between border-b border-[#E5E7EB] py-3 last:border-0">
+          <div class="flex items-center gap-3">
+            <div class="flex h-8 w-8 items-center justify-center rounded-full bg-[#EAF3F8] text-xs font-semibold text-[#1769AA]">
+              {String.first(user.name)}
+            </div>
+            <div>
+              <p class="text-sm font-medium text-[#0B2E4F]">{user.name}</p>
+              <p class="text-xs text-[#5B6B7C]">{user.email}</p>
+            </div>
+          </div>
+          <button class="text-xs font-medium text-red-600 hover:text-red-700">Remove</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layouts.admin_app>

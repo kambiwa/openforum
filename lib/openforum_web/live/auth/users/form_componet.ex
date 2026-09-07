@@ -47,7 +47,7 @@ defmodule OpenforumWeb.Auth.Users.FormComponet do
                 for={@uploads.image.ref}
                 class="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-[#4F7FA8]/40 bg-white px-3 py-1.5 text-xs font-medium text-[#0B2E4F] transition-colors hover:bg-[#EAF3F8]"
               >
-                <.icon name="hero-arrow-up-tray" class="size-3.5" /> Upload photo
+                <.icon name="hero-arrow-up-tray" class="size-3.5" /> Upload Profile photo
               </label>
               <.live_file_input upload={@uploads.image} class="sr-only" />
               <p class="mt-1.5 text-[0.68rem] text-[#6B7280]">JPG, PNG or WEBP. Max 5MB.</p>

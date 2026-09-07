@@ -61,25 +61,51 @@ defmodule OpenforumWeb.CoreComponents do
     <div
       :if={msg = render_slot(@inner_block) || Phoenix.Flash.get(@flash, @kind)}
       id={@id}
+      phx-hook="FlashTimer"
       phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> hide("##{@id}")}
       role="alert"
       class="toast toast-top toast-end z-50"
       {@rest}
     >
       <div class={[
-        "alert w-80 sm:w-96 max-w-80 sm:max-w-96 text-wrap",
-        @kind == :info && "alert-info",
+        "alert relative overflow-hidden w-96 sm:w-[32rem] max-w-[32rem] text-wrap py-5 px-6 shadow-lg",
+        @kind == :info && "!bg-emerald-500 !text-white !border-emerald-500",
         @kind == :error && "alert-error"
       ]}>
-        <.icon :if={@kind == :info} name="hero-information-circle" class="size-5 shrink-0" />
-        <.icon :if={@kind == :error} name="hero-exclamation-circle" class="size-5 shrink-0" />
+      <div class="flash-progress"></div>
+        <.icon
+          :if={@kind == :info}
+          name="hero-check-circle"
+          class="size-6 shrink-0"
+        />
+
+        <.icon
+          :if={@kind == :error}
+          name="hero-exclamation-circle"
+          class="size-6 shrink-0"
+        />
+
         <div>
-          <p :if={@title} class="font-semibold">{@title}</p>
-          <p>{msg}</p>
+          <p :if={@title} class="font-semibold text-lg">
+            {@title}
+          </p>
+
+          <p class="text-base">
+            {msg}
+          </p>
         </div>
+
         <div class="flex-1" />
-        <button type="button" class="group self-start cursor-pointer" aria-label={gettext("close")}>
-          <.icon name="hero-x-mark" class="size-5 opacity-40 group-hover:opacity-70" />
+
+        <button
+          type="button"
+          class="group self-start cursor-pointer"
+          aria-label={gettext("close")}
+        >
+          <.icon
+            name="hero-x-mark"
+            class="size-6 opacity-60 group-hover:opacity-100"
+          />
         </button>
       </div>
     </div>
@@ -119,7 +145,7 @@ defmodule OpenforumWeb.CoreComponents do
         <div class="flex min-h-full items-center justify-center p-4">
           <div
             id={"#{@id}-container"}
-            style="background: #fff; border: 1px solid #E8E2D9; border-top: 3px solid #8B1A1A;
+            style="background: #fff; border: 1px solid #E8E2D9; border-top: 3px solid #4675c1;
                   border-radius: 0.75rem; padding: 1.5rem; width: 100%; max-width: 42rem;
                   box-shadow: 0 20px 60px rgba(0,0,0,0.12);"
             phx-click-away={@on_cancel}
@@ -129,7 +155,7 @@ defmodule OpenforumWeb.CoreComponents do
             <div style="display: flex; justify-content: flex-end; margin-bottom: 0.75rem;">
               <button
                 phx-click={@on_cancel}
-                style="background: none; border: none; cursor: pointer; color: #9ca3af; padding: 0.25rem;"
+                style="background: none; border: none; cursor: pointer; color: #afc7f0; padding: 0.25rem;"
                 onmouseover="this.style.color='#374151'"
                 onmouseout="this.style.color='#9ca3af'"
                 aria-label="Close"

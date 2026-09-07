@@ -5,6 +5,7 @@ defmodule OpenforumWeb.Auth.WorkingAreas.Index do
   alias OpenforumWeb.Datatable.Table
   alias OpenforumWeb.Pagination
   alias Openforum.Context.WorkingAreas
+  alias Openforum.Context.AreaLeads
   alias OpenforumWeb.Schema.WorkingArea
   alias Openforum.Repo
 
@@ -19,6 +20,7 @@ defmodule OpenforumWeb.Auth.WorkingAreas.Index do
       |> assign(filter_expanded: false)
       |> assign(:status_filter, "")
       |> assign(:search_filter, "")
+      |> assign(:area_leads, AreaLeads.list_area_leads())
       |> assign(:working_area, %WorkingArea{})
       |> Pagination.order_by_composer()
       |> Pagination.i_search_composer()
@@ -37,7 +39,7 @@ defmodule OpenforumWeb.Auth.WorkingAreas.Index do
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
     |> assign(:page_title, "Edit Working Area")
-    |> assign(:working_area, Accounts.get_working_area!(id))
+    |> assign(:working_area, WorkingAreas.get_working_area!(id))
   end
 
   defp apply_action(socket, :new, _params) do
@@ -55,17 +57,27 @@ defmodule OpenforumWeb.Auth.WorkingAreas.Index do
 
   @impl true
   def handle_info(
-        {OpenforumWeb.Auth.WorkingArea.FormComponent, {:saved, _working_area}},
+        {OpenforumWeb.Auth.WorkingAreas.FormComponent, {:saved, _working_area}},
         socket
       ) do
     {:noreply, fetch_filtered_working_areas(socket)}
   end
 
   def handle_info(
-        {OpenforumWeb.Auth.WorkingArea.FormComponent, {:cancelled, _}},
+        {OpenforumWeb.Auth.WorkingAreas.FormComponent, {:cancelled, _}},
         socket
       ) do
     {:noreply, assign(socket, :live_action, :index)}
+  end
+
+  def update(%{working_area: working_area} = assigns, socket) do
+    changeset = WorkingAreas.change_working_area(working_area)
+
+    {:ok,
+    socket
+    |> assign(assigns)
+    |> assign_new(:area_leads, fn -> Openforum.Context.AreaLeads.list_all_area_leads() end)
+    |> assign(:form, to_form(changeset))}
   end
 
   @impl true
@@ -81,7 +93,7 @@ defmodule OpenforumWeb.Auth.WorkingAreas.Index do
     {:noreply,
      socket
      |> assign(:page_title, "Edit Working Area")
-     |> assign(:working_area, Accounts.get_working_area!(id))
+     |> assign(:working_area, WorkingAreas.get_working_area!(id))
      |> assign(:live_action, :edit)}
   end
 
@@ -110,6 +122,7 @@ defmodule OpenforumWeb.Auth.WorkingAreas.Index do
       status_filter: socket.assigns.status_filter
     }
 
+    area_leads = AreaLeads.list_area_leads()
     data =
       WorkingAreas.list_working_areas(
         Pagination.create_table_params(socket, socket.assigns.params),
@@ -261,13 +274,14 @@ defmodule OpenforumWeb.Auth.WorkingAreas.Index do
           on_cancel={JS.push("close")}
         >
           <.live_component
-            module={OpenforumWeb.Auth.WorkingAreas.FormComponent}
-            id={(@working_area && @working_area.id) || :new}
-            title={@page_title}
-            action={@live_action}
-            working_area={@working_area}
-            patch={~p"/admin/working_areas"}
-          />
+              module={OpenforumWeb.Auth.WorkingAreas.FormComponent}
+              id={@working_area.id || :new}
+              title={@page_title}
+              action={@live_action}
+              working_area={@working_area}
+              area_leads={@area_leads}
+              patch={~p"/admin/working_areas"}
+            />
         </.modal>
       </div>
     </Layouts.admin_app>

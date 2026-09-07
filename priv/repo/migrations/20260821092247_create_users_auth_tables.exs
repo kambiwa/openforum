@@ -7,7 +7,6 @@ defmodule Openforum.Repo.Migrations.CreateOpenforumTables do
     # ============================================================
     execute "CREATE EXTENSION IF NOT EXISTS citext", ""
 
-     
 
     # ============================================================
     # WORKING AREA
@@ -21,6 +20,7 @@ defmodule Openforum.Repo.Migrations.CreateOpenforumTables do
     end
 
     create unique_index(:working_area, [:name])
+
 
     # ============================================================
     # AREA LEAD
@@ -38,6 +38,7 @@ defmodule Openforum.Repo.Migrations.CreateOpenforumTables do
 
     create unique_index(:area_lead, [:working_area_id])
 
+
     # ============================================================
     # USERS
     # ============================================================
@@ -54,6 +55,7 @@ defmodule Openforum.Repo.Migrations.CreateOpenforumTables do
 
     create index(:users, [:working_area_id])
     create unique_index(:users, [:email])
+
 
     # ============================================================
     # USER TOKENS
@@ -74,6 +76,7 @@ defmodule Openforum.Repo.Migrations.CreateOpenforumTables do
     create index(:users_tokens, [:user_id])
     create unique_index(:users_tokens, [:context, :token])
 
+
     # ============================================================
     # ROLES
     # ============================================================
@@ -87,6 +90,7 @@ defmodule Openforum.Repo.Migrations.CreateOpenforumTables do
     end
 
     create unique_index(:roles, [:slug])
+
 
     # ============================================================
     # USER ROLES
@@ -105,47 +109,91 @@ defmodule Openforum.Repo.Migrations.CreateOpenforumTables do
 
     create unique_index(:user_roles, [:user_id, :role_id])
 
+
     # ============================================================
-    # APPROVAL LEVELS
+    # ROLE DELEGATIONS
     # ============================================================
-    create table(:approval_levels) do
-      add :name, :string, null: false
-      add :slug, :string, null: false
-      add :order_index, :integer, null: false
+    # "I'm out of office" — user_id temporarily delegates acting
+    # authority for role_id to delegate_user_id, for a time window.
+    # General across all workflows (not per-step).
+    create table(:role_delegations) do
+      add :user_id,
+          references(:users, on_delete: :delete_all),
+          null: false
 
       add :role_id,
-          references(:roles, on_delete: :nilify_all)
+          references(:roles, on_delete: :delete_all),
+          null: false
 
-      add :description, :string
-      add :is_active, :boolean, null: false, default: true
+      add :delegate_user_id,
+          references(:users, on_delete: :delete_all),
+          null: false
+
+      add :starts_at, :utc_datetime, null: false
+      add :ends_at, :utc_datetime, null: false
 
       timestamps(type: :utc_datetime)
     end
 
-    create unique_index(:approval_levels, [:slug])
-    create index(:approval_levels, [:order_index])
+    create index(:role_delegations, [:user_id])
+    create index(:role_delegations, [:role_id])
+    create index(:role_delegations, [:delegate_user_id])
+
 
     # ============================================================
-    # WORKFLOWS
+    # WORK FLOWS
     # ============================================================
-    create table(:workflows) do
+    create table(:work_flows) do
       add :name, :string, null: false
       add :status, :string, null: false, default: "active"
-
-      add :flow,
-          {:array, :map},
-          null: false,
-          default: []
-
       add :description, :string
-      add :is_active, :boolean, null: false, default: true
 
       timestamps(type: :utc_datetime)
     end
+
+    create unique_index(:work_flows, [:name])
+    create index(:work_flows, [:status])
+
+
+    # ============================================================
+    # WORK FLOW STEPS
+    # ============================================================
+    # The ordered approval ladder for a workflow. Any user holding
+    # role_id can act on a step; delegation (out-of-office) is
+    # handled separately via role_delegations, not per-step.
+    create table(:work_flow_steps) do
+      add :work_flow_id,
+          references(:work_flows, on_delete: :delete_all),
+          null: false
+
+      add :name, :string, null: false
+      add :description, :string
+
+      add :role_id,
+          references(:roles, on_delete: :restrict),
+          null: false
+
+      add :order_index, :integer, null: false
+
+      timestamps(type: :utc_datetime)
+    end
+
+    create index(:work_flow_steps, [:work_flow_id])
+    create index(:work_flow_steps, [:role_id])
+    create unique_index(:work_flow_steps, [:work_flow_id, :order_index])
+
 
     # ============================================================
     # CONTENT CATEGORIES
     # ============================================================
+    # Landing page categories:
+    #
+    # Bible
+    # Doctrine
+    # Catechism
+    # Questions & Answers
+    # Media
+    #
     create table(:content_categories) do
       add :name, :string, null: false
       add :slug, :string, null: false
@@ -158,6 +206,7 @@ defmodule Openforum.Repo.Migrations.CreateOpenforumTables do
     end
 
     create unique_index(:content_categories, [:slug])
+
 
     # ============================================================
     # CONTENT ITEMS
@@ -176,10 +225,10 @@ defmodule Openforum.Repo.Migrations.CreateOpenforumTables do
           null: false
 
       add :workflow_id,
-          references(:workflows, on_delete: :nilify_all)
+          references(:work_flows, on_delete: :nilify_all)
 
-      add :current_approval_level_id,
-          references(:approval_levels, on_delete: :nilify_all)
+      add :current_step_id,
+          references(:work_flow_steps, on_delete: :nilify_all)
 
       add :author_id,
           references(:users, on_delete: :nilify_all)
@@ -193,31 +242,42 @@ defmodule Openforum.Repo.Migrations.CreateOpenforumTables do
     create index(:content_items, [:category_id])
     create index(:content_items, [:status])
     create index(:content_items, [:author_id])
+    create index(:content_items, [:workflow_id])
+    create index(:content_items, [:current_step_id])
+
 
     # ============================================================
-    # CONTENT APPROVALS
+    # WORK FLOW STEP ACTIONS
     # ============================================================
-    create table(:content_approvals) do
+    # Audit trail: every approve/reject on a content item at a
+    # given step. actor_id is who actually acted; acted_as_role_id
+    # records whether they acted under their own role or as a
+    # delegate (see role_delegations). Comments are mandatory.
+    create table(:work_flow_step_actions) do
       add :content_item_id,
           references(:content_items, on_delete: :delete_all),
           null: false
 
-      add :approval_level_id,
-          references(:approval_levels, on_delete: :restrict),
+      add :work_flow_step_id,
+          references(:work_flow_steps, on_delete: :restrict),
           null: false
 
-      add :reviewer_id,
+      add :actor_id,
           references(:users, on_delete: :nilify_all)
 
+      add :acted_as_role_id,
+          references(:roles, on_delete: :nilify_all)
+
       add :action, :string, null: false
-      add :comments, :text
+      add :comments, :text, null: false
 
       timestamps(type: :utc_datetime, updated_at: false)
     end
 
-    create index(:content_approvals, [:content_item_id])
-    create index(:content_approvals, [:approval_level_id])
-    create index(:content_approvals, [:reviewer_id])
+    create index(:work_flow_step_actions, [:content_item_id])
+    create index(:work_flow_step_actions, [:work_flow_step_id])
+    create index(:work_flow_step_actions, [:actor_id])
+
 
     # ============================================================
     # CONTENT ATTACHMENTS
@@ -235,6 +295,7 @@ defmodule Openforum.Repo.Migrations.CreateOpenforumTables do
     end
 
     create index(:content_attachments, [:content_item_id])
+
 
     # ============================================================
     # MEDIA RESOURCES
@@ -263,6 +324,7 @@ defmodule Openforum.Repo.Migrations.CreateOpenforumTables do
     create index(:media_resources, [:media_type])
     create index(:media_resources, [:status])
     create index(:media_resources, [:uploaded_by_id])
+
 
     # ============================================================
     # NOTIFICATIONS

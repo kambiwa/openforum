@@ -1,12 +1,10 @@
 defmodule OpenforumWeb.Auth.Users.Index do
   use OpenforumWeb, :live_view
 
-  alias OpenforumWeb.PaginationComponent
   alias OpenforumWeb.Datatable.Table
   alias OpenforumWeb.Pagination
   alias Openforum.Accounts.User
   alias Openforum.Accounts
-  alias OpenforumWeb.Repo
 
   @impl true
   def mount(_params, _session, socket) do

@@ -5,7 +5,7 @@ defmodule Openforum.Context.WorkFlowSteps do
 
   alias Openforum.WorkFlow
   alias Openforum.WorkFlowStep
-  alias Openforum.Accounts.User
+  alias OpenforumWeb.Schema.Role
   alias Openforum.Repo
 
   import Ecto.Query, warn: false
@@ -94,42 +94,59 @@ defmodule Openforum.Context.WorkFlowSteps do
   def stage_options, do: [{"Draft", "draft"}, {"Reviewer", "reviewer"}, {"Approver", "approver"}]
 
   @doc """
+  {label, id} pairs for the role `<.input type="select">` on a step form.
+  """
+  def list_roles_for_select do
+    Role
+    |> where([r], r.is_active == true)
+    |> select([r], {r.name, r.id})
+    |> order_by([r], asc: r.name)
+    |> Repo.all()
+  end
+
+  @doc """
   Steps for a workflow, ordered by stage (Draft → Reviewer → Approver) and
-  then by creation time within the same stage. Order is always computed —
-  there is no manual/draggable ordering anymore.
+  then by creation order within the same stage. `order_index` is computed
+  and stored by `create_step/2` / `update_step/2` — there is no manual or
+  draggable ordering anymore, so this is a plain column sort (and matches
+  the `preload_order: [asc: :order_index]` already declared on
+  `WorkFlow.work_flow_steps`).
   """
   def list_steps(work_flow_id) when is_integer(work_flow_id) or is_binary(work_flow_id) do
     WorkFlowStep
     |> where([s], s.work_flow_id == ^work_flow_id)
-    |> order_by([s], asc: s.inserted_at)
-    |> preload(:owners)
-    |> Repo.all()
-    |> Enum.sort_by(&Map.get(@stage_rank, &1.stage_type, 99))
-  end
-
-  def get_step!(id), do: WorkFlowStep |> Repo.get!(id) |> Repo.preload(:owners)
-
-  @doc """
-  {label, id} pairs for the owners multi-select.
-  """
-  def list_users_for_select do
-    User
-    |> select([u], {u.name, u.id})
-    |> order_by([u], asc: u.name)
+    |> order_by([s], asc: s.order_index)
+    |> preload(:role)
     |> Repo.all()
   end
 
-  def create_step(work_flow_id, attrs, owner_ids \\ []) do
+  def get_step!(id), do: WorkFlowStep |> Repo.get!(id) |> Repo.preload(:role)
+
+  def create_step(work_flow_id, attrs) do
+    stage = fetch_stage(attrs)
+
+    attrs =
+      attrs
+      |> Map.put("work_flow_id", work_flow_id)
+      |> Map.put("order_index", next_order_index(work_flow_id, stage))
+
     %WorkFlowStep{}
-    |> WorkFlowStep.changeset(Map.put(attrs, "work_flow_id", work_flow_id), list_users(owner_ids))
+    |> WorkFlowStep.changeset(attrs)
     |> Repo.insert()
   end
 
-  def update_step(%WorkFlowStep{} = step, attrs, owner_ids \\ nil) do
-    owners = owner_ids && list_users(owner_ids)
+  def update_step(%WorkFlowStep{} = step, attrs) do
+    new_stage = fetch_stage(attrs)
+
+    attrs =
+      if new_stage && new_stage != step.stage_type do
+        Map.put(attrs, "order_index", next_order_index(step.work_flow_id, new_stage))
+      else
+        attrs
+      end
 
     step
-    |> WorkFlowStep.changeset(attrs, owners)
+    |> WorkFlowStep.changeset(attrs)
     |> Repo.update()
   end
 
@@ -141,9 +158,46 @@ defmodule Openforum.Context.WorkFlowSteps do
     WorkFlowStep.changeset(step, attrs)
   end
 
-  defp list_users(ids) do
-    ids = Enum.reject(ids, &(&1 in [nil, ""]))
-    User |> where([u], u.id in ^ids) |> Repo.all()
+  # Reads "stage_type" (form params come in as strings) or :stage_type
+  # (programmatic calls) out of attrs and normalizes it to an atom, without
+  # blowing up on bad/missing input — validation of the real value still
+  # happens via WorkFlowStep's Ecto.Enum cast in the changeset.
+  defp fetch_stage(attrs) do
+    case Map.get(attrs, "stage_type") || Map.get(attrs, :stage_type) do
+      nil ->
+        nil
+
+      stage when stage in [:draft, :reviewer, :approver] ->
+        stage
+
+      stage when is_binary(stage) ->
+        if stage in ~w(draft reviewer approver), do: String.to_existing_atom(stage), else: nil
+
+      _ ->
+        nil
+    end
+  end
+
+  # Next order_index within a stage: stage_rank * 100_000 keeps stages in
+  # separate bands (Draft: 0–99_999, Reviewer: 100_000–199_999, Approver:
+  # 200_000+), and steps within a stage get sequential values in creation
+  # order. This also satisfies the existing
+  # unique_index(:work_flow_steps, [:work_flow_id, :order_index]).
+  defp next_order_index(_work_flow_id, nil), do: 0
+
+  defp next_order_index(work_flow_id, stage) do
+    base = Map.fetch!(@stage_rank, stage) * 100_000
+
+    max_in_stage =
+      WorkFlowStep
+      |> where([s], s.work_flow_id == ^work_flow_id and s.stage_type == ^stage)
+      |> select([s], max(s.order_index))
+      |> Repo.one()
+
+    case max_in_stage do
+      nil -> base
+      val -> val + 1
+    end
   end
 
   # ── Private helpers ──────────────────────────────────────────────────

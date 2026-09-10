@@ -78,7 +78,7 @@ defmodule Openforum.Repo.Migrations.CreateOpenforumTables do
 
 
     # ============================================================
-    # ROLES
+    # ROLES, PERMISSIONS
     # ============================================================
     create table(:roles) do
       add :name, :string, null: false
@@ -90,6 +90,30 @@ defmodule Openforum.Repo.Migrations.CreateOpenforumTables do
     end
 
     create unique_index(:roles, [:slug])
+
+
+    create table(:permissions) do
+      add :category, :string, null: false
+      add :action, :string, null: false
+      timestamps(type: :utc_datetime)
+    end
+    create unique_index(:permissions, [:category, :action])
+
+
+    create table(:role_permissions) do
+      add :role_id, references(:roles, on_delete: :delete_all), null: false
+      add :permission_id, references(:permissions, on_delete: :delete_all), null: false
+      timestamps(type: :utc_datetime)
+    end
+    create unique_index(:role_permissions, [:role_id, :permission_id])
+
+
+    create table(:role_assignments) do
+      add :role_id, references(:roles, on_delete: :delete_all), null: false
+      add :user_id, references(:users, on_delete: :delete_all), null: false
+      timestamps(type: :utc_datetime)
+    end
+    create unique_index(:role_assignments, [:role_id, :user_id])
 
 
     # ============================================================
@@ -155,12 +179,17 @@ defmodule Openforum.Repo.Migrations.CreateOpenforumTables do
     create index(:work_flows, [:status])
 
 
-    # ============================================================
+        # ============================================================
     # WORK FLOW STEPS
     # ============================================================
     # The ordered approval ladder for a workflow. Any user holding
     # role_id can act on a step; delegation (out-of-office) is
     # handled separately via role_delegations, not per-step.
+    #
+    # stage_type groups steps into the three phases of the ladder
+    # (draft / reviewer / approver) and drives order_index — order
+    # is computed by the app (stage first, then creation order
+    # within a stage), not manually reordered.
     create table(:work_flow_steps) do
       add :work_flow_id,
           references(:work_flows, on_delete: :delete_all),
@@ -168,6 +197,8 @@ defmodule Openforum.Repo.Migrations.CreateOpenforumTables do
 
       add :name, :string, null: false
       add :description, :string
+      add :action, :string
+      add :stage_type, :string, null: false, default: "draft"
 
       add :role_id,
           references(:roles, on_delete: :restrict),
@@ -181,6 +212,10 @@ defmodule Openforum.Repo.Migrations.CreateOpenforumTables do
     create index(:work_flow_steps, [:work_flow_id])
     create index(:work_flow_steps, [:role_id])
     create unique_index(:work_flow_steps, [:work_flow_id, :order_index])
+
+    create constraint(:work_flow_steps, :stage_type_must_be_valid,
+             check: "stage_type IN ('draft','reviewer','approver')"
+           )
 
 
     # ============================================================

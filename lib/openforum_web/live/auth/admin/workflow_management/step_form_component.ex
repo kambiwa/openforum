@@ -5,13 +5,14 @@ defmodule OpenforumWeb.Auth.WorkFlowSteps.StepFormComponent do
 
   @impl true
   def update(%{step: step} = assigns, socket) do
+    changeset = WorkFlowSteps.change_step(step)
+
     {:ok,
      socket
      |> assign(assigns)
-     |> assign(:role_options, role_options())
-     |> assign_new(:form, fn ->
-       to_form(WorkFlowSteps.change_step(step))
-     end)}
+     |> assign(:stage_options, WorkFlowSteps.stage_options())
+     |> assign(:role_options, WorkFlowSteps.list_roles_for_select())
+     |> assign_form(changeset)}
   end
 
   @impl true
@@ -21,54 +22,48 @@ defmodule OpenforumWeb.Auth.WorkFlowSteps.StepFormComponent do
       |> WorkFlowSteps.change_step(params)
       |> Map.put(:action, :validate)
 
-    {:noreply, assign(socket, form: to_form(changeset))}
+    {:noreply, assign_form(socket, changeset)}
   end
 
   def handle_event("save", %{"work_flow_step" => params}, socket) do
-    save_step(socket, socket.assigns.action, params)
+    save_step(socket, params)
   end
 
   def handle_event("cancel", _params, socket) do
-    notify_parent({:cancelled, nil})
+    notify_parent({:cancelled, socket.assigns.step})
     {:noreply, socket}
   end
 
-  defp save_step(socket, :edit, params) do
-    case WorkFlowSteps.update_step(socket.assigns.step, params) do
+  defp save_step(socket, params) do
+    work_flow_id = socket.assigns.work_flow.id
+
+    result =
+      if socket.assigns.step.id do
+        WorkFlowSteps.update_step(socket.assigns.step, params)
+      else
+        WorkFlowSteps.create_step(work_flow_id, params)
+      end
+
+    case result do
       {:ok, step} ->
         notify_parent({:saved, step})
         {:noreply, socket}
 
-      {:error, changeset} ->
-        {:noreply, assign(socket, form: to_form(changeset))}
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign_form(socket, changeset)}
     end
   end
 
-  defp save_step(socket, :new, params) do
-    case WorkFlowSteps.create_step(socket.assigns.work_flow.id, params) do
-      {:ok, step} ->
-        notify_parent({:saved, step})
-        {:noreply, socket}
-
-      {:error, changeset} ->
-        {:noreply, assign(socket, form: to_form(changeset))}
-    end
-  end
-
+  defp assign_form(socket, changeset), do: assign(socket, :form, to_form(changeset))
   defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
-
-  defp role_options do
-    Openforum.Context.Roles.list_roles()
-    |> Enum.map(&{&1.name, &1.id})
-  end
 
   @impl true
   def render(assigns) do
     ~H"""
     <div>
-      <h3 class="mb-3 text-sm font-semibold text-[#0B2E4F]">
+      <h4 class="mb-3 text-sm font-semibold text-[#0B2E4F]">
         {if @action == :edit, do: "Edit Step", else: "New Step"}
-      </h3>
+      </h4>
 
       <.form
         for={@form}
@@ -76,30 +71,42 @@ defmodule OpenforumWeb.Auth.WorkFlowSteps.StepFormComponent do
         phx-target={@myself}
         phx-change="validate"
         phx-submit="save"
+        class="space-y-3"
       >
-        <.input field={@form[:name]} type="text" label="Name" required />
-        <.input field={@form[:description]} type="textarea" label="Description" />
+        <.input field={@form[:name]} type="text" label="Name" placeholder="e.g. Editorial Review" required />
+
+        <.input field={@form[:description]} type="textarea" label="Description" placeholder="Optional description..." />
+
+        <.input
+          field={@form[:stage_type]}
+          type="select"
+          label="Stage"
+          options={@stage_options}
+          prompt="Select stage"
+          required
+        />
+
         <.input
           field={@form[:role_id]}
           type="select"
           label="Role"
           options={@role_options}
-          prompt="Select a role"
+          prompt="Select the role that acts on this step"
+          required
         />
 
-        <:actions>
-          <div class="flex items-center justify-end gap-3">
-            <button
-              type="button"
-              phx-click="cancel"
-              phx-target={@myself}
-              class="rounded-lg border border-[#E5E7EB] px-3 py-1.5 text-xs font-medium text-[#6B7280] hover:bg-[#F3F4F6]"
-            >
-              Cancel
-            </button>
-            <.button phx-disable-with="Saving...">Save Step</.button>
-          </div>
-        </:actions>
+        <.input field={@form[:action]} type="textarea" label="Action" placeholder="What should happen at this step..." />
+
+        <div class="flex items-center justify-end gap-3 pt-2">
+          <button type="button" phx-click="cancel" phx-target={@myself}
+            class="rounded-lg border border-[#E5E7EB] bg-white px-4 py-2 text-sm font-medium text-[#0B2E4F] hover:bg-[#F9FAFB]">
+            Cancel
+          </button>
+          <button type="submit" phx-disable-with="Saving..."
+            class="rounded-lg bg-[#1769AA] px-4 py-2 text-sm font-medium text-white hover:bg-[#0B2E4F]">
+            Save Step
+          </button>
+        </div>
       </.form>
     </div>
     """

@@ -41,17 +41,9 @@ defmodule Openforum.Accounts do
   ## ======================
   ## REGISTRATION
   ## ======================
-  #  EnrouteHaye.Accounts.register_user(
 
-  #    user = %{
-  #       email: "dev@dev.com",
-  #       password: "dev@dev.com",
-  #        job_id: 1
-  #    }
-  # )
 
   def register_user(attrs) do
-    IO.inspect(attrs, label: "===0909==0909")
 
     %User{}
     |> User.registration_changeset(attrs)

@@ -68,17 +68,33 @@ defmodule OpenforumWeb.Auth.WorkFlowLive.Index do
 
   defp apply_action(socket, :steps, _params) do
     # live_action :steps is normally set via handle_event("manage_steps")
+    # or automatically after creating a new workflow (see handle_info below).
     socket
   end
 
   # ── Workflow FormComponent messages ─────────────────────────────────
 
   @impl true
-  def handle_info({OpenforumWeb.Auth.WorkFlowSteps.FormComponent, {:saved, _work_flow}}, socket) do
-    {:noreply,
-     socket
-     |> assign(:live_action, :index)
-     |> fetch_filtered_work_flows()}
+  def handle_info({OpenforumWeb.Auth.WorkFlowSteps.FormComponent, {:saved, work_flow}}, socket) do
+    case socket.assigns.live_action do
+      :new ->
+        # Fresh workflow just created — jump straight into Manage Steps so
+        # the admin can add steps + approvers without hunting for the row.
+        {:noreply,
+         socket
+         |> put_flash(:info, "\"#{work_flow.name}\" created. Now add its steps.")
+         |> assign(:page_title, "Manage Steps — #{work_flow.name}")
+         |> assign(:work_flow, work_flow)
+         |> assign(:steps, WorkFlowSteps.list_steps(work_flow.id))
+         |> assign(:step, nil)
+         |> assign(:live_action, :steps)}
+
+      _ ->
+        {:noreply,
+         socket
+         |> assign(:live_action, :index)
+         |> fetch_filtered_work_flows()}
+    end
   end
 
   def handle_info({OpenforumWeb.Auth.WorkFlowSteps.FormComponent, {:cancelled, _}}, socket) do
@@ -144,7 +160,8 @@ defmodule OpenforumWeb.Auth.WorkFlowLive.Index do
     {:noreply,
      socket
      |> assign(:live_action, :index)
-     |> assign(:step, nil)}
+     |> assign(:step, nil)
+     |> fetch_filtered_work_flows()}
   end
 
   # ── Manage Steps panel ──────────────────────────────────────────────
@@ -162,6 +179,7 @@ defmodule OpenforumWeb.Auth.WorkFlowLive.Index do
   end
 
   def handle_event("add_step", _params, socket) do
+    IO.inspect(socket, label: "============0909")
     {:noreply, assign(socket, :step, %WorkFlowStep{})}
   end
 
@@ -183,15 +201,6 @@ defmodule OpenforumWeb.Auth.WorkFlowLive.Index do
       {:error, _} ->
         {:noreply, put_flash(socket, :error, "Could not delete \"#{step.name}\".")}
     end
-  end
-
-  def handle_event("reorder", %{"ordered_ids" => ordered_ids}, socket) do
-    work_flow_id = socket.assigns.work_flow.id
-
-    {:ok, _} =
-      WorkFlowSteps.reorder_steps(work_flow_id, Enum.map(ordered_ids, &String.to_integer/1))
-
-    {:noreply, assign(socket, :steps, WorkFlowSteps.list_steps(work_flow_id))}
   end
 
   # ── Filters ─────────────────────────────────────────────────────────
@@ -257,6 +266,24 @@ defmodule OpenforumWeb.Auth.WorkFlowLive.Index do
   defp status_classes("draft"), do: "bg-[#FEF6E7] text-[#B7791F]"
   defp status_classes("inactive"), do: "bg-[#F3F4F6] text-[#6B7280]"
   defp status_classes(_), do: "bg-[#F3F4F6] text-[#6B7280]"
+
+  attr :stage_type, :atom, required: true
+
+  defp stage_badge(assigns) do
+    ~H"""
+    <span class={[
+      "inline-flex items-center rounded-md px-2 py-0.5 text-[0.65rem] font-medium capitalize",
+      stage_classes(@stage_type)
+    ]}>
+      {@stage_type}
+    </span>
+    """
+  end
+
+  defp stage_classes(:draft), do: "bg-[#FEF6E7] text-[#B7791F]"
+  defp stage_classes(:reviewer), do: "bg-[#EAF3F8] text-[#1769AA]"
+  defp stage_classes(:approver), do: "bg-[#EAF9F0] text-[#1E8E5A]"
+  defp stage_classes(_), do: "bg-[#F3F4F6] text-[#6B7280]"
 
   attr :work_flow, WorkFlow, required: true
 
@@ -458,7 +485,8 @@ defmodule OpenforumWeb.Auth.WorkFlowLive.Index do
                   Steps — {@work_flow.name}
                 </h2>
                 <p class="text-xs text-[#6B7280]">
-                  Add, reorder, or remove approval steps for this workflow.
+                  Add or remove approval steps for this workflow. Order follows
+                  Draft → Reviewer → Approver automatically.
                 </p>
               </div>
 
@@ -470,20 +498,22 @@ defmodule OpenforumWeb.Auth.WorkFlowLive.Index do
               </button>
             </div>
 
-            <ol id="steps-list" phx-hook="SortableSteps" class="flex flex-col gap-2">
+            <ol id="steps-list" class="flex flex-col gap-2">
               <li
                 :for={step <- @steps}
                 id={"step-#{step.id}"}
-                data-id={step.id}
                 class="flex items-center justify-between rounded-lg border border-[#E5E7EB] p-3"
               >
-                <div class="flex items-center gap-3">
-                  <span class="cursor-grab text-[#9CA3AF]">⠿</span>
-                  <span class="font-medium text-[#252525]">
-                    {step.order_index + 1}. {step.name}
-                  </span>
+                <div class="flex flex-col gap-1">
+                  <div class="flex items-center gap-2">
+                    <.stage_badge stage_type={step.stage_type} />
+                    <span class="font-medium text-[#252525]">{step.name}</span>
+                  </div>
                   <span :if={step.role} class="text-xs text-[#6B7280]">
-                    {step.role.name}
+                    Approver role: {step.role.name}
+                  </span>
+                  <span :if={step.action not in [nil, ""]} class="text-xs text-[#6B7280]">
+                    Action: {step.action}
                   </span>
                 </div>
 

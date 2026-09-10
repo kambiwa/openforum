@@ -232,6 +232,119 @@ defmodule OpenforumWeb.CoreComponents do
   end
 
   @doc """
+  Renders a [Heroicon](https://heroicons.com).
+
+  Heroicons come in three styles – outline, solid, and mini.
+  By default, the outline style is used, but solid and mini may
+  be applied by using the `-solid` and `-mini` suffix.
+
+  You can customize the size and colors of the icons by setting
+  width, height, and background color classes.
+
+  Icons are extracted from the `deps/heroicons` directory and bundled within
+  your compiled app.css by the plugin in `assets/vendor/heroicons.js`.
+
+  ## Examples
+
+      <.icon name="hero-x-mark" />
+      <.icon name="hero-arrow-path" class="ml-1 size-3 motion-safe:animate-spin" />
+  """
+  attr :name, :string, required: true
+  attr :class, :any, default: "size-4"
+
+  def icon(%{name: "hero-" <> _} = assigns) do
+    ~H"""
+    <span class={[@name, @class]} />
+    """
+  end
+
+  @doc """
+  Renders a single button inside a rich-text-style toolbar.
+
+  Pairs with a JS hook that reads the `data-command` attribute to
+  dispatch editor commands, and toggles the `is-active` class based
+  on editor selection state. Accepts either an icon name (`:icon`) or
+  short text label (via the default slot) for glyphs that don't exist
+  in Heroicons, such as bold/italic/strikethrough markers.
+
+  ## Examples
+
+      <.toolbar_button command="bold" icon="hero-bold" />
+      <.toolbar_button command="underline">U</.toolbar_button>
+      <.toolbar_button command="orderedList">1.</.toolbar_button>
+  """
+  attr :command, :string, required: true, doc: "matches data-command read by the JS hook"
+  attr :icon, :string, default: nil
+  attr :class, :any, default: nil
+  attr :rest, :global
+
+  slot :inner_block
+
+  def toolbar_button(assigns) do
+    ~H"""
+    <button
+      type="button"
+      data-command={@command}
+      class={[
+        "toolbar-btn inline-flex items-center justify-center rounded px-1.5 py-1 text-xs font-medium text-white",
+        @class
+      ]}
+      {@rest}
+    >
+      <.icon :if={@icon} name={@icon} class="size-4 text-white" />
+      {render_slot(@inner_block)}
+    </button>
+    """
+  end
+
+  @doc """
+  Renders a thin vertical divider between groups of toolbar buttons.
+  """
+  attr :class, :any, default: nil
+
+  def toolbar_divider(assigns) do
+    ~H"""
+    <span class={["w-px h-4 bg-white/30 mx-1", @class]}></span>
+    """
+  end
+
+  @doc """
+  Renders a `<select>` for toolbar dropdowns whose choice maps to an
+  editor command — e.g. heading level or font size. Pairs with the JS
+  hook reading `data-command` on the `<select>` and the chosen
+  `<option>`'s `value` to dispatch e.g. `setHeading(level)`.
+
+  ## Examples
+
+      <.toolbar_select command="heading" options={[
+        {"Paragraph", "paragraph"},
+        {"Heading 1", "1"},
+        {"Heading 2", "2"},
+        {"Heading 3", "3"}
+      ]} />
+  """
+  attr :command, :string, required: true, doc: "matches data-command read by the JS hook"
+  attr :options, :list, required: true, doc: "list of {label, value} tuples"
+  attr :class, :any, default: nil
+  attr :rest, :global
+
+  def toolbar_select(assigns) do
+    ~H"""
+    <select
+      data-command={@command}
+      class={[
+        "toolbar-select rounded border-none bg-white/10 px-1.5 py-1 text-xs font-medium text-white",
+        "focus:outline-none focus:ring-1 focus:ring-white/40",
+        @class
+      ]}
+      {@rest}
+    >
+      <option :for={{label, value} <- @options} value={value}>{label}</option>
+    </select>
+    """
+  end
+
+  @doc """
   Renders an input with label and error messages.
 
   A `Phoenix.HTML.FormField` may be passed as argument,
@@ -254,19 +367,19 @@ defmodule OpenforumWeb.CoreComponents do
 
   ## Examples
 
-  ```heex
+```heex
   <.input field={@form[:email]} type="email" />
   <.input name="my-input" errors={["oh no!"]} />
-  ```
+```
 
   ## Select type
 
   When using `type="select"`, you must pass the `options` and optionally
   a `value` to mark which option should be preselected.
 
-  ```heex
+```heex
   <.input field={@form[:user_type]} type="select" options={["Admin": "admin", "User": "user"]} />
-  ```
+```
 
   For more information on what kind of data can be passed to `options` see
   [`options_for_select`](https://phoenix-html.hexdocs.pm/Phoenix.HTML.Form.html#options_for_select/2).
@@ -530,33 +643,6 @@ defmodule OpenforumWeb.CoreComponents do
         </div>
       </li>
     </ul>
-    """
-  end
-
-  @doc """
-  Renders a [Heroicon](https://heroicons.com).
-
-  Heroicons come in three styles – outline, solid, and mini.
-  By default, the outline style is used, but solid and mini may
-  be applied by using the `-solid` and `-mini` suffix.
-
-  You can customize the size and colors of the icons by setting
-  width, height, and background color classes.
-
-  Icons are extracted from the `deps/heroicons` directory and bundled within
-  your compiled app.css by the plugin in `assets/vendor/heroicons.js`.
-
-  ## Examples
-
-      <.icon name="hero-x-mark" />
-      <.icon name="hero-arrow-path" class="ml-1 size-3 motion-safe:animate-spin" />
-  """
-  attr :name, :string, required: true
-  attr :class, :any, default: "size-4"
-
-  def icon(%{name: "hero-" <> _} = assigns) do
-    ~H"""
-    <span class={[@name, @class]} />
     """
   end
 

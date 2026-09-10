@@ -77,6 +77,8 @@ defmodule OpenforumWeb.Auth.Draft.Index do
 
   @impl true
   def handle_event("new_draft", _params, socket) do
+    IO.inspect(socket, label: "=========Socket in Draft Index")
+
     {:noreply,
      socket
      |> assign(:page_title, "New Draft")

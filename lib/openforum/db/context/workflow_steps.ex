@@ -154,6 +154,18 @@ defmodule Openforum.Context.WorkFlowSteps do
     Repo.delete(step)
   end
 
+    @doc """
+  First step (lowest order_index) within a given stage of a workflow, or
+  nil if that workflow has no steps in that stage yet.
+  """
+  def first_step_for_stage(work_flow_id, stage) when stage in [:draft, :reviewer, :approver] do
+    WorkFlowStep
+    |> where([s], s.work_flow_id == ^work_flow_id and s.stage_type == ^stage)
+    |> order_by([s], asc: s.order_index)
+    |> limit(1)
+    |> Repo.one()
+  end
+
   def change_step(%WorkFlowStep{} = step, attrs \\ %{}) do
     WorkFlowStep.changeset(step, attrs)
   end

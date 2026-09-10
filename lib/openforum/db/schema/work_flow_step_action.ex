@@ -1,14 +1,14 @@
-defmodule Openforum.WorkFlowStepAction do
+defmodule Openforum.Schema.WorkFlowStepAction do
   use Ecto.Schema
   import Ecto.Changeset
 
   @actions ~w(approve mark_as_reviewed reject)
 
   schema "work_flow_step_actions" do
-    belongs_to :content_item, Openforum.ContentItem
-    belongs_to :work_flow_step, Openforum.WorkFlowStep
-    belongs_to :actor, Openforum.Accounts.User
-    belongs_to :acted_as_role, Openforum.Role
+    belongs_to :content_item, Openforum.Schema.ContentItem
+    belongs_to :work_flow_step, Openforum.Schema.WorkFlowStep
+    belongs_to :actor, Openforum.Schema.User
+    belongs_to :acted_as_role, Openforum.Schema.Role
 
     field :action, :string
     field :comments, :string

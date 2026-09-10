@@ -236,6 +236,8 @@ defmodule Openforum.Repo.Migrations.CreateOpenforumTables do
       add :description, :string
       add :order_index, :integer, null: false, default: 0
       add :is_active, :boolean, null: false, default: true
+      add :default_work_flow_id, references(:work_flows, on_delete: :nilify_all)
+
 
       timestamps(type: :utc_datetime)
     end

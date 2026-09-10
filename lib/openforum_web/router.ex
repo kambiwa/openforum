@@ -62,6 +62,9 @@ defmodule OpenforumWeb.Router do
 
       live "/area_leads", AreaLeadLive.Index, :index
 
+
+      live "/drafts", Draft.Index, :index
+
       live "/work_flows/:work_flow_id/steps", WorkFlowStepLive.Index, :index
       live "/work_flows/:work_flow_id/steps/new", WorkFlowStepLive.Index, :new
       live "/work_flows/:work_flow_id/steps/:id/edit", WorkFlowStepLive.Index, :edit

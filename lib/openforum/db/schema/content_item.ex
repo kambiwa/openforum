@@ -13,9 +13,9 @@ defmodule Openforum.Schema.ContentItem do
     field :status, :string, default: "draft"
     field :published_at, :utc_datetime
 
-    belongs_to :category, Openforum.ContentCategory
-    belongs_to :work_flow, Openforum.WorkFlow, foreign_key: :workflow_id
-    belongs_to :current_step, Openforum.WorkFlowStep
+    belongs_to :category, Openforum.Schema.ContentCategory
+    belongs_to :work_flow, Openforum.Schema.WorkFlow, foreign_key: :workflow_id
+    belongs_to :current_step, Openforum.Schema.WorkFlowStep
     belongs_to :author, Openforum.Accounts.User
     has_many :content_attachments, Openforum.Schema.ContentAttachment
 

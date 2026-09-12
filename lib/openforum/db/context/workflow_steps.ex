@@ -3,8 +3,8 @@ defmodule Openforum.Context.WorkFlowSteps do
   Context for Workflows and their Steps.
   """
 
-  alias Openforum.WorkFlow
-  alias Openforum.WorkFlowStep
+  alias Openforum.Schema.WorkFlow
+  alias Openforum.Schema.WorkFlowStep
   alias OpenforumWeb.Schema.Role
   alias Openforum.Repo
 

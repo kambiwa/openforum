@@ -2,7 +2,7 @@ defmodule Openforum.Schema.WorkFlowStepAction do
   use Ecto.Schema
   import Ecto.Changeset
 
-  @actions ~w(approve mark_as_reviewed reject)
+  @actions ~w(approve for review mark_as_reviewed reject)
 
   schema "work_flow_step_actions" do
     belongs_to :content_item, Openforum.Schema.ContentItem

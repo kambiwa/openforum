@@ -5,8 +5,8 @@ defmodule OpenforumWeb.Auth.WorkFlowLive.Index do
   alias Openforum.Context.WorkFlowSteps
   alias OpenforumWeb.Datatable.Table
   alias OpenforumWeb.Pagination
-  alias Openforum.WorkFlowStep
-  alias Openforum.WorkFlow
+  alias Openforum.Schema.WorkFlowStep
+  alias Openforum.Schema.WorkFlow
 
   @status_options [{"Active", "active"}, {"Draft", "draft"}, {"Inactive", "inactive"}]
 

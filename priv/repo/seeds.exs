@@ -146,28 +146,115 @@ for {role, granted_keys} <- roles, key <- granted_keys do
     conflict_target: [:role_id, :permission_id]
   )
 end
-
-# ── 4. Optional: assign existing users to roles by email ───────────
+# ── 4 (fixed). Role assignments ─────────────────────────────────────
 #
-# Adjust these emails to real accounts in your dev DB (e.g. ones created
-# via phx.gen.auth registration) if you want the "Assigned Users" tab
-# populated. Safe to leave as-is if those users don't exist yet — lookups
-# just return nil and are skipped.
+# Was pointing at emails that don't match any registered user
+# (c.mulenga@nac.org / r.zulu@nac.org), so no RoleAssignment rows were
+# ever actually created. Point at the real seeded emails instead.
 
 user_role_assignments = [
-  {"c.mulenga@nac.org", "district-apostle"},
-  {"r.zulu@nac.org", "district-apostle"}
+  {"admin@dev.com", "district-apostle"},
+  {"dev@dev.com", "district-rector"}
 ]
 
 for {email, role_slug} <- user_role_assignments do
-  with %User{} = user <- Repo.get_by(User, email: email),
-       %Role{} = role <- Repo.get_by(Role, slug: role_slug) do
+  case {Repo.get_by(User, email: email), Repo.get_by(Role, slug: role_slug)} do
+    {%User{} = user, %Role{} = role} ->
+      Repo.insert!(
+        %RoleAssignment{role_id: role.id, user_id: user.id},
+        on_conflict: :nothing,
+        conflict_target: [:role_id, :user_id]
+      )
+
+    _ ->
+      IO.puts("Skipped role assignment for #{email} / #{role_slug} — user or role not found.")
+  end
+
+IO.puts("Seeded #{length(permissions)} permissions and #{length(roles)} roles.")
+# ── 5. Content categories, workflow, and steps ──────────────────────
+#
+# Categories mirror the permission categories above (minus "Approval
+# Queue", which isn't a content category — it's the review/approve
+# action space). Slugs match what Draft.Index/FormComponent expect.
+
+alias Openforum.Schema.ContentCategory
+alias Openforum.Schema.WorkFlow
+alias Openforum.Schema.WorkFlowStep
+
+content_categories_attrs = [
+  %{name: "Bible Content", slug: "bible-content", order_index: 1},
+  %{name: "Doctrine Articles", slug: "doctrine-articles", order_index: 2},
+  %{name: "Catechism", slug: "catechism", order_index: 3},
+  %{name: "Q&A", slug: "qna", order_index: 4},
+  %{name: "Media", slug: "media", order_index: 5}
+]
+
+content_categories =
+  Enum.map(content_categories_attrs, fn attrs ->
     Repo.insert!(
-      %RoleAssignment{role_id: role.id, user_id: user.id},
-      on_conflict: :nothing,
-      conflict_target: [:role_id, :user_id]
+      struct(ContentCategory, Map.put(attrs, :is_active, true)),
+      on_conflict: {:replace, [:name, :order_index, :is_active, :updated_at]},
+      conflict_target: [:slug],
+      returning: true
     )
+  end)
+
+# Standard three-stage approval ladder, matching the roles seeded above:
+#   draft    -> District Rector (creates/edits content)
+#   reviewer -> Bishop (doctrinal review)
+#   approver -> District Apostle (final sign-off)
+role_by_slug = Map.new(roles, fn {role, _granted} -> {role.slug, role} end)
+
+{:ok, standard_review} =
+  case Repo.get_by(WorkFlow, name: "Standard Review") do
+    nil ->
+      %WorkFlow{}
+      |> WorkFlow.changeset(%{
+        name: "Standard Review",
+        status: "active",
+        description: "Draft -> Bishop review -> District Apostle approval"
+      })
+      |> Repo.insert()
+
+    %WorkFlow{} = wf ->
+      {:ok, wf}
+  end
+
+standard_review_steps = [
+  %{name: "Draft", stage_type: :draft, role_slug: "district-rector", order_index: 0},
+  %{name: "Doctrinal Review", stage_type: :reviewer, role_slug: "bishop", order_index: 100_000},
+  %{name: "Final Approval", stage_type: :approver, role_slug: "district-apostle", order_index: 200_000}
+]
+
+for step_attrs <- standard_review_steps do
+  role = Map.fetch!(role_by_slug, step_attrs.role_slug)
+
+  existing =
+    Repo.get_by(WorkFlowStep, work_flow_id: standard_review.id, stage_type: step_attrs.stage_type)
+
+  if is_nil(existing) do
+    %WorkFlowStep{}
+    |> WorkFlowStep.changeset(%{
+      name: step_attrs.name,
+      stage_type: step_attrs.stage_type,
+      work_flow_id: standard_review.id,
+      role_id: role.id,
+      order_index: step_attrs.order_index
+    })
+    |> Repo.insert!()
   end
 end
 
-IO.puts("Seeded #{length(permissions)} permissions and #{length(roles)} roles.")
+# Every category defaults to Standard Review for now — split this out
+# per-category later if Media ends up wanting a lighter workflow
+# (e.g. Media Coordinator only, no Bishop/Apostle stages).
+for category <- content_categories do
+  category
+  |> ContentCategory.changeset(%{default_work_flow_id: standard_review.id})
+  |> Repo.update!()
+end
+
+IO.puts("Seeded #{length(content_categories)} content categories and the Standard Review workflow.")
+
+
+end

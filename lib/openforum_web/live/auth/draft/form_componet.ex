@@ -38,6 +38,7 @@ defmodule OpenforumWeb.Auth.Draft.FormComponent do
   end
 
   def handle_event("save", %{"content_item" => params} = full, socket) do
+    IO.inspect(socket, label: "============0909")
     case Map.get(full, "form_action", "save") do
       "submit_for_review" -> do_submit_for_review(socket, params, full["note"])
       _ -> do_save(socket, params)
@@ -212,7 +213,7 @@ defmodule OpenforumWeb.Auth.Draft.FormComponent do
 
         <%!-- BODY: full rich text editor --%>
         <div class="mt-4 flex flex-col gap-1.5">
-          <label class="text-xs font-medium text-[#0B2E4F]">Allegations / Description</label>
+          <label class="text-xs font-medium text-[#0B2E4F]">Description</label>
 
           <div id="draft-body-editor" phx-hook="RichTextEditor" phx-update="ignore" data-input-id="draft-body-input" data-initial-value={@form[:body].value}>
             <div data-editor-toolbar class="flex flex-wrap items-center gap-1 rounded-t-lg bg-[#1769AA] px-2 py-1.5"></div>

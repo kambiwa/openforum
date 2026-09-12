@@ -1,4 +1,4 @@
-defmodule Openforum.WorkFlow do
+defmodule Openforum.Schema.WorkFlow do
   use Ecto.Schema
   import Ecto.Changeset
 

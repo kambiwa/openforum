@@ -41,6 +41,12 @@ defmodule OpenforumWeb.Auth.Draft.Index do
     |> assign(:draft, Drafts.get_draft!(current_user(socket), id))
   end
 
+  defp apply_action(socket, :view, %{"id" => id}) do
+    socket
+    |> assign(:page_title, "View Draft")
+    |> assign(:draft, Drafts.get_draft!(current_user(socket), id))
+  end
+
   defp apply_action(socket, :new, _params) do
     socket
     |> assign(:page_title, "New Draft")
@@ -215,6 +221,13 @@ defmodule OpenforumWeb.Auth.Draft.Index do
             </:col>
 
             <:action :let={draft}>
+             <button
+                phx-click="view"
+                phx-value-id={draft.id}
+                class="inline-flex items-center gap-1 rounded-md bg-[#EAF3F8] px-2.5 py-1 text-xs font-medium text-[#1769AA] hover:bg-[#4F7FA8]/20"
+              >
+                <.icon name="hero-pencil-square" class="size-3" /> View
+              </button>
               <button
                 phx-click="edit"
                 phx-value-id={draft.id}

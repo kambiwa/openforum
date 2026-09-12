@@ -10,8 +10,8 @@ defmodule Openforum.Schema.ContentCategory do
     field :order_index, :integer, default: 0
     field :is_active, :boolean, default: true
 
-    belongs_to :default_work_flow, Openforum.WorkFlow
-    has_many :content_items, Openforum.ContentItem
+    belongs_to :default_work_flow, Openforum.Schema.WorkFlow
+    has_many :content_items, Openforum.Schema.ContentItem
 
     timestamps(type: :utc_datetime)
   end

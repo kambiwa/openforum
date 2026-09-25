@@ -38,7 +38,6 @@ defmodule OpenforumWeb.Auth.Draft.FormComponent do
   end
 
   def handle_event("save", %{"content_item" => params} = full, socket) do
-    IO.inspect(socket, label: "============0909")
     case Map.get(full, "form_action", "save") do
       "submit_for_review" -> do_submit_for_review(socket, params, full["note"])
       _ -> do_save(socket, params)
@@ -71,7 +70,11 @@ defmodule OpenforumWeb.Auth.Draft.FormComponent do
       {:ok, draft} ->
         draft = persist_attachment(socket, draft)
         notify_parent({:saved, draft})
-        {:noreply, put_flash(socket, :info, "Draft saved.")}
+
+        {:noreply,
+        socket
+        |> assign(:draft, draft)
+        |> put_flash(:info, "Draft saved.")}
 
       {:error, changeset} ->
         {:noreply, assign_form(socket, changeset)}
@@ -157,6 +160,7 @@ defmodule OpenforumWeb.Auth.Draft.FormComponent do
               type="select"
               options={@categories}
               prompt="Choose a category"
+              required
             />
           </div>
         </div>

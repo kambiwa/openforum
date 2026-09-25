@@ -7,7 +7,7 @@ defmodule Openforum.Schema.WorkFlow do
     field :status, :string, default: "active"
     field :description, :string
 
-    has_many :work_flow_steps, Openforum.WorkFlowStep,
+    has_many :work_flow_steps, Openforum.Schema.WorkFlowStep,
       preload_order: [asc: :order_index],
       on_delete: :delete_all
 

@@ -50,6 +50,14 @@ defmodule Openforum.Accounts.User do
     |> validate_length(:last_name, min: 1, max: 100)
   end
 
+  def update_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:first_name, :last_name, :email, :working_area_id])
+    |> validate_first_name()
+    |> validate_last_name()
+    |> validate_email([])
+  end
+
   @doc """
   A user changeset for changing the email.
 

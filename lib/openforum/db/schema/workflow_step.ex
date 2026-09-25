@@ -11,8 +11,8 @@ defmodule Openforum.Schema.WorkFlowStep do
     field :stage_type, Ecto.Enum, values: @stage_types
     field :order_index, :integer, default: 0
 
-    belongs_to :work_flow, Openforum.WorkFlow
-    belongs_to :role, OpenforumWeb.Schema.Role   # <-- was Openforum.Role
+    belongs_to :work_flow, Openforum.Schema.WorkFlow
+    belongs_to :role, OpenforumWeb.Schema.Role
 
     timestamps(type: :utc_datetime)
   end

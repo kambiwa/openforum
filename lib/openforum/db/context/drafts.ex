@@ -13,12 +13,14 @@ defmodule Openforum.Context.Drafts do
 
   def list_drafts(current_user, params, filters \\ %{}) do
     ContentItem
-    |> where([c], c.author_id == ^current_user.id and c.status == "draft")
+    |> where([c], c.author_id == ^current_user.id )
     |> filter_by_search(filters[:search_filter] || filters["search_filter"])
     |> filter_by_category(filters[:category_filter] || filters["category_filter"])
     |> order_by_from_params(params)
     |> paginate(params)
   end
+
+
 
   def get_draft!(current_user, id) do
     ContentItem

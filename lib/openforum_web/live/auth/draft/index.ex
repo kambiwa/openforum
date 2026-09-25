@@ -220,6 +220,10 @@ defmodule OpenforumWeb.Auth.Draft.Index do
               <span class="text-[#6B7280]">{draft.updated_at}</span>
             </:col>
 
+            <:col :let={draft} label="Status">
+              <span class="text-[#6B7280]">{draft.status}</span>
+            </:col>
+
             <:action :let={draft}>
              <button
                 phx-click="view"

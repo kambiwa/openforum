@@ -5,7 +5,6 @@ defmodule OpenforumWeb.Auth.Dashboard.Index do
   def mount(_params, _session, socket) do
     socket =
       socket
-      |> assign(:current_scope, "")
       |> assign(:mobile_menu_open, false)
       |> assign(:page_title, "Dashboard")
       |> assign(:current_page, :dashboard)

@@ -54,6 +54,12 @@ defmodule Openforum.Accounts do
     User.registration_changeset(user, attrs)
   end
 
+  def update_user(user, attrs) do
+    %User{}
+    |> User.update_changeset(user, attrs)
+    |> Repo.update()
+  end
+
   ## ======================
   ## EMAIL (OPTIONAL KEEP)
   ## ======================

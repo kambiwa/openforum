@@ -267,19 +267,20 @@ defmodule OpenforumWeb.Layouts do
                 class="flex items-center gap-2 cursor-pointer px-2 py-1.5 rounded-lg hover:bg-[#F4F8FB] transition-colors"
               >
                 <div class="w-8 h-8 rounded-full bg-[#0B2E4F] text-white flex items-center justify-center text-xs font-bold">
-                  A
+                  {String.first(@current_scope.user.first_name) <>
+                    String.first(@current_scope.user.last_name)}
                 </div>
 
                 <div class="hidden sm:block text-left">
                   <p class="text-xs font-semibold text-[#252525]">
-                    Administrator
+                    {"#{@current_scope.user.first_name} #{@current_scope.user.last_name}"}
                   </p>
 
                   <p class="text-[0.68rem] text-[#6B7280]">
-                    OpenForum Admin
+                    {@current_scope.user.role}
                   </p>
                 </div>
-
+                s
                 <.icon
                   name="hero-chevron-down"
                   class="size-3.5 hidden sm:block text-[#9CA3AF]"
@@ -292,11 +293,11 @@ defmodule OpenforumWeb.Layouts do
               >
                 <li class="px-3 py-3 border-b border-[#E5E7EB] mb-1">
                   <p class="font-semibold text-[#252525] text-sm">
-                    Administrator
+                    {"#{@current_scope.user.first_name} #{@current_scope.user.last_name}"}
                   </p>
 
                   <p class="text-[#6B7280] text-xs mt-1">
-                    OpenForum Administration
+                    {@current_scope.user.role}
                   </p>
                 </li>
 
@@ -600,10 +601,6 @@ defmodule OpenforumWeb.Layouts do
               Home
             </a>
           </li>
-
-          <li>
-            <.theme_toggle />
-          </li>
         </ul>
       </div>
     </header>
@@ -823,51 +820,6 @@ defmodule OpenforumWeb.Layouts do
           class="ml-1 size-3 motion-safe:animate-spin"
         />
       </.flash>
-    </div>
-    """
-  end
-
-  # ───────────────────────────────────────────────
-  #  THEME TOGGLE
-  # ───────────────────────────────────────────────
-
-  def theme_toggle(assigns) do
-    ~H"""
-    <div class="card relative flex flex-row items-center border-2 border-base-300 bg-base-300 rounded-full">
-      <div class="absolute w-1/3 h-full rounded-full border-1 border-base-200 bg-base-100 brightness-200 left-0 [[data-theme=light]_&]:left-1/3 [[data-theme=dark]_&]:left-2/3 transition-[left]" />
-
-      <button
-        class="flex p-2 cursor-pointer w-1/3"
-        phx-click={JS.dispatch("phx:set-theme")}
-        data-phx-theme="system"
-      >
-        <.icon
-          name="hero-computer-desktop-micro"
-          class="size-4 opacity-75 hover:opacity-100"
-        />
-      </button>
-
-      <button
-        class="flex p-2 cursor-pointer w-1/3"
-        phx-click={JS.dispatch("phx:set-theme")}
-        data-phx-theme="light"
-      >
-        <.icon
-          name="hero-sun-micro"
-          class="size-4 opacity-75 hover:opacity-100"
-        />
-      </button>
-
-      <button
-        class="flex p-2 cursor-pointer w-1/3"
-        phx-click={JS.dispatch("phx:set-theme")}
-        data-phx-theme="dark"
-      >
-        <.icon
-          name="hero-moon-micro"
-          class="size-4 opacity-75 hover:opacity-100"
-        />
-      </button>
     </div>
     """
   end

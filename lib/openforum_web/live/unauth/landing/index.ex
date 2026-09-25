@@ -4,7 +4,6 @@ defmodule OpenforumWeb.Unauth.Landing.Index do
   def mount(_params, _session, socket) do
     socket =
       socket
-      |> assign(:current_scope, "")
       |> assign(:mobile_menu_open, false)
       |> assign(:page_title, "OpenForum — New Apostolic Church Knowledge Platform")
       |> assign(:knowledge_categories, knowledge_categories())

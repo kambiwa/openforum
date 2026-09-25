@@ -17,12 +17,6 @@ defmodule OpenforumWeb.Router do
     plug :accepts, ["json"]
   end
 
-  scope "/", OpenforumWeb do
-    pipe_through :browser
-
-    live "/", Unauth.Landing.Index, :index
-  end
-
   # Other scopes may use custom stacks.
   # scope "/api", OpenforumWeb do
   #   pipe_through :api
@@ -62,7 +56,6 @@ defmodule OpenforumWeb.Router do
 
       live "/area_leads", AreaLeadLive.Index, :index
 
-
       live "/drafts", Draft.Index, :index
 
       live "/work_flows/:work_flow_id/steps", WorkFlowStepLive.Index, :index
@@ -82,6 +75,8 @@ defmodule OpenforumWeb.Router do
 
     live_session :current_user,
       on_mount: [{OpenforumWeb.UserAuth, :mount_current_scope}] do
+      live "/", Unauth.Landing.Index, :index
+
       live "/users/register", UserLive.Registration, :new
       live "/users/log-in", UserLive.Login, :new
       live "/users/log-in/:token", UserLive.Confirmation, :new

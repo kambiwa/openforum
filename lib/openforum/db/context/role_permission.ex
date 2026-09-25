@@ -11,7 +11,6 @@
 
 #     {:ok,
 #      socket
-#      |> assign(:current_scope, "")
 #      |> assign(:mobile_menu_open, false)
 #      |> assign(:page_title, "Roles & Permissions")
 #      |> assign(:current_page, :roles_permissions)

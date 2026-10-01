@@ -3,7 +3,7 @@ defmodule OpenforumWeb.Auth.WorkFlowSteps.FormComponent do
 
   alias Openforum.Context.WorkFlowSteps
 
-  @status_options [{"Active", "active"}, {"Draft", "draft"}, {"Inactive", "inactive"}]
+  @status_options [{"Active", "active"}, {"Document", "document"}, {"Inactive", "inactive"}]
 
   @impl true
   def update(%{work_flow: work_flow} = assigns, socket) do

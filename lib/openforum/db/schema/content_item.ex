@@ -2,7 +2,7 @@ defmodule Openforum.Schema.ContentItem do
   use Ecto.Schema
   import Ecto.Changeset
 
-  @statuses ~w(draft in_review approved published rejected)
+  @statuses ~w(document in_review approved published rejected)
 
   schema "content_items" do
     field :title, :string
@@ -10,7 +10,7 @@ defmodule Openforum.Schema.ContentItem do
     field :summary, :string
     field :body, :string
     field :duration_label, :string
-    field :status, :string, default: "draft"
+    field :status, :string, default: "document"
     field :published_at, :utc_datetime
 
     belongs_to :category, Openforum.Schema.ContentCategory
@@ -25,7 +25,7 @@ defmodule Openforum.Schema.ContentItem do
   def statuses, do: @statuses
 
   # Used before we know the resolved workflow/step — those get set
-  # separately in Drafts.create_draft/2 once the category's default
+  # separately in Documents.create_document/2 once the category's default
   # workflow has been resolved.
   def create_changeset(content_item, attrs) do
     content_item

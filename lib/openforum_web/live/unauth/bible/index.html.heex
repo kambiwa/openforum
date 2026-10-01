@@ -1,0 +1,160 @@
+<div class="openforum-bible">
+  <Layouts.unauth_app
+    flash={@flash}
+    current_scope={@current_scope}
+    mobile_menu_open={@mobile_menu_open}
+  >
+    <main class="bg-[#FAFAF7]">
+      <%!-- ============ HEADER ============ --%>
+      <section class="relative overflow-hidden bg-[#FAFAF7]">
+        <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+          <div class="absolute -right-24 top-0 h-[340px] w-[340px] rounded-full bg-[#EAF3F8]"></div>
+          <div class="absolute right-40 top-32 h-32 w-32 rounded-full border border-[#4F7FA8]/20">
+          </div>
+        </div>
+
+        <div class="relative mx-auto max-w-[1280px] px-6 py-16 sm:px-8 lg:py-20">
+          <p class="text-xs font-semibold uppercase tracking-[0.14em] text-[#1769AA]">
+            The Holy Bible
+          </p>
+          <h1 class="mt-4 max-w-2xl text-4xl font-semibold leading-[1.1] tracking-tight text-[#0B2E4F] sm:text-5xl">
+            Read the Scriptures
+          </h1>
+          <p class="mt-5 max-w-xl text-base leading-relaxed text-[#6B7280] sm:text-lg">
+            Sixty-six books across the Old and New Testaments. Choose a book to begin reading.
+          </p>
+
+          <form phx-change="search" phx-submit="search" class="mt-8 max-w-xl">
+            <label for="bible-search" class="sr-only">Search books</label>
+            <div class="relative">
+              <.icon
+                name="hero-magnifying-glass"
+                class="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#6B7280]"
+              />
+              <input
+                id="bible-search"
+                type="search"
+                name="query"
+                value={@query}
+                placeholder="Find a book, e.g. Romans"
+                phx-debounce="200"
+                autocomplete="off"
+                class="w-full rounded-md border border-[#4F7FA8]/30 bg-white py-3 pl-12 pr-4 text-sm text-[#0B2E4F] placeholder:text-[#6B7280] focus:border-[#1769AA] focus:outline-none focus:ring-2 focus:ring-[#1769AA]/20"
+              />
+            </div>
+          </form>
+
+          <div class="mt-6 flex flex-wrap items-center gap-3">
+            <button
+              :for={filter <- testament_filters()}
+              type="button"
+              phx-click="set_testament"
+              phx-value-testament={filter.id}
+              aria-pressed={to_string(@testament == filter.id)}
+              class={[
+                "rounded-full border px-4 py-2 text-sm font-medium transition-colors",
+                @testament == filter.id && "border-[#0B2E4F] bg-[#0B2E4F] text-white",
+                @testament != filter.id &&
+                  "border-[#4F7FA8]/30 bg-white text-[#0B2E4F] hover:bg-[#EAF3F8]"
+              ]}
+            >
+              {filter.title}
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <%!-- ============ OLD TESTAMENT ============ --%>
+      <section :if={@old_groups != []} id="old-testament" class="mx-auto max-w-[1280px] px-6 pb-16 sm:px-8">
+        <div class="flex items-end justify-between border-b border-[#E5E7EB] pb-4">
+          <h2 class="text-3xl font-semibold tracking-tight text-[#0B2E4F]">Old Testament</h2>
+          <span class="text-sm text-[#6B7280]">{@old_count} books</span>
+        </div>
+
+        <div :for={group <- @old_groups} class="mt-10">
+          <h3 class="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#B8964F]">
+            {group.category}
+          </h3>
+          <div class="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+            <.link
+              :for={book <- group.books}
+              navigate={~p"/bible/#{book.slug}/1"}
+              class="group rounded-xl border border-[#E5E7EB] bg-white p-4 transition-all hover:border-[#4F7FA8]/30 hover:bg-[#EAF3F8]/40 hover:shadow-md"
+            >
+              <p class="text-base font-semibold text-[#0B2E4F]">{book.name}</p>
+              <p class="mt-1 text-xs text-[#6B7280]">
+                {book.chapters} {if book.chapters == 1, do: "chapter", else: "chapters"}
+              </p>
+            </.link>
+          </div>
+        </div>
+      </section>
+
+      <%!-- ============ NEW TESTAMENT ============ --%>
+      <section :if={@new_groups != []} id="new-testament" class="bg-[#F4F8FB]">
+        <div class="mx-auto max-w-[1280px] px-6 py-16 sm:px-8">
+          <div class="flex items-end justify-between border-b border-[#4F7FA8]/20 pb-4">
+            <h2 class="text-3xl font-semibold tracking-tight text-[#0B2E4F]">New Testament</h2>
+            <span class="text-sm text-[#6B7280]">{@new_count} books</span>
+          </div>
+
+          <div :for={group <- @new_groups} class="mt-10">
+            <h3 class="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#B8964F]">
+              {group.category}
+            </h3>
+            <div class="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+              <.link
+                :for={book <- group.books}
+                navigate={~p"/bible/#{book.slug}/1"}
+                class="group rounded-xl border border-[#E5E7EB] bg-white p-4 transition-all hover:border-[#4F7FA8]/30 hover:bg-[#EAF3F8]/40 hover:shadow-md"
+              >
+                <p class="text-base font-semibold text-[#0B2E4F]">{book.name}</p>
+                <p class="mt-1 text-xs text-[#6B7280]">
+                  {book.chapters} {if book.chapters == 1, do: "chapter", else: "chapters"}
+                </p>
+              </.link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <%!-- ============ EMPTY STATE ============ --%>
+      <section :if={@result_count == 0} class="mx-auto max-w-[1280px] px-6 pb-20 sm:px-8">
+        <div class="mx-auto max-w-md rounded-xl border border-[#E5E7EB] bg-white p-10 text-center">
+          <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#EAF3F8]">
+            <.icon name="hero-magnifying-glass" class="h-5 w-5 text-[#1769AA]" />
+          </div>
+          <h3 class="mt-4 text-base font-semibold text-[#0B2E4F]">No books found</h3>
+          <p class="mt-2 text-sm text-[#6B7280]">Check the spelling or clear your filters.</p>
+          <button
+            type="button"
+            phx-click="clear_filters"
+            class="mt-6 inline-flex items-center justify-center rounded-md border border-[#4F7FA8]/40 bg-white px-5 py-2.5 text-sm font-medium text-[#0B2E4F] transition-colors hover:bg-[#EAF3F8]"
+          >
+            Clear filters
+          </button>
+        </div>
+      </section>
+
+      <%!-- ============ CTA ============ --%>
+      <section class="bg-[#0B2E4F]">
+        <div class="mx-auto max-w-[1280px] px-6 py-20 text-center sm:px-8">
+          <h2 class="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+            Go deeper into the Word
+          </h2>
+          <p class="mx-auto mt-4 max-w-xl text-base leading-relaxed text-white/75">
+            Connect Scripture with doctrine, the Catechism and approved teachings.
+          </p>
+          <div class="mt-9">
+            <.link
+              navigate={~p"/knowledge"}
+              class="inline-flex items-center justify-center rounded-md bg-white px-6 py-3 text-sm font-medium text-[#0B2E4F] transition-colors hover:bg-[#EAF3F8]"
+            >
+              Explore Knowledge
+            </.link>
+          </div>
+        </div>
+      </section>
+    </main>
+  </Layouts.unauth_app>
+</div>

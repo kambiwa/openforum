@@ -1,25 +1,25 @@
-defmodule OpenforumWeb.Auth.Draft.Index do
+defmodule OpenforumWeb.Auth.Document.Index do
   use OpenforumWeb, :live_view
 
   alias OpenforumWeb.PaginationComponent
-  alias Openforum.Context.Drafts
+  alias Openforum.Context.Documents
   alias OpenforumWeb.Pagination
   alias OpenforumWeb.Datatable.Table
   alias Openforum.Schema.ContentItem
 
   @impl true
   def mount(_params, _session, socket) do
-    IO.inspect(socket.assigns.current_scope, label: "=========Current Scope in Draft Index")
+    IO.inspect(socket.assigns.current_scope, label: "=========Current Scope in Document Index")
     socket =
       socket
-      |> assign(:page_title, "My Drafts")
+      |> assign(:page_title, "My Documents")
       |> assign(:data, [])
       |> assign(:data_pagenations, %{})
-      |> assign(:categories, Drafts.list_categories_for_select())
+      |> assign(:categories, Documents.list_categories_for_select())
       |> assign(:search_filter, "")
       |> assign(:category_filter, "")
       |> assign(:filter_expanded, false)
-      |> assign(:draft, nil)
+      |> assign(:document, nil)
       |> assign(:live_action, :index)
       |> Pagination.order_by_composer()
       |> Pagination.i_search_composer()
@@ -37,86 +37,93 @@ defmodule OpenforumWeb.Auth.Draft.Index do
 
   defp apply_action(socket, :edit, %{"id" => id}) do
     socket
-    |> assign(:page_title, "Edit Draft")
-    |> assign(:draft, Drafts.get_draft!(current_user(socket), id))
+    |> assign(:page_title, "Edit Document")
+    |> assign(:document, Documents.get_document!(current_user(socket), id))
   end
 
   defp apply_action(socket, :view, %{"id" => id}) do
     socket
-    |> assign(:page_title, "View Draft")
-    |> assign(:draft, Drafts.get_draft!(current_user(socket), id))
+    |> assign(:page_title, "View Document")
+    |> assign(:document, Documents.get_document!(current_user(socket), id))
   end
 
   defp apply_action(socket, :new, _params) do
     socket
-    |> assign(:page_title, "New Draft")
-    |> assign(:draft, %ContentItem{})
+    |> assign(:page_title, "New Document")
+    |> assign(:document, %ContentItem{})
   end
 
   defp apply_action(socket, :index, _params) do
     socket
-    |> assign(:page_title, "My Drafts")
-    |> assign(:draft, nil)
-    |> fetch_filtered_drafts()
+    |> assign(:page_title, "My Documents")
+    |> assign(:document, nil)
+    |> fetch_filtered_documents()
   end
 
   # ── FormComponent messages ──────────────────────────────────────────
 
   @impl true
-  def handle_info({OpenforumWeb.Auth.Draft.FormComponent, {:saved, _draft}}, socket) do
-    {:noreply, socket |> assign(:live_action, :index) |> fetch_filtered_drafts()}
+  def handle_info({OpenforumWeb.Auth.Document.FormComponent, {:saved, _document}}, socket) do
+    {:noreply, socket |> assign(:live_action, :index) |> fetch_filtered_documents()}
   end
 
-  def handle_info({OpenforumWeb.Auth.Draft.FormComponent, {:submitted, draft}}, socket) do
+  def handle_info({OpenforumWeb.Auth.Document.FormComponent, {:submitted, document}}, socket) do
     {:noreply,
      socket
-     |> put_flash(:info, "\"#{draft.title}\" submitted for review.")
+     |> put_flash(:info, "\"#{document.title}\" submitted for review.")
      |> assign(:live_action, :index)
-     |> fetch_filtered_drafts()}
+     |> fetch_filtered_documents()}
   end
 
-  def handle_info({OpenforumWeb.Auth.Draft.FormComponent, {:cancelled, _}}, socket) do
+  def handle_info({OpenforumWeb.Auth.Document.FormComponent, {:cancelled, _}}, socket) do
     {:noreply, assign(socket, :live_action, :index)}
   end
 
   # ── Row / page actions ───────────────────────────────────────────────
 
   @impl true
-  def handle_event("new_draft", _params, socket) do
-    IO.inspect(socket, label: "=========Socket in Draft Index")
+  def handle_event("new_document", _params, socket) do
 
     {:noreply,
      socket
-     |> assign(:page_title, "New Draft")
-     |> assign(:draft, %ContentItem{})
+     |> assign(:page_title, "New Document")
+     |> assign(:document, %ContentItem{})
      |> assign(:live_action, :new)}
   end
 
   def handle_event("edit", %{"id" => id}, socket) do
     {:noreply,
      socket
-     |> assign(:page_title, "Edit Draft")
-     |> assign(:draft, Drafts.get_draft!(current_user(socket), id))
+     |> assign(:page_title, "Edit Document")
+     |> assign(:document, Documents.get_document!(current_user(socket), id))
      |> assign(:live_action, :edit)}
   end
 
-  def handle_event("delete", %{"id" => id}, socket) do
-    draft = Drafts.get_draft!(current_user(socket), id)
+  def handle_event("view", %{"id" => id}, socket) do
+    {:noreply,
+     socket
+     |> assign(:page_title, "View Document")
+     |> assign(:document, Documents.get_document!(current_user(socket), id))
+     |> assign(:live_action, :view)}
+  end
 
-    case Drafts.delete_draft(draft) do
+  def handle_event("delete", %{"id" => id}, socket) do
+    document = Documents.get_document!(current_user(socket), id)
+
+    case Documents.delete_document(document) do
       {:ok, _} ->
         {:noreply,
          socket
-         |> put_flash(:info, "\"#{draft.title}\" deleted.")
-         |> fetch_filtered_drafts()}
+         |> put_flash(:info, "\"#{document.title}\" deleted.")
+         |> fetch_filtered_documents()}
 
       {:error, _} ->
-        {:noreply, put_flash(socket, :error, "Could not delete \"#{draft.title}\".")}
+        {:noreply, put_flash(socket, :error, "Could not delete \"#{document.title}\".")}
     end
   end
 
   def handle_event("close", _params, socket) do
-    {:noreply, socket |> assign(:live_action, :index) |> fetch_filtered_drafts()}
+    {:noreply, socket |> assign(:live_action, :index) |> fetch_filtered_documents()}
   end
 
   def handle_event("toggle-filter", _, socket) do
@@ -128,14 +135,14 @@ defmodule OpenforumWeb.Auth.Draft.Index do
      socket
      |> assign(:search_filter, filters["search_filter"] || "")
      |> assign(:category_filter, filters["category_filter"] || "")
-     |> fetch_filtered_drafts()}
+     |> fetch_filtered_documents()}
   end
 
-  defp fetch_filtered_drafts(socket) do
+  defp fetch_filtered_documents(socket) do
     filters = %{search_filter: socket.assigns.search_filter, category_filter: socket.assigns.category_filter}
 
     data =
-      Drafts.list_drafts(
+      Documents.list_documents(
         current_user(socket),
         Pagination.create_table_params(socket, socket.assigns.params),
         filters
@@ -146,7 +153,6 @@ defmodule OpenforumWeb.Auth.Draft.Index do
     |> assign(:data_pagenations, Map.drop(data, [:entries]))
   end
 
-  # Adjust to match your actual auth scope, e.g. socket.assigns.current_user
   defp current_user(socket), do: socket.assigns.current_scope.user
 
   # ── Render ──────────────────────────────────────────────────────────
@@ -154,11 +160,11 @@ defmodule OpenforumWeb.Auth.Draft.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.admin_app flash={@flash} current_scope={@current_scope} current_page={:drafts}>
+    <Layouts.admin_app flash={@flash} current_scope={@current_scope} current_page={:documents}>
       <div class="flex flex-col gap-6 p-6">
         <div class="flex items-center justify-between">
           <div>
-            <h1 class="mb-0.5 text-[1.1rem] font-bold text-[#0B2E4F]">My Drafts</h1>
+            <h1 class="mb-0.5 text-[1.1rem] font-bold text-[#0B2E4F]">My Documents</h1>
             <p class="text-[0.82rem] text-[#6B7280]">
               Content you're writing before it goes out for review.
             </p>
@@ -173,10 +179,10 @@ defmodule OpenforumWeb.Auth.Draft.Index do
             </button>
 
             <button
-              phx-click="new_draft"
+              phx-click="new_document"
               class="inline-flex items-center gap-1.5 rounded-lg bg-[#1769AA] px-4 py-2 text-[0.82rem] font-medium text-white hover:bg-[#0B2E4F]"
             >
-              <.icon name="hero-plus" class="size-4" /> New Draft
+              <.icon name="hero-plus" class="size-4" /> New Document
             </button>
           </div>
         </div>
@@ -189,7 +195,7 @@ defmodule OpenforumWeb.Auth.Draft.Index do
             <div class="grid grid-cols-2 gap-4">
               <div class="flex flex-col gap-1.5">
                 <label class="text-xs font-medium text-[#0B2E4F]">Search</label>
-                <.input name="filter[search_filter]" placeholder="Search drafts..." value={@search_filter} />
+                <.input name="filter[search_filter]" placeholder="Search documents..." value={@search_filter} />
               </div>
 
               <div class="flex flex-col gap-1.5">
@@ -207,34 +213,34 @@ defmodule OpenforumWeb.Auth.Draft.Index do
         </div>
 
         <div class="overflow-hidden rounded-xl border border-[#E5E7EB] bg-white">
-          <Table.table id="tbl_drafts" rows={@data}>
-            <:col :let={draft} label="Title">
-              <span class="font-medium text-[#252525]">{draft.title}</span>
+          <Table.table id="tbl_documents" rows={@data}>
+            <:col :let={document} label="Title">
+              <span class="font-medium text-[#252525]">{document.title}</span>
             </:col>
 
-            <:col :let={draft} label="Category">
-              <span class="text-[#6B7280]">{draft.category && draft.category.name}</span>
+            <:col :let={document} label="Category">
+              <span class="text-[#6B7280]">{document.category && document.category.name}</span>
             </:col>
 
-            <:col :let={draft} label="Updated">
-              <span class="text-[#6B7280]">{draft.updated_at}</span>
+            <:col :let={document} label="Updated">
+              <span class="text-[#6B7280]">{document.updated_at}</span>
             </:col>
 
-            <:col :let={draft} label="Status">
-              <span class="text-[#6B7280]">{draft.status}</span>
+            <:col :let={document} label="Status">
+              <span class="text-[#6B7280]">{document.status}</span>
             </:col>
 
-            <:action :let={draft}>
+            <:action :let={document}>
              <button
                 phx-click="view"
-                phx-value-id={draft.id}
+                phx-value-id={document.id}
                 class="inline-flex items-center gap-1 rounded-md bg-[#EAF3F8] px-2.5 py-1 text-xs font-medium text-[#1769AA] hover:bg-[#4F7FA8]/20"
               >
                 <.icon name="hero-pencil-square" class="size-3" /> View
               </button>
               <button
                 phx-click="edit"
-                phx-value-id={draft.id}
+                phx-value-id={document.id}
                 class="inline-flex items-center gap-1 rounded-md bg-[#EAF3F8] px-2.5 py-1 text-xs font-medium text-[#1769AA] hover:bg-[#4F7FA8]/20"
               >
                 <.icon name="hero-pencil-square" class="size-3" /> Edit
@@ -242,8 +248,8 @@ defmodule OpenforumWeb.Auth.Draft.Index do
 
               <button
                 phx-click="delete"
-                phx-value-id={draft.id}
-                data-confirm={"Delete \"#{draft.title}\"? This cannot be undone."}
+                phx-value-id={document.id}
+                data-confirm={"Delete \"#{document.title}\"? This cannot be undone."}
                 class="inline-flex items-center gap-1 rounded-md bg-red-50 px-2.5 py-1 text-xs font-medium text-red-600 hover:bg-red-100"
               >
                 <.icon name="hero-trash" class="size-3" /> Delete
@@ -252,7 +258,7 @@ defmodule OpenforumWeb.Auth.Draft.Index do
           </Table.table>
 
           <p :if={@data == []} class="p-10 text-center text-sm text-[#6B7280]">
-            No drafts yet — start a new one above.
+            No documents yet — start a new one above.
           </p>
 
           <div class="border-t border-[#E5E7EB]">
@@ -267,16 +273,16 @@ defmodule OpenforumWeb.Auth.Draft.Index do
 
         <.modal
           :if={@live_action in [:new, :edit]}
-          id={"draft-modal-#{(@draft && @draft.id) || :new}"}
+          id={"document-modal-#{(@document && @document.id) || :new}"}
           show
           on_cancel={JS.push("close")}
         >
           <.live_component
-            module={OpenforumWeb.Auth.Draft.FormComponent}
-            id={(@draft && @draft.id) || :new}
+            module={OpenforumWeb.Auth.Document.FormComponent}
+            id={(@document && @document.id) || :new}
             title={@page_title}
             action={@live_action}
-            draft={@draft}
+            document={@document}
             current_user={@current_scope.user}
           />
         </.modal>

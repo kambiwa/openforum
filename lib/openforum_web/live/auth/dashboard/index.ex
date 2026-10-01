@@ -3,18 +3,18 @@ defmodule OpenforumWeb.Auth.Dashboard.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    socket =
-      socket
-      |> assign(:mobile_menu_open, false)
-      |> assign(:page_title, "Dashboard")
-      |> assign(:current_page, :dashboard)
-      |> assign(:stats, stats())
-      |> assign(:pending_approvals, pending_approvals())
-      |> assign(:recent_activity, recent_activity())
-      |> assign(:quick_actions, quick_actions())
+  socket =
+    socket
+    |> assign(:mobile_menu_open, false)
+    |> assign(:page_title, "Dashboard")
+    |> assign(:current_page, :dashboard)
+    |> assign(:stats, stats())
+    |> assign(:pending_approvals, pending_approvals())
+    |> assign(:recent_activity, recent_activity())
+    |> assign(:quick_actions, quick_actions())
 
-    {:ok, socket}
-  end
+  {:ok, socket}
+end
 
   # TODO: replace with real queries once the content/approval schemas are wired up
   # (Content.count_by_status/0, Content.pending_for_user/1, Activity.recent/1, etc.)
@@ -69,7 +69,7 @@ defmodule OpenforumWeb.Auth.Dashboard.Index do
         icon: "hero-check-circle"
       },
       %{
-        message: "New draft created: \"Living the Ten Commandments\"",
+        message: "New document created: \"Living the Ten Commandments\"",
         actor: "Admin Dev",
         timestamp: "4 hours ago",
         icon: "hero-pencil-square"

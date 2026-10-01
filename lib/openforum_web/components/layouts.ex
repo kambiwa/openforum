@@ -45,43 +45,23 @@ defmodule OpenforumWeb.Layouts do
           <%!-- DESKTOP NAVIGATION --%>
           <ul class="hidden xl:flex items-center gap-5">
             <li>
-              <.nav_link
-                href={~p"/"}
-                label="Home"
-                active={@current_page == :home}
-              />
+              <.nav_link href={~p"/"} label="Home" active={@current_page == :home} />
             </li>
 
             <li>
-              <.nav_link
-                href={~p"/learn"}
-                label="Learn"
-                active={@current_page == :learn}
-              />
+              <.nav_link href={~p"/learn"} label="Learn" active={@current_page == :learn} />
             </li>
 
             <li>
-              <.nav_link
-                href={~p"/bible"}
-                label="Bible"
-                active={@current_page == :bible}
-              />
+              <.nav_link href={~p"/bible"} label="Bible" active={@current_page == :bible} />
             </li>
 
             <li>
-              <.nav_link
-                href={~p"/doctrine"}
-                label="Doctrine"
-                active={@current_page == :doctrine}
-              />
+              <.nav_link href={~p"/doctrine"} label="Doctrine" active={@current_page == :doctrine} />
             </li>
 
             <li>
-              <.nav_link
-                href={~p"/catechism"}
-                label="Catechism"
-                active={@current_page == :catechism}
-              />
+              <.nav_link href={~p"/catechism"} label="Catechism" active={@current_page == :catechism} />
             </li>
 
             <li>
@@ -93,11 +73,7 @@ defmodule OpenforumWeb.Layouts do
             </li>
 
             <li>
-              <.nav_link
-                href={~p"/media"}
-                label="Media"
-                active={@current_page == :media}
-              />
+              <.nav_link href={~p"/media"} label="Media" active={@current_page == :media} />
             </li>
           </ul>
 
@@ -142,35 +118,15 @@ defmodule OpenforumWeb.Layouts do
           class="xl:hidden mx-4 mb-4 p-5 bg-white border border-[#E5E7EB] rounded-xl shadow-lg"
         >
           <div class="flex flex-col gap-1">
-            <.nav_link
-              href={~p"/"}
-              label="Home"
-              active={@current_page == :home}
-            />
+            <.nav_link href={~p"/"} label="Home" active={@current_page == :home} />
 
-            <.nav_link
-              href={~p"/learn"}
-              label="Learn"
-              active={@current_page == :learn}
-            />
+            <.nav_link href={~p"/learn"} label="Learn" active={@current_page == :learn} />
 
-            <.nav_link
-              href={~p"/bible"}
-              label="Bible"
-              active={@current_page == :bible}
-            />
+            <.nav_link href={~p"/bible"} label="Bible" active={@current_page == :bible} />
 
-            <.nav_link
-              href={~p"/doctrine"}
-              label="Doctrine"
-              active={@current_page == :doctrine}
-            />
+            <.nav_link href={~p"/doctrine"} label="Doctrine" active={@current_page == :doctrine} />
 
-            <.nav_link
-              href={~p"/catechism"}
-              label="Catechism"
-              active={@current_page == :catechism}
-            />
+            <.nav_link href={~p"/catechism"} label="Catechism" active={@current_page == :catechism} />
 
             <.nav_link
               href={~p"/questions-and-answers"}
@@ -178,18 +134,11 @@ defmodule OpenforumWeb.Layouts do
               active={@current_page == :questions_and_answers}
             />
 
-            <.nav_link
-              href={~p"/media"}
-              label="Audio & Video"
-              active={@current_page == :media}
-            />
+            <.nav_link href={~p"/media"} label="Audio & Video" active={@current_page == :media} />
 
             <div class="border-t border-[#E5E7EB] my-3"></div>
 
-            <a
-              href={~p"/users/log-in"}
-              class="px-3 py-2.5 text-sm font-medium text-[#0B2E4F]"
-            >
+            <a href={~p"/users/log-in"} class="px-3 py-2.5 text-sm font-medium text-[#0B2E4F]">
               Sign In
             </a>
 
@@ -266,21 +215,18 @@ defmodule OpenforumWeb.Layouts do
                 tabindex="0"
                 class="flex items-center gap-2 cursor-pointer px-2 py-1.5 rounded-lg hover:bg-[#F4F8FB] transition-colors"
               >
-                <div class="w-8 h-8 rounded-full bg-[#0B2E4F] text-white flex items-center justify-center text-xs font-bold">
-                  {String.first(@current_scope.user.first_name) <>
-                    String.first(@current_scope.user.last_name)}
-                </div>
+                <.user_avatar user={@current_scope.user} />
 
                 <div class="hidden sm:block text-left">
                   <p class="text-xs font-semibold text-[#252525]">
-                    {"#{@current_scope.user.first_name} #{@current_scope.user.last_name}"}
+                    {@current_scope.user.first_name} {@current_scope.user.last_name}
                   </p>
 
                   <p class="text-[0.68rem] text-[#6B7280]">
-                    {@current_scope.user.role}
+                    {role_label(@current_scope.user.roles)}
                   </p>
                 </div>
-                s
+
                 <.icon
                   name="hero-chevron-down"
                   class="size-3.5 hidden sm:block text-[#9CA3AF]"
@@ -291,27 +237,23 @@ defmodule OpenforumWeb.Layouts do
                 tabindex="0"
                 class="dropdown-content z-50 mt-2 w-60 bg-white rounded-xl shadow-lg border border-[#E5E7EB] p-1.5 text-sm"
               >
-                <li class="px-3 py-3 border-b border-[#E5E7EB] mb-1">
-                  <p class="font-semibold text-[#252525] text-sm">
-                    {"#{@current_scope.user.first_name} #{@current_scope.user.last_name}"}
-                  </p>
+                <li class="px-3 py-3 border-b border-[#E5E7EB] mb-1 flex items-center gap-3">
+                  <.user_avatar user={@current_scope.user} size="w-10 h-10 text-sm" />
 
-                  <p class="text-[#6B7280] text-xs mt-1">
-                    {@current_scope.user.role}
-                  </p>
+                  <div>
+                    <p class="font-semibold text-[#252525] text-sm">
+                      {@current_scope.user.first_name} {@current_scope.user.last_name}
+                    </p>
+
+                    <p class="text-[#6B7280] text-xs mt-1">
+                      {role_label(@current_scope.user.roles)}
+                    </p>
+                  </div>
                 </li>
 
-                <.admin_menu_item
-                  href={~p"/admin/profile"}
-                  icon="hero-user-circle"
-                  label="My Profile"
-                />
+                <.admin_menu_item href={~p"/admin/profile"} icon="hero-user-circle" label="My Profile" />
 
-                <.admin_menu_item
-                  href={~p"/admin/settings"}
-                  icon="hero-cog-6-tooth"
-                  label="Settings"
-                />
+                <.admin_menu_item href={~p"/admin/settings"} icon="hero-cog-6-tooth" label="Settings" />
 
                 <li class="border-t border-[#E5E7EB] mt-1 pt-1">
                   <.link
@@ -335,12 +277,8 @@ defmodule OpenforumWeb.Layouts do
       </div>
 
       <%!-- ADMIN SIDEBAR --%>
-      <div class="drawer-side z-40">
-        <label
-          for="admin-sidebar"
-          aria-label="Close sidebar"
-          class="drawer-overlay"
-        ></label>
+       <div class="drawer-side z-40">
+        <label for="admin-sidebar" aria-label="Close sidebar" class="drawer-overlay"></label>
 
         <aside class="min-h-full w-72 bg-white border-r border-[#E5E7EB] flex flex-col">
           <%!-- ADMIN BRAND --%>
@@ -382,10 +320,10 @@ defmodule OpenforumWeb.Layouts do
             />
 
             <.sidebar_link
-              href={~p"/admin/drafts"}
+              href={~p"/admin/documents"}
               icon="hero-pencil-square"
-              label="Drafts"
-              active={@current_page == :drafts}
+              label="Documents"
+              active={@current_page == :documents}
             />
 
             <.sidebar_link
@@ -412,12 +350,7 @@ defmodule OpenforumWeb.Layouts do
             <%!-- KNOWLEDGE --%>
             <.sidebar_group label="Knowledge" />
 
-            <.sidebar_link
-              href={~p"/admin/bible"}
-              icon="hero-book-open"
-              label="Bible"
-              active={@current_page == :bible}
-            />
+            <.sidebar_link href={~p"/admin/bible"} icon="hero-book-open" label="Bible" active={@current_page == :bible} />
 
             <.sidebar_link
               href={~p"/admin/doctrine"}
@@ -480,6 +413,7 @@ defmodule OpenforumWeb.Layouts do
               label="Working Areas"
               active={@current_page == :working_areas}
             />
+
             <.sidebar_link
               href={~p"/admin/area_leads"}
               icon="hero-users"
@@ -525,12 +459,7 @@ defmodule OpenforumWeb.Layouts do
             <%!-- ACCESS MANAGEMENT --%>
             <.sidebar_group label="Access" />
 
-            <.sidebar_link
-              href={~p"/admin/users"}
-              icon="hero-users"
-              label="Users"
-              active={@current_page == :users}
-            />
+            <.sidebar_link href={~p"/admin/users"} icon="hero-users" label="Users" active={@current_page == :users} />
 
             <.sidebar_link
               href={~p"/admin/roles"}
@@ -628,10 +557,7 @@ defmodule OpenforumWeb.Layouts do
           <div class="lg:col-span-2">
             <div class="flex items-center gap-3">
               <span class="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
-                <.icon
-                  name="hero-book-open"
-                  class="size-5 text-[#C9A227]"
-                />
+                <.icon name="hero-book-open" class="size-5 text-[#C9A227]" />
               </span>
 
               <div>
@@ -783,42 +709,24 @@ defmodule OpenforumWeb.Layouts do
         id="client-error"
         kind={:error}
         title={gettext("We can't find the internet")}
-        phx-disconnected={
-          show(".phx-client-error #client-error")
-          |> JS.remove_attribute("hidden")
-        }
-        phx-connected={
-          hide(".phx-client-error #client-error")
-          |> JS.set_attribute({"hidden", ""})
-        }
+        phx-disconnected={show(".phx-client-error #client-error") |> JS.remove_attribute("hidden")}
+        phx-connected={hide(".phx-client-error #client-error") |> JS.set_attribute({"hidden", ""})}
         hidden
       >
         {gettext("Attempting to reconnect")}
-        <.icon
-          name="hero-arrow-path"
-          class="ml-1 size-3 motion-safe:animate-spin"
-        />
+        <.icon name="hero-arrow-path" class="ml-1 size-3 motion-safe:animate-spin" />
       </.flash>
 
       <.flash
         id="server-error"
         kind={:error}
         title={gettext("Something went wrong!")}
-        phx-disconnected={
-          show(".phx-server-error #server-error")
-          |> JS.remove_attribute("hidden")
-        }
-        phx-connected={
-          hide(".phx-server-error #server-error")
-          |> JS.set_attribute({"hidden", ""})
-        }
+        phx-disconnected={show(".phx-server-error #server-error") |> JS.remove_attribute("hidden")}
+        phx-connected={hide(".phx-server-error #server-error") |> JS.set_attribute({"hidden", ""})}
         hidden
       >
         {gettext("Attempting to reconnect")}
-        <.icon
-          name="hero-arrow-path"
-          class="ml-1 size-3 motion-safe:animate-spin"
-        />
+        <.icon name="hero-arrow-path" class="ml-1 size-3 motion-safe:animate-spin" />
       </.flash>
     </div>
     """
@@ -838,8 +746,7 @@ defmodule OpenforumWeb.Layouts do
       href={@href}
       class={[
         "block px-2 py-2 text-sm font-medium transition-colors whitespace-nowrap rounded-md",
-        if(
-          @active,
+        if(@active,
           do: "text-[#1769AA] bg-[#EAF3F8]/60",
           else: "text-[#374151] hover:text-[#1769AA] hover:bg-[#EAF3F8]/50"
         )
@@ -875,18 +782,13 @@ defmodule OpenforumWeb.Layouts do
       href={@href}
       class={[
         "flex items-center gap-3 px-3 py-2.5 rounded-lg text-[0.82rem] border-l-[3px] transition-colors mb-1",
-        if(
-          @active,
+        if(@active,
           do: "font-semibold text-[#0B2E4F] bg-[#EAF3F8] border-[#1769AA]",
-          else:
-            "font-medium text-[#4B5563] border-transparent hover:bg-[#F4F8FB] hover:text-[#1769AA]"
+          else: "font-medium text-[#4B5563] border-transparent hover:bg-[#F4F8FB] hover:text-[#1769AA]"
         )
       ]}
     >
-      <.icon
-        name={@icon}
-        class="size-4 shrink-0"
-      />
+      <.icon name={@icon} class="size-4 shrink-0" />
 
       <span class="truncate">
         {@label}
@@ -916,4 +818,54 @@ defmodule OpenforumWeb.Layouts do
     </li>
     """
   end
+
+  # ───────────────────────────────────────────────
+  #  USER AVATAR (photo, or initials fallback)
+  # ───────────────────────────────────────────────
+
+  attr :user, :map, required: true
+  attr :size, :string, default: "w-8 h-8 text-xs"
+
+  defp user_avatar(assigns) do
+    ~H"""
+    <img
+      :if={Map.get(@user, :avatar_url) not in [nil, ""]}
+      src={@user.avatar_url}
+      alt={"#{@user.first_name} #{@user.last_name}"}
+      class={["rounded-full object-cover shrink-0", @size]}
+    />
+
+    <div
+      :if={Map.get(@user, :avatar_url) in [nil, ""]}
+      class={[
+        "rounded-full bg-[#0B2E4F] text-white flex items-center justify-center font-bold shrink-0",
+        @size
+      ]}
+    >
+      {user_initials(@user)}
+    </div>
+    """
+  end
+
+  # ───────────────────────────────────────────────
+  #  USER INITIALS
+  # ───────────────────────────────────────────────
+
+  defp user_initials(%{first_name: first, last_name: last})
+       when is_binary(first) and byte_size(first) > 0 and
+              is_binary(last) and byte_size(last) > 0 do
+    String.first(first) <> String.first(last)
+  end
+
+  defp user_initials(_user), do: "?"
+
+  # ───────────────────────────────────────────────
+  #  ROLE LABEL
+  # ───────────────────────────────────────────────
+
+    defp role_label(%{roles: roles}) when is_list(roles) and roles != [] do
+    roles |> Enum.map(& &1.name) |> Enum.join(", ")
+  end
+
+  defp role_label(_user), do: "—"
 end

@@ -1,7 +1,7 @@
-defmodule OpenforumWeb.Auth.Draft.FormComponent do
+defmodule OpenforumWeb.Auth.Document.FormComponent do
   use OpenforumWeb, :live_component
 
-  alias Openforum.Context.Drafts
+  alias Openforum.Context.Documents
 
   @impl true
   def mount(socket) do
@@ -15,13 +15,13 @@ defmodule OpenforumWeb.Auth.Draft.FormComponent do
   end
 
   @impl true
-  def update(%{draft: draft} = assigns, socket) do
-    changeset = Drafts.change_draft(draft)
+  def update(%{document: document} = assigns, socket) do
+    changeset = Documents.change_document(document)
 
     {:ok,
      socket
      |> assign(assigns)
-     |> assign(:categories, Drafts.list_categories_for_select())
+     |> assign(:categories, Documents.list_categories_for_select())
      |> assign(:show_submit_note?, false)
      |> assign(:submit_note, "")
      |> assign_form(changeset)}
@@ -29,7 +29,7 @@ defmodule OpenforumWeb.Auth.Draft.FormComponent do
 
   @impl true
   def handle_event("validate", %{"content_item" => params} = full, socket) do
-    changeset = socket.assigns.draft |> Drafts.change_draft(params) |> Map.put(:action, :validate)
+    changeset = socket.assigns.document |> Documents.change_document(params) |> Map.put(:action, :validate)
 
     {:noreply,
      socket
@@ -53,28 +53,28 @@ defmodule OpenforumWeb.Auth.Draft.FormComponent do
   end
 
   def handle_event("remove_attachment", %{"id" => id}, socket) do
-    attachment = Drafts.get_attachment!(id)
-    {:ok, _} = Drafts.delete_attachment(attachment)
+    attachment = Documents.get_attachment!(id)
+    {:ok, _} = Documents.delete_attachment(attachment)
 
-    draft = Drafts.get_draft!(socket.assigns.current_user, socket.assigns.draft.id)
-    {:noreply, assign(socket, :draft, draft)}
+    document = Documents.get_document!(socket.assigns.current_user, socket.assigns.document.id)
+    {:noreply, assign(socket, :document, document)}
   end
 
   def handle_event("cancel", _params, socket) do
-    notify_parent({:cancelled, socket.assigns.draft})
+    notify_parent({:cancelled, socket.assigns.document})
     {:noreply, socket}
   end
 
   defp do_save(socket, params) do
-    case save_draft_silently(socket, socket.assigns.draft.id, params) do
-      {:ok, draft} ->
-        draft = persist_attachment(socket, draft)
-        notify_parent({:saved, draft})
+    case save_document_silently(socket, socket.assigns.document.id, params) do
+      {:ok, document} ->
+        document = persist_attachment(socket, document)
+        notify_parent({:saved, document})
 
         {:noreply,
         socket
-        |> assign(:draft, draft)
-        |> put_flash(:info, "Draft saved.")}
+        |> assign(:document, document)
+        |> put_flash(:info, "Document saved.")}
 
       {:error, changeset} ->
         {:noreply, assign_form(socket, changeset)}
@@ -82,11 +82,11 @@ defmodule OpenforumWeb.Auth.Draft.FormComponent do
   end
 
   defp do_submit_for_review(socket, params, note) do
-    case save_draft_silently(socket, socket.assigns.draft.id, params) do
-      {:ok, draft} ->
-        draft = persist_attachment(socket, draft)
+    case save_document_silently(socket, socket.assigns.document.id, params) do
+      {:ok, document} ->
+        document = persist_attachment(socket, document)
 
-        case Drafts.submit_draft(draft, note, socket.assigns.current_user) do
+        case Documents.submit_document(document, note, socket.assigns.current_user) do
           {:ok, updated} ->
             notify_parent({:submitted, updated})
             {:noreply, socket}
@@ -107,7 +107,7 @@ defmodule OpenforumWeb.Auth.Draft.FormComponent do
   # Copies each uploaded entry into priv/static/uploads and records a
   # content_attachments row. Swap the destination for S3/Cloud storage
   # if that's where you're actually keeping files.
-  defp persist_attachment(socket, draft) do
+  defp persist_attachment(socket, document) do
     consume_uploaded_entries(socket, :attachment, fn %{path: path}, entry ->
       filename = "#{Ecto.UUID.generate()}-#{entry.client_name}"
       dest = Path.join([:code.priv_dir(:openforum), "static", "uploads", filename])
@@ -115,7 +115,7 @@ defmodule OpenforumWeb.Auth.Draft.FormComponent do
       File.cp!(path, dest)
 
       {:ok, _} =
-        Drafts.create_attachment(draft, %{
+        Documents.create_attachment(document, %{
           "file_type" => entry.client_type,
           "file_url" => "/uploads/#{filename}",
           "caption" => entry.client_name
@@ -124,7 +124,7 @@ defmodule OpenforumWeb.Auth.Draft.FormComponent do
       {:ok, dest}
     end)
 
-    Drafts.get_draft!(socket.assigns.current_user, draft.id)
+    Documents.get_document!(socket.assigns.current_user, document.id)
   end
 
   defp error_to_string(other), do: "Upload error: #{inspect(other)}"
@@ -132,8 +132,8 @@ defmodule OpenforumWeb.Auth.Draft.FormComponent do
   defp attachments(%{content_attachments: %Ecto.Association.NotLoaded{}}), do: []
   defp attachments(%{content_attachments: attachments}), do: attachments
 
-  defp save_draft_silently(socket, nil, params), do: Drafts.create_draft(socket.assigns.current_user, params)
-  defp save_draft_silently(socket, _id, params), do: Drafts.update_draft(socket.assigns.draft, params)
+  defp save_document_silently(socket, nil, params), do: Documents.create_document(socket.assigns.current_user, params)
+  defp save_document_silently(socket, _id, params), do: Documents.update_document(socket.assigns.document, params)
 
   defp assign_form(socket, changeset), do: assign(socket, :form, to_form(changeset))
   defp notify_parent(msg), do: send(self(), {__MODULE__, msg})
@@ -146,7 +146,7 @@ defmodule OpenforumWeb.Auth.Draft.FormComponent do
   def render(assigns) do
     ~H"""
     <div>
-      <.form for={@form} id="draft-form" phx-target={@myself} phx-change="validate" phx-submit="save">
+      <.form for={@form} id="document-form" phx-target={@myself} phx-change="validate" phx-submit="save">
         <div class="grid grid-cols-2 gap-4">
           <div class="flex flex-col gap-1.5">
             <label class="text-xs font-medium text-[#0B2E4F]">Title</label>
@@ -199,7 +199,7 @@ defmodule OpenforumWeb.Auth.Draft.FormComponent do
             {error_to_string(msg)}
           </p>
 
-          <div :for={attachment <- attachments(@draft)} class="mt-2 flex items-center justify-between rounded-lg border border-[#E5E7EB] px-3 py-2 text-xs">
+          <div :for={attachment <- attachments(@document)} class="mt-2 flex items-center justify-between rounded-lg border border-[#E5E7EB] px-3 py-2 text-xs">
             <a href={attachment.file_url} target="_blank" class="text-[#1769AA] hover:underline">
               {attachment.caption}
             </a>
@@ -219,11 +219,11 @@ defmodule OpenforumWeb.Auth.Draft.FormComponent do
         <div class="mt-4 flex flex-col gap-1.5">
           <label class="text-xs font-medium text-[#0B2E4F]">Description</label>
 
-          <div id="draft-body-editor" phx-hook="RichTextEditor" phx-update="ignore" data-input-id="draft-body-input" data-initial-value={@form[:body].value}>
+          <div id="document-body-editor" phx-hook="RichTextEditor" phx-update="ignore" data-input-id="document-body-input" data-initial-value={@form[:body].value}>
             <div data-editor-toolbar class="flex flex-wrap items-center gap-1 rounded-t-lg bg-[#1769AA] px-2 py-1.5"></div>
             <div data-editor-container class="min-h-[200px] rounded-b-lg border border-t-0 border-[#E5E7EB] bg-white p-3 text-sm"></div>
           </div>
-          <input type="hidden" name="content_item[body]" id="draft-body-input" value={@form[:body].value} />
+          <input type="hidden" name="content_item[body]" id="document-body-input" value={@form[:body].value} />
           <p :if={@form[:body].errors != []} class="text-xs text-red-600">
             <%= for {msg, _} <- @form[:body].errors do %>{msg}<% end %>
           </p>
@@ -250,7 +250,7 @@ defmodule OpenforumWeb.Auth.Draft.FormComponent do
           </button>
 
           <button type="submit" name="form_action" value="save" class="rounded-lg bg-[#1769AA] px-4 py-2 text-sm font-medium text-white hover:bg-[#0B2E4F]">
-            Save Draft
+            Save Document
           </button>
 
           <button :if={@show_submit_note?} type="submit" name="form_action" value="submit_for_review" class="rounded-lg bg-[#1E8E5A] px-4 py-2 text-sm font-medium text-white hover:bg-[#166B44]">

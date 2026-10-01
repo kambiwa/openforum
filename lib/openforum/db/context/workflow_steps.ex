@@ -10,7 +10,7 @@ defmodule Openforum.Context.WorkFlowSteps do
 
   import Ecto.Query, warn: false
 
-  @stage_rank %{draft: 0, reviewer: 1, approver: 2}
+  @stage_rank %{document: 0, reviewer: 1, approver: 2}
 
   # ── Workflows ────────────────────────────────────────────────────────
 
@@ -86,12 +86,12 @@ defmodule Openforum.Context.WorkFlowSteps do
   @doc """
   The fixed set of stage types, in workflow order.
   """
-  def stage_types, do: [:draft, :reviewer, :approver]
+  def stage_types, do: [:document, :reviewer, :approver]
 
   @doc """
   {label, value} pairs for a stage `<.input type="select">`.
   """
-  def stage_options, do: [{"Draft", "draft"}, {"Reviewer", "reviewer"}, {"Approver", "approver"}]
+  def stage_options, do: [{"Document", "document"}, {"Reviewer", "reviewer"}, {"Approver", "approver"}]
 
   @doc """
   {label, id} pairs for the role `<.input type="select">` on a step form.
@@ -105,7 +105,7 @@ defmodule Openforum.Context.WorkFlowSteps do
   end
 
   @doc """
-  Steps for a workflow, ordered by stage (Draft → Reviewer → Approver) and
+  Steps for a workflow, ordered by stage (Document → Reviewer → Approver) and
   then by creation order within the same stage. `order_index` is computed
   and stored by `create_step/2` / `update_step/2` — there is no manual or
   draggable ordering anymore, so this is a plain column sort (and matches
@@ -158,7 +158,7 @@ defmodule Openforum.Context.WorkFlowSteps do
   First step (lowest order_index) within a given stage of a workflow, or
   nil if that workflow has no steps in that stage yet.
   """
-  def first_step_for_stage(work_flow_id, stage) when stage in [:draft, :reviewer, :approver] do
+  def first_step_for_stage(work_flow_id, stage) when stage in [:document, :reviewer, :approver] do
     WorkFlowStep
     |> where([s], s.work_flow_id == ^work_flow_id and s.stage_type == ^stage)
     |> order_by([s], asc: s.order_index)
@@ -179,11 +179,11 @@ defmodule Openforum.Context.WorkFlowSteps do
       nil ->
         nil
 
-      stage when stage in [:draft, :reviewer, :approver] ->
+      stage when stage in [:document, :reviewer, :approver] ->
         stage
 
       stage when is_binary(stage) ->
-        if stage in ~w(draft reviewer approver), do: String.to_existing_atom(stage), else: nil
+        if stage in ~w(document reviewer approver), do: String.to_existing_atom(stage), else: nil
 
       _ ->
         nil
@@ -191,7 +191,7 @@ defmodule Openforum.Context.WorkFlowSteps do
   end
 
   # Next order_index within a stage: stage_rank * 100_000 keeps stages in
-  # separate bands (Draft: 0–99_999, Reviewer: 100_000–199_999, Approver:
+  # separate bands (Document: 0–99_999, Reviewer: 100_000–199_999, Approver:
   # 200_000+), and steps within a stage get sequential values in creation
   # order. This also satisfies the existing
   # unique_index(:work_flow_steps, [:work_flow_id, :order_index]).

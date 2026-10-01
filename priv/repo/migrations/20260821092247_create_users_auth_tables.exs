@@ -187,7 +187,7 @@ defmodule Openforum.Repo.Migrations.CreateOpenforumTables do
     # handled separately via role_delegations, not per-step.
     #
     # stage_type groups steps into the three phases of the ladder
-    # (draft / reviewer / approver) and drives order_index — order
+    # (document / reviewer / approver) and drives order_index — order
     # is computed by the app (stage first, then creation order
     # within a stage), not manually reordered.
     create table(:work_flow_steps) do
@@ -198,7 +198,7 @@ defmodule Openforum.Repo.Migrations.CreateOpenforumTables do
       add :name, :string, null: false
       add :description, :string
       add :action, :string
-      add :stage_type, :string, null: false, default: "draft"
+      add :stage_type, :string, null: false, default: "document"
 
       add :role_id,
           references(:roles, on_delete: :restrict),
@@ -214,7 +214,7 @@ defmodule Openforum.Repo.Migrations.CreateOpenforumTables do
     create unique_index(:work_flow_steps, [:work_flow_id, :order_index])
 
     create constraint(:work_flow_steps, :stage_type_must_be_valid,
-             check: "stage_type IN ('draft','reviewer','approver')"
+             check: "stage_type IN ('document','reviewer','approver')"
            )
 
 
@@ -255,7 +255,7 @@ defmodule Openforum.Repo.Migrations.CreateOpenforumTables do
       add :body, :text
       add :duration_label, :string
 
-      add :status, :string, null: false, default: "draft"
+      add :status, :string, null: false, default: "document"
 
       add :category_id,
           references(:content_categories, on_delete: :restrict),
@@ -349,7 +349,7 @@ defmodule Openforum.Repo.Migrations.CreateOpenforumTables do
       add :thumbnail_url, :string
       add :duration_seconds, :integer
 
-      add :status, :string, null: false, default: "draft"
+      add :status, :string, null: false, default: "document"
 
       add :uploaded_by_id,
           references(:users, on_delete: :nilify_all)

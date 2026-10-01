@@ -56,7 +56,7 @@ defmodule OpenforumWeb.Router do
 
       live "/area_leads", AreaLeadLive.Index, :index
 
-      live "/drafts", Draft.Index, :index
+      live "/documents", Document.Index, :index
 
       live "/work_flows/:work_flow_id/steps", WorkFlowStepLive.Index, :index
       live "/work_flows/:work_flow_id/steps/new", WorkFlowStepLive.Index, :new
@@ -76,6 +76,10 @@ defmodule OpenforumWeb.Router do
     live_session :current_user,
       on_mount: [{OpenforumWeb.UserAuth, :mount_current_scope}] do
       live "/", Unauth.Landing.Index, :index
+      live "/media", Unauth.Media.Index, :index
+      live "/bible", Unauth.Bible.Index, :index
+
+live "/bible/:book/:chapter", Unauth.Bible.Show
 
       live "/users/register", UserLive.Registration, :new
       live "/users/log-in", UserLive.Login, :new

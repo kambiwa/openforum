@@ -17,18 +17,17 @@ alias OpenforumWeb.Schema.{Permission, Role, RolePermission, RoleAssignment}
 
 import Ecto.Query
 
-# ------------- user-------------
-alias Openforum.Accounts
-alias Openforum.Accounts.User
-
 # ── 0. Users ─────────────────────────────────────────────────────────
 #
 # Registers the users referenced in the role-assignment section below,
 # and confirms them immediately so they can log in right away in dev.
 
 users_attrs = [
-  %{first_name: "Chanda", last_name: "Mulenga", email: "dev@dev.com", password: "dev@dev.com"},
-  %{first_name: "Ruth", last_name: "Zulu", email: "admin@dev.com", password: "admin@dev.com"}
+  %{first_name: "grey", last_name: "luka", email: "dev@dev.com", password: "dev@dev.com", role: "congregation-rector"},
+  %{first_name: "green", last_name: "Mulenga", email: "green@dev.com", password: "dev@dev.com", role: "district-rector"},
+  %{first_name: "brown", last_name: "lubasi", email: "brown@dev.com", password: "dev@dev.com", role: "apostle-area"},
+  %{first_name: "White", last_name: "Kakoma", email: "white@dev.com", password: "dev@dev.com", role: "bishop"},
+  %{first_name: "Black", last_name: "Sepo", email: "black@dev.com", password: "admin@dev.com", role: "district-apostle"}
 ]
 
 users =
@@ -44,7 +43,6 @@ users =
   end
 
 IO.puts("Seeded #{length(users)} users.")
-
 
 # ── 1. Permissions (category/action pairs) ─────────────────────────────
 
@@ -146,11 +144,12 @@ for {role, granted_keys} <- roles, key <- granted_keys do
     conflict_target: [:role_id, :permission_id]
   )
 end
-# ── 4 (fixed). Role assignments ─────────────────────────────────────
+
+# ── 4. Role assignments ──────────────────────────────────────────────
 #
-# Was pointing at emails that don't match any registered user
-# (c.mulenga@nac.org / r.zulu@nac.org), so no RoleAssignment rows were
-# ever actually created. Point at the real seeded emails instead.
+# Points at the real seeded emails (dev@dev.com / admin@dev.com), so
+# RoleAssignment rows are actually created and each user gets a role
+# they can log in and be recognised by.
 
 user_role_assignments = [
   {"admin@dev.com", "district-apostle"},
@@ -169,13 +168,15 @@ for {email, role_slug} <- user_role_assignments do
     _ ->
       IO.puts("Skipped role assignment for #{email} / #{role_slug} — user or role not found.")
   end
+end
 
 IO.puts("Seeded #{length(permissions)} permissions and #{length(roles)} roles.")
+
 # ── 5. Content categories, workflow, and steps ──────────────────────
 #
 # Categories mirror the permission categories above (minus "Approval
 # Queue", which isn't a content category — it's the review/approve
-# action space). Slugs match what Draft.Index/FormComponent expect.
+# action space). Slugs match what Document.Index/FormComponent expect.
 
 alias Openforum.Schema.ContentCategory
 alias Openforum.Schema.WorkFlow
@@ -200,7 +201,7 @@ content_categories =
   end)
 
 # Standard three-stage approval ladder, matching the roles seeded above:
-#   draft    -> District Rector (creates/edits content)
+#   document    -> District Rector (creates/edits content)
 #   reviewer -> Bishop (doctrinal review)
 #   approver -> District Apostle (final sign-off)
 role_by_slug = Map.new(roles, fn {role, _granted} -> {role.slug, role} end)
@@ -212,7 +213,7 @@ role_by_slug = Map.new(roles, fn {role, _granted} -> {role.slug, role} end)
       |> WorkFlow.changeset(%{
         name: "Standard Review",
         status: "active",
-        description: "Draft -> Bishop review -> District Apostle approval"
+        description: "Document -> Bishop review -> District Apostle approval"
       })
       |> Repo.insert()
 
@@ -221,7 +222,7 @@ role_by_slug = Map.new(roles, fn {role, _granted} -> {role.slug, role} end)
   end
 
 standard_review_steps = [
-  %{name: "Draft", stage_type: :draft, role_slug: "district-rector", order_index: 0},
+  %{name: "Document", stage_type: :document, role_slug: "district-rector", order_index: 0},
   %{name: "Doctrinal Review", stage_type: :reviewer, role_slug: "bishop", order_index: 100_000},
   %{name: "Final Approval", stage_type: :approver, role_slug: "district-apostle", order_index: 200_000}
 ]
@@ -255,6 +256,3 @@ for category <- content_categories do
 end
 
 IO.puts("Seeded #{length(content_categories)} content categories and the Standard Review workflow.")
-
-
-end

@@ -8,7 +8,7 @@ defmodule OpenforumWeb.Auth.WorkFlowLive.Index do
   alias Openforum.Schema.WorkFlowStep
   alias Openforum.Schema.WorkFlow
 
-  @status_options [{"Active", "active"}, {"Draft", "draft"}, {"Inactive", "inactive"}]
+  @status_options [{"Active", "active"}, {"Document", "document"}, {"Inactive", "inactive"}]
 
   @impl true
   def mount(_params, _session, socket) do
@@ -263,7 +263,7 @@ defmodule OpenforumWeb.Auth.WorkFlowLive.Index do
   end
 
   defp status_classes("active"), do: "bg-[#EAF9F0] text-[#1E8E5A]"
-  defp status_classes("draft"), do: "bg-[#FEF6E7] text-[#B7791F]"
+  defp status_classes("document"), do: "bg-[#FEF6E7] text-[#B7791F]"
   defp status_classes("inactive"), do: "bg-[#F3F4F6] text-[#6B7280]"
   defp status_classes(_), do: "bg-[#F3F4F6] text-[#6B7280]"
 
@@ -280,7 +280,7 @@ defmodule OpenforumWeb.Auth.WorkFlowLive.Index do
     """
   end
 
-  defp stage_classes(:draft), do: "bg-[#FEF6E7] text-[#B7791F]"
+  defp stage_classes(:document), do: "bg-[#FEF6E7] text-[#B7791F]"
   defp stage_classes(:reviewer), do: "bg-[#EAF3F8] text-[#1769AA]"
   defp stage_classes(:approver), do: "bg-[#EAF9F0] text-[#1E8E5A]"
   defp stage_classes(_), do: "bg-[#F3F4F6] text-[#6B7280]"
@@ -486,7 +486,7 @@ defmodule OpenforumWeb.Auth.WorkFlowLive.Index do
                 </h2>
                 <p class="text-xs text-[#6B7280]">
                   Add or remove approval steps for this workflow. Order follows
-                  Draft → Reviewer → Approver automatically.
+                  Document → Reviewer → Approver automatically.
                 </p>
               </div>
 

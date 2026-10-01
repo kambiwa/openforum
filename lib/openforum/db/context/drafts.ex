@@ -1,6 +1,6 @@
-defmodule Openforum.Context.Drafts do
+defmodule Openforum.Context.Documents do
   @moduledoc """
-  "My Drafts" — content_items still in the :draft stage, owned by the
+  "My Documents" — content_items still in the :document stage, owned by the
   current user.
   """
 
@@ -11,9 +11,9 @@ defmodule Openforum.Context.Drafts do
   alias Openforum.Schema.ContentAttachment
   alias Openforum.Repo
 
-  def list_drafts(current_user, params, filters \\ %{}) do
+  def list_documents(current_user, params, filters \\ %{}) do
     ContentItem
-    |> where([c], c.author_id == ^current_user.id )
+    # |> where([c], c.author_id == ^current_user.id )
     |> filter_by_search(filters[:search_filter] || filters["search_filter"])
     |> filter_by_category(filters[:category_filter] || filters["category_filter"])
     |> order_by_from_params(params)
@@ -22,10 +22,9 @@ defmodule Openforum.Context.Drafts do
 
 
 
-  def get_draft!(current_user, id) do
+  def get_document!(current_user, id) do
     ContentItem
-    |> where([c], c.author_id == ^current_user.id and c.id == ^id)
-    |> preload([:category, :work_flow, :current_step])
+    |> preload([:category, :work_flow, :current_step, :content_attachments])
     |> Repo.one!()
   end
 
@@ -38,16 +37,11 @@ defmodule Openforum.Context.Drafts do
   end
 
 
-  def get_draft!(current_user, id) do
-    ContentItem
-    |> where([c], c.author_id == ^current_user.id and c.id == ^id)
-    |> preload([:category, :work_flow, :current_step, :content_attachments])
-    |> Repo.one!()
-  end
 
-  def create_attachment(%ContentItem{} = draft, attrs) do
+
+  def create_attachment(%ContentItem{} = document, attrs) do
     %ContentAttachment{}
-    |> ContentAttachment.changeset(Map.put(attrs, "content_item_id", draft.id))
+    |> ContentAttachment.changeset(Map.put(attrs, "content_item_id", document.id))
     |> Repo.insert()
   end
 
@@ -55,26 +49,26 @@ def delete_attachment(%ContentAttachment{} = attachment), do: Repo.delete(attach
 
 def get_attachment!(id), do: Repo.get!(ContentAttachment, id)
 
-  def change_draft(%ContentItem{id: nil} = draft, attrs \\ %{}), do: ContentItem.create_changeset(draft, attrs)
+  def change_document(%ContentItem{id: nil} = document, attrs \\ %{}), do: ContentItem.create_changeset(document, attrs)
 
-  def change_draft(%ContentItem{} = draft, attrs), do: ContentItem.update_changeset(draft, attrs)
+  def change_document(%ContentItem{} = document, attrs), do: ContentItem.update_changeset(document, attrs)
 
   @doc """
-  Resolves category -> default_work_flow_id -> first :draft-stage step,
+  Resolves category -> default_work_flow_id -> first :document-stage step,
   and blocks creation with a changeset error if either is missing.
   """
-  def create_draft(current_user, attrs) do
+  def create_document(current_user, attrs) do
     changeset = ContentItem.create_changeset(%ContentItem{}, attrs)
     category_id = Ecto.Changeset.get_field(changeset, :category_id)
 
     with {:ok, category} <- fetch_category(category_id),
          {:ok, work_flow_id} <- fetch_default_work_flow(category),
-         {:ok, step} <- fetch_first_step_for_stage(work_flow_id, :draft) do
+         {:ok, step} <- fetch_first_step_for_stage(work_flow_id, :document) do
       changeset
       |> Ecto.Changeset.put_change(:author_id, current_user.id)
       |> Ecto.Changeset.put_change(:workflow_id, work_flow_id)
       |> Ecto.Changeset.put_change(:current_step_id, step.id)
-      |> Ecto.Changeset.put_change(:status, "draft")
+      |> Ecto.Changeset.put_change(:status, "document")
       |> Repo.insert()
     else
       {:error, :no_category} ->
@@ -93,33 +87,33 @@ def get_attachment!(id), do: Repo.get!(ContentAttachment, id)
          Ecto.Changeset.add_error(
            changeset,
            :category_id,
-           "workflow has no draft step configured — ask an admin to fix it"
+           "workflow has no document step configured — ask an admin to fix it"
          )}
     end
   end
 
-  def update_draft(%ContentItem{} = draft, attrs) do
-    draft |> ContentItem.update_changeset(attrs) |> Repo.update()
+  def update_document(%ContentItem{} = document, attrs) do
+    document |> ContentItem.update_changeset(attrs) |> Repo.update()
   end
 
-  def delete_draft(%ContentItem{} = draft), do: Repo.delete(draft)
+  def delete_document(%ContentItem{} = document), do: Repo.delete(document)
 
   @doc """
   Logs the submit action, advances current_step_id to the first
   :reviewer step, flips status to "in_review". A note is required
   (work_flow_step_actions.comments is NOT NULL).
   """
-  def submit_draft(%ContentItem{} = draft, note, current_user) do
+  def submit_document(%ContentItem{} = document, note, current_user) do
     note = String.trim(note || "")
 
     with true <- note != "" || {:error, :note_required},
-         {:ok, reviewer_step} <- fetch_first_step_for_stage(draft.workflow_id, :reviewer) do
+         {:ok, reviewer_step} <- fetch_first_step_for_stage(document.workflow_id, :reviewer) do
       Repo.transaction(fn ->
         {:ok, _action} =
           %WorkFlowStepAction{}
           |> WorkFlowStepAction.changeset(%{
-            content_item_id: draft.id,
-            work_flow_step_id: draft.current_step_id,
+            content_item_id: document.id,
+            work_flow_step_id: document.current_step_id,
             actor_id: current_user.id,
             action: "submit",
             comments: note
@@ -127,7 +121,7 @@ def get_attachment!(id), do: Repo.get!(ContentAttachment, id)
           |> Repo.insert()
 
         {:ok, updated} =
-          draft
+          document
           |> Ecto.Changeset.change(%{current_step_id: reviewer_step.id, status: "in_review"})
           |> Repo.update()
 

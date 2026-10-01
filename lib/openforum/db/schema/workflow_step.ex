@@ -2,7 +2,7 @@ defmodule Openforum.Schema.WorkFlowStep do
   use Ecto.Schema
   import Ecto.Changeset
 
-  @stage_types [:draft, :reviewer, :approver]
+  @stage_types [:document, :reviewer, :approver]
 
   schema "work_flow_steps" do
     field :name, :string

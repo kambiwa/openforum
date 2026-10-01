@@ -1,0 +1,126 @@
+<div class="openforum-bible-reader">
+  <Layouts.unauth_app
+    flash={@flash}
+    current_scope={@current_scope}
+    mobile_menu_open={@mobile_menu_open}
+  >
+    <main class="bg-[#FAFAF7]">
+      <%!-- ============ HEADER ============ --%>
+      <section class="border-b border-[#E5E7EB] bg-[#FAFAF7]">
+        <div class="mx-auto max-w-3xl px-6 py-10 sm:px-8">
+          <nav class="flex items-center gap-2 text-xs text-[#6B7280]" aria-label="Breadcrumb">
+            <.link navigate={~p"/bible"} class="hover:text-[#1769AA]">Bible</.link>
+            <.icon name="hero-chevron-right" class="h-3 w-3" />
+            <span>{if @book.testament == :old, do: "Old Testament", else: "New Testament"}</span>
+            <.icon name="hero-chevron-right" class="h-3 w-3" />
+            <span class="text-[#0B2E4F]">{@book.name}</span>
+          </nav>
+
+          <div class="mt-5 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p class="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#B8964F]">
+                {@book.category}
+              </p>
+              <h1 class="mt-2 text-4xl font-semibold tracking-tight text-[#0B2E4F]">
+                {@book.name} {@chapter}
+              </h1>
+            </div>
+
+            <div class="inline-flex rounded-full border border-[#4F7FA8]/30 bg-white p-1" role="group" aria-label="Translation">
+              <.link
+                :for={t <- @translations}
+                patch={~p"/bible/#{@book.slug}/#{@chapter}?#{[t: t.id]}"}
+                title={t.name}
+                aria-current={to_string(@translation.id == t.id)}
+                class={[
+                  "rounded-full px-4 py-1.5 text-xs font-semibold transition-colors",
+                  @translation.id == t.id && "bg-[#0B2E4F] text-white",
+                  @translation.id != t.id && "text-[#0B2E4F] hover:bg-[#EAF3F8]"
+                ]}
+              >
+                {t.short}
+              </.link>
+            </div>
+          </div>
+
+          <%!-- chapter picker --%>
+          <details :if={@book.chapters > 1} class="group mt-6 rounded-xl border border-[#E5E7EB] bg-white">
+            <summary class="flex cursor-pointer list-none items-center justify-between px-5 py-3 text-sm font-medium text-[#0B2E4F]">
+              Jump to chapter
+              <.icon
+                name="hero-chevron-down"
+                class="h-4 w-4 text-[#1769AA] transition-transform group-open:rotate-180"
+              />
+            </summary>
+            <div class="grid grid-cols-6 gap-2 border-t border-[#E5E7EB] p-4 sm:grid-cols-10">
+              <.link
+                :for={n <- 1..@book.chapters}
+                patch={~p"/bible/#{@book.slug}/#{n}?#{[t: @translation.id]}"}
+                class={[
+                  "flex h-9 items-center justify-center rounded-md text-sm font-medium transition-colors",
+                  n == @chapter && "bg-[#1769AA] text-white",
+                  n != @chapter && "text-[#0B2E4F] hover:bg-[#EAF3F8]"
+                ]}
+              >
+                {n}
+              </.link>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <%!-- ============ TEXT ============ --%>
+      <section class="mx-auto max-w-3xl px-6 py-12 sm:px-8">
+        <article :if={@verses} class="font-serif text-lg leading-[1.9] text-[#0B2E4F]">
+          <p :for={verse <- @verses} id={"v#{verse.number}"} class="scroll-mt-24 target:bg-[#EAF3F8]">
+            <sup class="mr-1.5 font-sans text-[11px] font-semibold text-[#B8964F]">{verse.number}</sup>{verse.text}
+          </p>
+        </article>
+
+        <div :if={is_nil(@verses)} class="rounded-xl border border-[#E5E7EB] bg-white p-10 text-center">
+          <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#EAF3F8]">
+            <.icon name="hero-book-open" class="h-5 w-5 text-[#1769AA]" />
+          </div>
+          <h2 class="mt-4 text-base font-semibold text-[#0B2E4F]">Text not available yet</h2>
+          <p class="mt-2 text-sm text-[#6B7280]">
+            {@book.name} {@chapter} is not yet available in the {@translation.name}.
+          </p>
+          <.link
+            :for={t <- @translations}
+            :if={t.id != @translation.id}
+            patch={~p"/bible/#{@book.slug}/#{@chapter}?#{[t: t.id]}"}
+            class="mt-5 inline-flex items-center justify-center rounded-md border border-[#4F7FA8]/40 bg-white px-5 py-2.5 text-sm font-medium text-[#0B2E4F] transition-colors hover:bg-[#EAF3F8]"
+          >
+            Try the {t.name}
+          </.link>
+        </div>
+
+        <p class="mt-10 text-center text-xs text-[#6B7280]">{@translation.name} · Public domain</p>
+      </section>
+
+      <%!-- ============ PREV / NEXT ============ --%>
+      <section class="border-t border-[#E5E7EB] bg-[#F4F8FB]">
+        <div class="mx-auto flex max-w-3xl items-center justify-between gap-4 px-6 py-6 sm:px-8">
+          <.link
+            :if={@prev}
+            navigate={~p"/bible/#{elem(@prev, 0)}/#{elem(@prev, 1)}?#{[t: @translation.id]}"}
+            class="inline-flex items-center gap-2 rounded-md border border-[#4F7FA8]/30 bg-white px-4 py-2.5 text-sm font-medium text-[#0B2E4F] transition-colors hover:bg-[#EAF3F8]"
+          >
+            <.icon name="hero-arrow-left" class="h-4 w-4" />
+            {book_of(elem(@prev, 0)).name} {elem(@prev, 1)}
+          </.link>
+          <span :if={is_nil(@prev)}></span>
+
+          <.link
+            :if={@next}
+            navigate={~p"/bible/#{elem(@next, 0)}/#{elem(@next, 1)}?#{[t: @translation.id]}"}
+            class="inline-flex items-center gap-2 rounded-md bg-[#1769AA] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#0B2E4F]"
+          >
+            {book_of(elem(@next, 0)).name} {elem(@next, 1)}
+            <.icon name="hero-arrow-right" class="h-4 w-4" />
+          </.link>
+        </div>
+      </section>
+    </main>
+  </Layouts.unauth_app>
+</div>

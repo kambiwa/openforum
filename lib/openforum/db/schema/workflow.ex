@@ -19,7 +19,7 @@ defmodule Openforum.Schema.WorkFlow do
     |> cast(attrs, [:name, :status, :description])
     |> validate_required([:name, :status])
     |> validate_length(:name, min: 1, max: 160)
-    |> validate_inclusion(:status, ["active", "inactive", "draft"])
+    |> validate_inclusion(:status, ["active", "inactive", "document"])
     |> unique_constraint(:name)
   end
 

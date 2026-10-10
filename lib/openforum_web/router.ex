@@ -55,6 +55,14 @@ defmodule OpenforumWeb.Router do
       live "/work_flows/:id/edit", WorkFlowLive.Index, :edit
 
       live "/area_leads", AreaLeadLive.Index, :index
+      live "/congregations", CongregationLive.Index, :index
+      live "/district_areas", DistrictAreaLive.Index, :index
+      live "/apostle_areas", ApostleAreaLive.Index, :index
+      live "/lead_apostle_areas", LeadApostleAreaLive.Index, :index
+      live "/district_apostle_areas", DistrictAreaLive.Index, :index
+
+
+
 
       live "/documents", Document.Index, :index
 
@@ -77,9 +85,11 @@ defmodule OpenforumWeb.Router do
       on_mount: [{OpenforumWeb.UserAuth, :mount_current_scope}] do
       live "/", Unauth.Landing.Index, :index
       live "/media", Unauth.Media.Index, :index
+      live "/learn", Unauth.Learn.Index, :index
       live "/bible", Unauth.Bible.Index, :index
-
-live "/bible/:book/:chapter", Unauth.Bible.Show
+      live "/catechism", Unauth.Catechism.Index, :index
+      live "/questions-and-answers", Unauth.Questions_Answers.Index, :index
+      live "/bible/:book/:chapter", Unauth.Bible.Show
 
       live "/users/register", UserLive.Registration, :new
       live "/users/log-in", UserLive.Login, :new

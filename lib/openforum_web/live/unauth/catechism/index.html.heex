@@ -1,0 +1,155 @@
+<div class="openforum-catechism">
+  <Layouts.unauth_app
+    flash={@flash}
+    current_scope={@current_scope}
+    mobile_menu_open={@mobile_menu_open}
+  >
+    <main class="bg-[#FAFAF7]">
+      <%!-- ============ SECTION 1 — HEADER ============ --%>
+      <section class="relative overflow-hidden bg-[#FAFAF7]">
+        <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+          <div class="absolute -right-24 -top-16 h-[320px] w-[320px] rounded-full bg-[#EAF3F8]">
+          </div>
+        </div>
+
+        <div class="relative mx-auto max-w-[1280px] px-6 py-14 sm:px-8 lg:py-16">
+          <div class="max-w-2xl">
+            <h1 class="text-4xl font-semibold leading-[1.1] tracking-tight text-[#0B2E4F] sm:text-5xl">
+              The Catechism of the New Apostolic Church
+            </h1>
+            <p class="mt-5 max-w-xl text-base leading-relaxed text-[#6B7280] sm:text-lg">
+              The doctrinal reference book of the New Apostolic Church. Choose a chapter to see
+              what it covers.
+            </p>
+            <div class="mt-8 flex flex-wrap items-center gap-4">
+              <.link
+                navigate={~p"/questions-answers"}
+                class="inline-flex items-center justify-center gap-2 rounded-md bg-[#1769AA] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#0B2E4F]"
+              >
+                <.icon name="hero-arrow-down-tray" class="h-4 w-4" /> Download the PDF
+              </.link>
+              <a
+                href={@source_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center justify-center rounded-md border border-[#4F7FA8]/40 bg-white px-6 py-3 text-sm font-medium text-[#0B2E4F] transition-colors hover:bg-[#EAF3F8]"
+              >
+                Read the full text on nak.org
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <%!-- ============ SECTION 2 — READER ============ --%>
+      <section class="mx-auto max-w-[1280px] px-6 pb-20 sm:px-8">
+        <div class="grid grid-cols-1 gap-10 lg:grid-cols-[300px_1fr]">
+          <%!-- mobile: collapsible chapter list --%>
+          <details class="rounded-xl border border-[#E5E7EB] bg-white lg:hidden">
+            <summary class="cursor-pointer list-none px-4 py-3 text-sm font-medium text-[#0B2E4F]">
+              Chapters
+            </summary>
+            <div class="border-t border-[#E5E7EB] p-2">
+              <.chapter_nav chapters={@chapters} active_id={@active_id} />
+            </div>
+          </details>
+
+          <%!-- desktop: sticky chapter list --%>
+          <aside class="hidden lg:block">
+            <div class="sticky top-6 rounded-xl border border-[#E5E7EB] bg-white p-3">
+              <h2 class="px-3 pb-2 pt-1 text-sm font-semibold text-[#0B2E4F]">Contents</h2>
+              <.chapter_nav chapters={@chapters} active_id={@active_id} />
+            </div>
+          </aside>
+
+          <%!-- chapter panel --%>
+          <article
+            id="chapter-panel"
+            class="min-w-0 rounded-xl border border-[#E5E7EB] bg-white p-6 sm:p-10"
+          >
+            <p :if={@current.number} class="text-sm font-medium text-[#B8964F]">
+              Chapter {@current.number}
+            </p>
+            <h2 class="mt-1 text-3xl font-semibold tracking-tight text-[#0B2E4F]">
+              {@current.title}
+            </h2>
+
+            <%= if @current.id == "introduction" do %>
+              <div class="mt-8 max-w-prose space-y-8">
+                <section :for={part <- @introduction}>
+                  <h3 class="text-lg font-semibold text-[#0B2E4F]">{part.heading}</h3>
+                  <p class="mt-2 text-base leading-relaxed text-[#6B7280]">{part.body}</p>
+                </section>
+              </div>
+            <% else %>
+              <p class="mt-5 max-w-prose text-base leading-relaxed text-[#6B7280]">
+                {@current.summary}
+              </p>
+            <% end %>
+
+            <div class="mt-8">
+              <a
+                href={@current.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center justify-center gap-2 rounded-md bg-[#1769AA] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#0B2E4F]"
+              >
+                Read this chapter on nak.org
+                <.icon name="hero-arrow-top-right-on-square" class="h-4 w-4" />
+              </a>
+            </div>
+
+            <div class="mt-10 flex items-center justify-between gap-4 border-t border-[#E5E7EB] pt-6">
+              <button
+                :if={@prev_chapter}
+                type="button"
+                phx-click="select_chapter"
+                phx-value-id={@prev_chapter.id}
+                class="inline-flex min-w-0 items-center gap-2 text-sm font-medium text-[#1769AA] hover:text-[#0B2E4F]"
+              >
+                <.icon name="hero-arrow-left" class="h-4 w-4 shrink-0" />
+                <span class="truncate">{@prev_chapter.title}</span>
+              </button>
+              <span :if={!@prev_chapter}></span>
+
+              <button
+                :if={@next_chapter}
+                type="button"
+                phx-click="select_chapter"
+                phx-value-id={@next_chapter.id}
+                class="inline-flex min-w-0 items-center gap-2 text-sm font-medium text-[#1769AA] hover:text-[#0B2E4F]"
+              >
+                <span class="truncate">{@next_chapter.title}</span>
+                <.icon name="hero-arrow-right" class="h-4 w-4 shrink-0" />
+              </button>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <%!-- ============ SECTION 3 — SOURCE NOTE ============ --%>
+      <section class="bg-[#EAF3F8]">
+        <div class="mx-auto max-w-[1280px] px-6 py-12 text-center sm:px-8">
+          <p class="mx-auto max-w-2xl text-sm leading-relaxed text-[#6B7280]">
+            The Catechism is published by the New Apostolic Church International. Chapter
+            summaries here are brief overviews; the complete text is available at
+            <a
+              href={@source_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="font-medium text-[#1769AA] hover:text-[#0B2E4F]"
+            >
+              nak.org
+            </a>.
+          </p>
+          <.link
+            navigate={~p"/knowledge"}
+            class="mt-6 inline-flex items-center justify-center rounded-md border border-[#4F7FA8]/40 bg-white px-6 py-3 text-sm font-medium text-[#0B2E4F] transition-colors hover:bg-[#EAF3F8]"
+          >
+            Explore more knowledge
+          </.link>
+        </div>
+      </section>
+    </main>
+  </Layouts.unauth_app>
+</div>

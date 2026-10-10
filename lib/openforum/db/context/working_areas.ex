@@ -19,6 +19,66 @@ defmodule Openforum.Context.WorkingAreas do
     |> apply_order(order_by)
     |> Repo.paginate(page: page, page_size: page_size)
   end
+
+  def list_congregation(table_params \\ %{}, filters \\ %{}) do
+    page = OpenforumWeb.Pagination.param_value(table_params, "page", 1)
+    page_size = OpenforumWeb.Pagination.param_value(table_params, "page_size", 10)
+    order_by = table_params["order_by"] || %{"sort_field" => "id", "sort_direction" => "desc"}
+    search = get_in(table_params, ["filter", "isearch"]) || ""
+    status = filters[:status_filter] || filters["status_filter"] || ""
+
+    WorkingArea
+    |> where([f], f.name == "Congregation")
+    |> apply_search(search)
+    |> apply_status(status)
+    |> apply_order(order_by)
+    |> Repo.paginate(page: page, page_size: page_size)
+  end
+
+  def list_district_rector_areas(table_params \\ %{}, filters \\ %{}) do
+    page = OpenforumWeb.Pagination.param_value(table_params, "page", 1)
+    page_size = OpenforumWeb.Pagination.param_value(table_params, "page_size", 10)
+    order_by = table_params["order_by"] || %{"sort_field" => "id", "sort_direction" => "desc"}
+    search = get_in(table_params, ["filter", "isearch"]) || ""
+    status = filters[:status_filter] || filters["status_filter"] || ""
+
+    WorkingArea
+    |> where([f], f.name == "District Rector Area")
+    |> apply_search(search)
+    |> apply_status(status)
+    |> apply_order(order_by)
+    |> Repo.paginate(page: page, page_size: page_size)
+  end
+
+  def list_lead_apostle_areas(table_params \\ %{}, filters \\ %{}) do
+    page = OpenforumWeb.Pagination.param_value(table_params, "page", 1)
+    page_size = OpenforumWeb.Pagination.param_value(table_params, "page_size", 10)
+    order_by = table_params["order_by"] || %{"sort_field" => "id", "sort_direction" => "desc"}
+    search = get_in(table_params, ["filter", "isearch"]) || ""
+    status = filters[:status_filter] || filters["status_filter"] || ""
+
+    WorkingArea
+    |> apply_search(search)
+    |> apply_status(status)
+    |> apply_order(order_by)
+    |> Repo.paginate(page: page, page_size: page_size)
+  end
+
+  def list_district_apostle_areas(table_params \\ %{}, filters \\ %{}) do
+    page = OpenforumWeb.Pagination.param_value(table_params, "page", 1)
+    page_size = OpenforumWeb.Pagination.param_value(table_params, "page_size", 10)
+    order_by = table_params["order_by"] || %{"sort_field" => "id", "sort_direction" => "desc"}
+    search = get_in(table_params, ["filter", "isearch"]) || ""
+    status = filters[:status_filter] || filters["status_filter"] || ""
+
+    WorkingArea
+    |> apply_search(search)
+    |> apply_status(status)
+    |> apply_order(order_by)
+    |> Repo.paginate(page: page, page_size: page_size)
+  end
+
+
   # ── Standard CRUD ────────────────────────────────────────────────────
 
   def get_working_area!(id), do: Repo.get!(WorkingArea, id)

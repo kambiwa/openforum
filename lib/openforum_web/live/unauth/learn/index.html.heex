@@ -1,0 +1,176 @@
+<div class="openforum-learn">
+  <Layouts.unauth_app
+    flash={@flash}
+    current_scope={@current_scope}
+    mobile_menu_open={@mobile_menu_open}
+  >
+    <main class="bg-[#FAFAF7]">
+      <%!-- ============ SECTION 1 — HEADER ============ --%>
+      <section class="relative overflow-hidden bg-[#FAFAF7]">
+        <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+          <div class="absolute -right-24 -top-16 h-[320px] w-[320px] rounded-full bg-[#EAF3F8]">
+          </div>
+        </div>
+
+        <div class="relative mx-auto max-w-[1280px] px-6 py-16 sm:px-8 lg:py-20">
+          <div class="max-w-2xl">
+            <h1 class="text-4xl font-semibold leading-[1.1] tracking-tight text-[#0B2E4F] sm:text-5xl">
+              Start Learning
+            </h1>
+            <p class="mt-5 max-w-lg text-base leading-relaxed text-[#6B7280] sm:text-lg">
+              Follow a guided learning path through Scripture, doctrine, the Catechism and
+              common questions. Each path is made of short lessons you can take at your own pace.
+            </p>
+            <div class="mt-8 flex flex-wrap items-center gap-4">
+              <a
+                href="#paths"
+                class="inline-flex items-center justify-center rounded-md bg-[#1769AA] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#0B2E4F]"
+              >
+                Browse Learning Paths
+              </a>
+              <.link
+                navigate={~p"/knowledge"}
+                class="inline-flex items-center justify-center rounded-md border border-[#4F7FA8]/40 bg-white px-6 py-3 text-sm font-medium text-[#0B2E4F] transition-colors hover:bg-[#EAF3F8]"
+              >
+                Explore Knowledge
+              </.link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <%!-- ============ SECTION 2 — LEARNING PATHS ============ --%>
+      <section id="paths" class="mx-auto max-w-[1280px] scroll-mt-20 px-6 py-16 sm:px-8">
+        <div class="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 class="text-3xl font-semibold tracking-tight text-[#0B2E4F]">Learning Paths</h2>
+            <p class="mt-3 text-base leading-relaxed text-[#6B7280]">
+              Choose a topic to see the paths available.
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-8 flex flex-wrap gap-2" role="group" aria-label="Filter by topic">
+          <button
+            type="button"
+            phx-click="filter_category"
+            phx-value-category="all"
+            aria-pressed={@active_category == "all"}
+            class={[
+              "rounded-full border px-4 py-2 text-sm font-medium transition-colors",
+              @active_category == "all" &&
+                "border-[#0B2E4F] bg-[#0B2E4F] text-white",
+              @active_category != "all" &&
+                "border-[#4F7FA8]/30 bg-white text-[#0B2E4F] hover:bg-[#EAF3F8]"
+            ]}
+          >
+            All
+          </button>
+          <button
+            :for={category <- @categories}
+            type="button"
+            phx-click="filter_category"
+            phx-value-category={category.id}
+            aria-pressed={@active_category == category.id}
+            class={[
+              "rounded-full border px-4 py-2 text-sm font-medium transition-colors",
+              @active_category == category.id &&
+                "border-[#0B2E4F] bg-[#0B2E4F] text-white",
+              @active_category != category.id &&
+                "border-[#4F7FA8]/30 bg-white text-[#0B2E4F] hover:bg-[#EAF3F8]"
+            ]}
+          >
+            {category.label}
+          </button>
+        </div>
+
+        <div class="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <article
+            :for={path <- @visible_paths}
+            class="flex flex-col rounded-xl border border-[#E5E7EB] bg-white p-6 transition-shadow hover:shadow-md"
+          >
+            <div class="flex items-center justify-between">
+              <div class="flex h-11 w-11 items-center justify-center rounded-lg bg-[#EAF3F8]">
+                <.icon name={path.icon} class="h-5 w-5 text-[#1769AA]" />
+              </div>
+              <span class="text-xs font-medium text-[#B8964F]">{path.level}</span>
+            </div>
+            <p class="mt-5 text-xs font-medium text-[#6B7280]">{category_label(path.category)}</p>
+            <h3 class="mt-1 text-lg font-semibold text-[#0B2E4F]">{path.title}</h3>
+            <p class="mt-2 flex-1 text-sm leading-relaxed text-[#6B7280]">{path.description}</p>
+            <div class="mt-5 flex items-center justify-between border-t border-[#E5E7EB] pt-4">
+              <span class="text-xs text-[#6B7280]">
+                {path.lessons} lessons · {path.duration}
+              </span>
+              <.link
+                navigate={~p"/knowledge"}
+                class="inline-flex items-center gap-1 text-sm font-medium text-[#1769AA] hover:text-[#0B2E4F]"
+              >
+                Start Path <.icon name="hero-arrow-right" class="h-3.5 w-3.5" />
+              </.link>
+            </div>
+          </article>
+        </div>
+
+        <p :if={@visible_paths == []} class="mt-10 text-sm text-[#6B7280]">
+          No learning paths in this topic yet. Choose another topic to keep exploring.
+        </p>
+      </section>
+
+      <%!-- ============ SECTION 3 — HOW LEARNING WORKS ============ --%>
+      <section class="bg-[#EAF3F8]">
+        <div class="mx-auto max-w-[1280px] px-6 py-16 sm:px-8">
+          <div class="mx-auto max-w-2xl text-center">
+            <h2 class="text-3xl font-semibold tracking-tight text-[#0B2E4F]">
+              How Learning Works
+            </h2>
+            <p class="mt-4 text-base leading-relaxed text-[#6B7280]">
+              No account is needed. Pick a path and begin.
+            </p>
+          </div>
+
+          <ol class="mx-auto mt-12 grid max-w-4xl grid-cols-1 gap-8 sm:grid-cols-3">
+            <li
+              :for={{step, index} <- Enum.with_index(@how_it_works, 1)}
+              class="flex flex-col items-center text-center"
+            >
+              <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[#0B2E4F] text-sm font-semibold text-white">
+                {index}
+              </span>
+              <h3 class="mt-4 text-base font-semibold text-[#0B2E4F]">{step.title}</h3>
+              <p class="mt-2 max-w-[16rem] text-sm leading-relaxed text-[#6B7280]">
+                {step.description}
+              </p>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <%!-- ============ SECTION 4 — FINAL CTA ============ --%>
+      <section class="bg-[#0B2E4F]">
+        <div class="mx-auto max-w-[1280px] px-6 py-16 text-center sm:px-8">
+          <h2 class="text-3xl font-semibold tracking-tight text-white">
+            Ready to begin?
+          </h2>
+          <p class="mx-auto mt-4 max-w-xl text-base leading-relaxed text-white/75">
+            Start with Understanding Our Faith, or browse the full knowledge library.
+          </p>
+          <div class="mt-8 flex flex-wrap items-center justify-center gap-4">
+            <.link
+              navigate={~p"/knowledge"}
+              class="inline-flex items-center justify-center rounded-md bg-white px-6 py-3 text-sm font-medium text-[#0B2E4F] transition-colors hover:bg-[#EAF3F8]"
+            >
+              Explore Knowledge
+            </.link>
+            <.link
+              navigate={~p"/users/register"}
+              class="inline-flex items-center justify-center rounded-md border border-white/30 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-white/10"
+            >
+              Create an Account
+            </.link>
+          </div>
+        </div>
+      </section>
+    </main>
+  </Layouts.unauth_app>
+</div>

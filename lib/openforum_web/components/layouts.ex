@@ -57,10 +57,6 @@ defmodule OpenforumWeb.Layouts do
             </li>
 
             <li>
-              <.nav_link href={~p"/doctrine"} label="Doctrine" active={@current_page == :doctrine} />
-            </li>
-
-            <li>
               <.nav_link href={~p"/catechism"} label="Catechism" active={@current_page == :catechism} />
             </li>
 
@@ -588,12 +584,6 @@ defmodule OpenforumWeb.Layouts do
               <li>
                 <a href={~p"/bible"} class="hover:text-white transition-colors">
                   Bible
-                </a>
-              </li>
-
-              <li>
-                <a href={~p"/doctrine"} class="hover:text-white transition-colors">
-                  Doctrine
                 </a>
               </li>
 

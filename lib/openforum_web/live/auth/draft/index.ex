@@ -286,6 +286,20 @@ defmodule OpenforumWeb.Auth.Document.Index do
             current_user={@current_scope.user}
           />
         </.modal>
+
+        <.modal
+            :if={@live_action == :view && @document}
+            id={"document-view-modal-#{@document.id}"}
+            show
+            on_cancel={JS.push("close")}
+          >
+            <.live_component
+              module={OpenforumWeb.Auth.Document.View}
+              id={"view-#{@document.id}"}
+              document={@document}
+              current_user={@current_scope.user}
+            />
+          </.modal>
       </div>
     </Layouts.admin_app>
     """

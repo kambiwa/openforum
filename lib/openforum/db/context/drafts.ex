@@ -11,19 +11,20 @@ defmodule Openforum.Context.Documents do
   alias Openforum.Schema.ContentAttachment
   alias Openforum.Repo
 
+  # ── Queries ──────────────────────────────────────────────────────────
+
   def list_documents(current_user, params, filters \\ %{}) do
     ContentItem
-    # |> where([c], c.author_id == ^current_user.id )
+    |> where([c], c.author_id == ^current_user.id)
     |> filter_by_search(filters[:search_filter] || filters["search_filter"])
     |> filter_by_category(filters[:category_filter] || filters["category_filter"])
     |> order_by_from_params(params)
     |> paginate(params)
   end
 
-
-
   def get_document!(current_user, id) do
     ContentItem
+    |> where([c], c.id == ^id and c.author_id == ^current_user.id)
     |> preload([:category, :work_flow, :current_step, :content_attachments])
     |> Repo.one!()
   end
@@ -36,8 +37,7 @@ defmodule Openforum.Context.Documents do
     |> Repo.all()
   end
 
-
-
+  # ── Attachments ──────────────────────────────────────────────────────
 
   def create_attachment(%ContentItem{} = document, attrs) do
     %ContentAttachment{}
@@ -45,13 +45,20 @@ defmodule Openforum.Context.Documents do
     |> Repo.insert()
   end
 
-def delete_attachment(%ContentAttachment{} = attachment), do: Repo.delete(attachment)
+  def delete_attachment(%ContentAttachment{} = attachment), do: Repo.delete(attachment)
 
-def get_attachment!(id), do: Repo.get!(ContentAttachment, id)
+  def get_attachment!(id), do: Repo.get!(ContentAttachment, id)
 
-  def change_document(%ContentItem{id: nil} = document, attrs \\ %{}), do: ContentItem.create_changeset(document, attrs)
+  # ── Documents ────────────────────────────────────────────────────────
 
-  def change_document(%ContentItem{} = document, attrs), do: ContentItem.update_changeset(document, attrs)
+  # Function head is required because the clauses below share a default arg.
+  def change_document(document, attrs \\ %{})
+
+  def change_document(%ContentItem{id: nil} = document, attrs),
+    do: ContentItem.create_changeset(document, attrs)
+
+  def change_document(%ContentItem{} = document, attrs),
+    do: ContentItem.update_changeset(document, attrs)
 
   @doc """
   Resolves category -> default_work_flow_id -> first :document-stage step,
@@ -66,6 +73,7 @@ def get_attachment!(id), do: Repo.get!(ContentAttachment, id)
          {:ok, step} <- fetch_first_step_for_stage(work_flow_id, :document) do
       changeset
       |> Ecto.Changeset.put_change(:author_id, current_user.id)
+      # NOTE: must match the field name in ContentItem (workflow_id vs work_flow_id)
       |> Ecto.Changeset.put_change(:workflow_id, work_flow_id)
       |> Ecto.Changeset.put_change(:current_step_id, step.id)
       |> Ecto.Changeset.put_change(:status, "document")
@@ -87,7 +95,7 @@ def get_attachment!(id), do: Repo.get!(ContentAttachment, id)
          Ecto.Changeset.add_error(
            changeset,
            :category_id,
-           "workflow has no document step configured — ask an admin to fix it"
+           "workflow has no Document step configured — ask an admin to fix it"
          )}
     end
   end
@@ -136,6 +144,7 @@ def get_attachment!(id), do: Repo.get!(ContentAttachment, id)
   # ── Private ──────────────────────────────────────────────────────────
 
   defp fetch_category(nil), do: {:error, :no_category}
+
   defp fetch_category(id) do
     case Repo.get(ContentCategory, id) do
       nil -> {:error, :no_category}
@@ -143,7 +152,9 @@ def get_attachment!(id), do: Repo.get!(ContentAttachment, id)
     end
   end
 
-  defp fetch_default_work_flow(%ContentCategory{default_work_flow_id: nil}), do: {:error, :no_work_flow}
+  defp fetch_default_work_flow(%ContentCategory{default_work_flow_id: nil}),
+    do: {:error, :no_work_flow}
+
   defp fetch_default_work_flow(%ContentCategory{default_work_flow_id: id}), do: {:ok, id}
 
   defp fetch_first_step_for_stage(work_flow_id, stage) do
@@ -154,6 +165,7 @@ def get_attachment!(id), do: Repo.get!(ContentAttachment, id)
   end
 
   defp filter_by_search(query, s) when s in [nil, ""], do: query
+
   defp filter_by_search(query, s) do
     s = "%#{s}%"
     where(query, [c], ilike(c.title, ^s) or ilike(c.summary, ^s))
@@ -162,7 +174,9 @@ def get_attachment!(id), do: Repo.get!(ContentAttachment, id)
   defp filter_by_category(query, c) when c in [nil, ""], do: query
   defp filter_by_category(query, c), do: where(query, [c2], c2.category_id == ^c)
 
-  defp order_by_from_params(query, %{"order_by" => %{"sort_field" => field, "sort_direction" => dir}}) do
+  defp order_by_from_params(query, %{
+         "order_by" => %{"sort_field" => field, "sort_direction" => dir}
+       }) do
     direction = if dir == "asc", do: :asc, else: :desc
 
     case field do
@@ -177,14 +191,20 @@ def get_attachment!(id), do: Repo.get!(ContentAttachment, id)
   defp paginate(query, params) do
     page = String.to_integer(params["page"] || "1")
     page_size = String.to_integer(params["page_size"] || "10")
+    total = Repo.aggregate(query, :count, :id)
 
     %{
       entries:
-        Repo.all(query |> preload(:category) |> limit(^page_size) |> offset(^((page - 1) * page_size))),
+        Repo.all(
+          query
+          |> preload(:category)
+          |> limit(^page_size)
+          |> offset(^((page - 1) * page_size))
+        ),
       page_number: page,
       page_size: page_size,
-      total_entries: Repo.aggregate(query, :count, :id),
-      total_pages: ceil(Repo.aggregate(query, :count, :id) / page_size)
+      total_entries: total,
+      total_pages: ceil(total / page_size)
     }
   end
 end

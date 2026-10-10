@@ -2,18 +2,24 @@
 #
 #     mix run priv/repo/seeds.exs
 #
+# Or rebuild everything from scratch (drop, create, migrate, seed):
+#
+#     mix ecto.reset
+#
 # Inside the script, you can read and write to any of your
 # repositories directly:
 #
 #     Openforum.Repo.insert!(%Openforum.SomeSchema{})
 #
-# We recommend using the bang functions (`insert!`, `update!`
-# and so on) as they will fail if something goes wrong.
+
 
 alias Openforum.Repo
 alias Openforum.Accounts
 alias Openforum.Accounts.User
 alias OpenforumWeb.Schema.{Permission, Role, RolePermission, RoleAssignment}
+alias Openforum.Schema.ContentCategory
+alias Openforum.Schema.WorkFlow
+alias Openforum.Schema.WorkFlowStep
 
 import Ecto.Query
 
@@ -23,11 +29,11 @@ import Ecto.Query
 # and confirms them immediately so they can log in right away in dev.
 
 users_attrs = [
-  %{first_name: "grey", last_name: "luka", email: "dev@dev.com", password: "dev@dev.com", role: "congregation-rector"},
-  %{first_name: "green", last_name: "Mulenga", email: "green@dev.com", password: "dev@dev.com", role: "district-rector"},
-  %{first_name: "brown", last_name: "lubasi", email: "brown@dev.com", password: "dev@dev.com", role: "apostle-area"},
-  %{first_name: "White", last_name: "Kakoma", email: "white@dev.com", password: "dev@dev.com", role: "bishop"},
-  %{first_name: "Black", last_name: "Sepo", email: "black@dev.com", password: "admin@dev.com", role: "district-apostle"}
+  %{first_name: "grey", last_name: "luka", email: "dev@dev.com", password: "dev@dev.com"},
+  %{first_name: "green", last_name: "Mulenga", email: "green@dev.com", password: "dev@dev.com"},
+  %{first_name: "brown", last_name: "lubasi", email: "brown@dev.com", password: "dev@dev.com"},
+  %{first_name: "White", last_name: "Kakoma", email: "white@dev.com", password: "dev@dev.com"},
+  %{first_name: "Black", last_name: "Sepo", email: "black@dev.com", password: "admin@dev.com"}
 ]
 
 users =
@@ -70,10 +76,10 @@ permission_by_key = Map.new(permissions, &{{&1.category, &1.action}, &1})
 # ── 2. Roles ─────────────────────────────────────────────────────────
 
 roles_attrs = [
-  %{
+   %{
     name: "District Apostle",
     slug: "district-apostle",
-    description: "Final sign-off, approves stage 3 (Lead Apostle Area)",
+    description: "Final sign-off, approves stage 6 (District Apostle Area)",
     granted: [
       {"Bible Content", "View"}, {"Bible Content", "Publish"},
       {"Doctrine Articles", "View"}, {"Doctrine Articles", "Publish"},
@@ -82,9 +88,31 @@ roles_attrs = [
     ]
   },
   %{
-    name: "District Rector",
-    slug: "district-rector",
-    description: "Reviews submitted content and approves stage 1 (Congregation)",
+    name: "Lead Apostle",
+    slug: "lead-apostle",
+    description: "Final sign-off, approves stage 5 (Lead Apostle Area)",
+    granted: [
+      {"Bible Content", "View"}, {"Bible Content", "Publish"},
+      {"Doctrine Articles", "View"}, {"Doctrine Articles", "Publish"},
+      {"Catechism", "View"}, {"Catechism", "Publish"},
+      {"Approval Queue", "View"}, {"Approval Queue", "Approve"}, {"Approval Queue", "Reject"}
+    ]
+  },
+    %{
+    name: "Apostle",
+    slug: "apostle",
+    description: "Final sign-off, Performs doctrinal review, approves stage 4 (Apostle Area)",
+    granted: [
+      {"Bible Content", "View"},
+      {"Doctrine Articles", "View"}, {"Doctrine Articles", "Edit"},
+      {"Catechism", "View"},
+      {"Approval Queue", "View"}, {"Approval Queue", "Approve"}, {"Approval Queue", "Reject"}
+    ]
+  },
+    %{
+    name: "Bishop",
+    slug: "bishop",
+    description: "Final sign-off, Reviews submitted content and approves stage 3 (Apostle Area)",
     granted: [
       {"Bible Content", "View"}, {"Bible Content", "Create"}, {"Bible Content", "Edit"},
       {"Doctrine Articles", "View"}, {"Doctrine Articles", "Create"}, {"Doctrine Articles", "Edit"},
@@ -93,14 +121,25 @@ roles_attrs = [
     ]
   },
   %{
-    name: "Bishop",
-    slug: "bishop",
-    description: "Performs doctrinal review, approves stage 2 (Apostle Area)",
+    name: "District Rector",
+    slug: "district-rector",
+    description: "Reviews submitted content and approves stage 2 (District Rector area)",
     granted: [
-      {"Bible Content", "View"},
-      {"Doctrine Articles", "View"}, {"Doctrine Articles", "Edit"},
-      {"Catechism", "View"},
-      {"Approval Queue", "View"}, {"Approval Queue", "Approve"}, {"Approval Queue", "Reject"}
+      {"Bible Content", "View"}, {"Bible Content", "Create"}, {"Bible Content", "Edit"},
+      {"Doctrine Articles", "View"}, {"Doctrine Articles", "Create"}, {"Doctrine Articles", "Edit"},
+      {"Catechism", "View"}, {"Catechism", "Create"}, {"Catechism", "Edit"},
+      {"Approval Queue", "View"}
+    ]
+  },
+  %{
+    name: "Congregation Rector",
+    slug: "congregation-rector",
+    description: "submits for review 1 (Congregation)",
+    granted: [
+      {"Bible Content", "View"}, {"Bible Content", "Create"}, {"Bible Content", "Edit"},
+      {"Doctrine Articles", "View"}, {"Doctrine Articles", "Create"}, {"Doctrine Articles", "Edit"},
+      {"Catechism", "View"}, {"Catechism", "Create"}, {"Catechism", "Edit"},
+      {"Approval Queue", "View"}
     ]
   },
   %{
@@ -147,13 +186,16 @@ end
 
 # ── 4. Role assignments ──────────────────────────────────────────────
 #
-# Points at the real seeded emails (dev@dev.com / admin@dev.com), so
-# RoleAssignment rows are actually created and each user gets a role
-# they can log in and be recognised by.
+# One role per seeded user, so every login has something to test with.
 
 user_role_assignments = [
-  {"admin@dev.com", "district-apostle"},
-  {"dev@dev.com", "district-rector"}
+  {"yellow@dev.com", "congregation-rector"},
+  {"blue@dev.com", "district-rector"},
+  {"red@dev.com", "lead-apostle"},
+  {"green@dev.com", "apostle"},
+  {"brown@dev.com", "media-coordinator"},
+  {"white@dev.com", "bishop"},
+  {"black@dev.com", "district-apostle"}
 ]
 
 for {email, role_slug} <- user_role_assignments do
@@ -178,10 +220,6 @@ IO.puts("Seeded #{length(permissions)} permissions and #{length(roles)} roles.")
 # Queue", which isn't a content category — it's the review/approve
 # action space). Slugs match what Document.Index/FormComponent expect.
 
-alias Openforum.Schema.ContentCategory
-alias Openforum.Schema.WorkFlow
-alias Openforum.Schema.WorkFlowStep
-
 content_categories_attrs = [
   %{name: "Bible Content", slug: "bible-content", order_index: 1},
   %{name: "Doctrine Articles", slug: "doctrine-articles", order_index: 2},
@@ -201,9 +239,9 @@ content_categories =
   end)
 
 # Standard three-stage approval ladder, matching the roles seeded above:
-#   document    -> District Rector (creates/edits content)
-#   reviewer -> Bishop (doctrinal review)
-#   approver -> District Apostle (final sign-off)
+#   document -> congregation Rector (creates/edits content)
+#   reviewer -> District Rector (doctrinal review)
+#   approver ->  Apostle (final sign-off)
 role_by_slug = Map.new(roles, fn {role, _granted} -> {role.slug, role} end)
 
 {:ok, standard_review} =
@@ -213,7 +251,7 @@ role_by_slug = Map.new(roles, fn {role, _granted} -> {role.slug, role} end)
       |> WorkFlow.changeset(%{
         name: "Standard Review",
         status: "active",
-        description: "Document -> Bishop review -> District Apostle approval"
+        description: "Document -> District Rector review -> Apostle approval"
       })
       |> Repo.insert()
 
@@ -222,9 +260,9 @@ role_by_slug = Map.new(roles, fn {role, _granted} -> {role.slug, role} end)
   end
 
 standard_review_steps = [
-  %{name: "Document", stage_type: :document, role_slug: "district-rector", order_index: 0},
-  %{name: "Doctrinal Review", stage_type: :reviewer, role_slug: "bishop", order_index: 100_000},
-  %{name: "Final Approval", stage_type: :approver, role_slug: "district-apostle", order_index: 200_000}
+  %{name: "Document", stage_type: :document, role_slug: "congregation-rector", order_index: 0},
+  %{name: "Doctrinal Review", stage_type: :reviewer, role_slug: "district-rector", order_index: 100_000},
+  %{name: "Final Approval", stage_type: :approver, role_slug: "apostle", order_index: 200_000}
 ]
 
 for step_attrs <- standard_review_steps do
@@ -249,10 +287,85 @@ end
 # Every category defaults to Standard Review for now — split this out
 # per-category later if Media ends up wanting a lighter workflow
 # (e.g. Media Coordinator only, no Bishop/Apostle stages).
-for category <- content_categories do
-  category
-  |> ContentCategory.changeset(%{default_work_flow_id: standard_review.id})
-  |> Repo.update!()
-end
+content_categories =
+  for category <- content_categories do
+    category
+    |> ContentCategory.changeset(%{default_work_flow_id: standard_review.id})
+    |> Repo.update!()
+  end
 
 IO.puts("Seeded #{length(content_categories)} content categories and the Standard Review workflow.")
+
+# ── 6. Sample documents ──────────────────────────────────────────────
+#
+# Inserted straight into content_items so the seeds don't depend on the
+# document schema module. All start at the Document stage, authored by
+# dev@dev.com (District Rector). Re-running is safe: rows are keyed on slug.
+
+author = Repo.get_by!(User, email: "dev@dev.com")
+
+document_step =
+  Repo.get_by!(WorkFlowStep, work_flow_id: standard_review.id, stage_type: :document)
+
+categories_by_slug = Map.new(content_categories, &{&1.slug, &1})
+now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+
+sample_documents = [
+  %{
+    title: "Courtship and Marriage",
+    slug: "courtship-and-marriage",
+    category: "doctrine-articles",
+    summary: "Guidance on courtship and marriage",
+    duration_label: "10 min read",
+    body: "<p>Courtship and Marriage</p>"
+  },
+  %{
+    title: "The Lord's Prayer",
+    slug: "the-lords-prayer",
+    category: "catechism",
+    summary: "An explanation of the Lord's Prayer",
+    duration_label: "5 min read",
+    body: "<p>An explanation of the Lord's Prayer.</p>"
+  },
+  %{
+    title: "Reading the Gospel of John",
+    slug: "reading-the-gospel-of-john",
+    category: "bible-content",
+    summary: "A study guide",
+    duration_label: "15 min read",
+    body: "<p>A study guide to the Gospel of John.</p>"
+  },
+  %{
+    title: "Why do we pray?",
+    slug: "why-do-we-pray",
+    category: "qna",
+    summary: "Common questions about prayer",
+    duration_label: "3 min read",
+    body: "<p>Common questions about prayer.</p>"
+  }
+]
+
+document_rows =
+  for d <- sample_documents do
+    %{
+      title: d.title,
+      slug: d.slug,
+      summary: d.summary,
+      body: d.body,
+      duration_label: d.duration_label,
+      status: "document",
+      category_id: Map.fetch!(categories_by_slug, d.category).id,
+      workflow_id: standard_review.id,
+      current_step_id: document_step.id,
+      author_id: author.id,
+      inserted_at: now,
+      updated_at: now
+    }
+  end
+
+Repo.insert_all("content_items", document_rows,
+  on_conflict: :nothing,
+  conflict_target: [:slug]
+)
+
+IO.puts("Seeded #{length(document_rows)} sample documents.")

@@ -16,15 +16,18 @@ defmodule OpenforumWeb.Auth.Document.FormComponent do
 
   @impl true
   def update(%{document: document} = assigns, socket) do
-    changeset = Documents.change_document(document)
+    socket = assign(socket, assigns)
 
-    {:ok,
-     socket
-     |> assign(assigns)
-     |> assign(:categories, Documents.list_categories_for_select())
-     |> assign(:show_submit_note?, false)
-     |> assign(:submit_note, "")
-     |> assign_form(changeset)}
+    if socket.assigns[:form] do
+      {:ok, socket}
+    else
+      {:ok,
+      socket
+      |> assign(:categories, Documents.list_categories_for_select())
+      |> assign(:show_submit_note?, false)
+      |> assign(:submit_note, "")
+      |> assign_form(Documents.change_document(document))}
+    end
   end
 
   @impl true
@@ -77,7 +80,13 @@ defmodule OpenforumWeb.Auth.Document.FormComponent do
         |> put_flash(:info, "Document saved.")}
 
       {:error, changeset} ->
-        {:noreply, assign_form(socket, changeset)}
+  require Logger
+  Logger.error("Document save failed: #{inspect(changeset.errors)}")
+
+  {:noreply,
+   socket
+   |> put_flash(:error, "Could not save: " <> format_errors(changeset))
+   |> assign_form(changeset)}
     end
   end
 
@@ -100,7 +109,13 @@ defmodule OpenforumWeb.Auth.Document.FormComponent do
         end
 
       {:error, changeset} ->
-        {:noreply, socket |> assign(:show_submit_note?, true) |> assign_form(changeset)}
+        require Logger
+        Logger.error("Document save failed: #{inspect(changeset.errors)}")
+
+        {:noreply,
+        socket
+        |> put_flash(:error, "Could not save: " <> format_errors(changeset))
+        |> assign_form(changeset)}
     end
   end
 
@@ -127,6 +142,16 @@ defmodule OpenforumWeb.Auth.Document.FormComponent do
     Documents.get_document!(socket.assigns.current_user, document.id)
   end
 
+  defp format_errors(%Ecto.Changeset{} = cs) do
+    cs
+    |> Ecto.Changeset.traverse_errors(fn {msg, opts} ->
+      Regex.replace(~r"%{(\w+)}", msg, fn _, key ->
+        opts |> Keyword.get(String.to_existing_atom(key), key) |> to_string()
+      end)
+    end)
+    |> Enum.map_join("; ", fn {field, msgs} -> "#{field} #{inspect(msgs)}" end)
+  end
+
   defp error_to_string(other), do: "Upload error: #{inspect(other)}"
 
   defp attachments(%{content_attachments: %Ecto.Association.NotLoaded{}}), do: []
@@ -141,6 +166,7 @@ defmodule OpenforumWeb.Auth.Document.FormComponent do
   defp error_to_string(:too_large), do: "File is too large"
   defp error_to_string(:not_accepted), do: "Unacceptable file type"
   defp error_to_string(:too_many_files), do: "Only one attachment allowed"
+  defp error_to_string(other), do: "Upload error: #{inspect(other)}"
 
   @impl true
   def render(assigns) do

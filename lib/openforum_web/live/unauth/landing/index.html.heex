@@ -5,78 +5,56 @@
     mobile_menu_open={@mobile_menu_open}
   >
     <main class="bg-[#FAFAF7]">
-      <%!-- ============ SECTION 1 — HERO ============ --%>
-      <section class="relative overflow-hidden bg-[#FAFAF7]">
-        <%!-- soft decorative blue field, kept behind content --%>
-        <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-          <div class="absolute -right-24 top-10 h-[420px] w-[420px] rounded-full bg-[#EAF3F8]">
-          </div>
-          <div class="absolute right-40 top-40 h-40 w-40 rounded-full border border-[#4F7FA8]/20">
-          </div>
-        </div>
-
-        <div class="relative mx-auto grid max-w-[1280px] grid-cols-1 items-center gap-12 px-6 py-20 sm:px-8 lg:grid-cols-2 lg:gap-16 lg:py-28">
-          <div>
-            <p class="text-xs font-semibold uppercase tracking-[0.14em] text-[#1769AA]">
-              New Apostolic Church Knowledge Platform
-            </p>
-            <h1 class="mt-5 text-4xl font-semibold leading-[1.1] tracking-tight text-[#0B2E4F] sm:text-5xl lg:text-[3.25rem]">
-              Learn. Understand.<br class="hidden sm:block" /> Grow in Faith.
-            </h1>
-            <p class="mt-6 max-w-lg text-base leading-relaxed text-[#6B7280] sm:text-lg">
-              OpenForum brings together trusted biblical knowledge, New Apostolic Church
-              doctrine, Catechism, questions and answers, audio, video and other approved
-              learning resources in one accessible platform.
-            </p>
-
-            <div class="mt-9 flex flex-wrap items-center gap-4">
-              <.link
-                navigate={~p"/knowledge"}
-                class="inline-flex items-center justify-center rounded-md bg-[#1769AA] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#0B2E4F]"
-              >
-                Explore Knowledge
-              </.link>
-              <.link
-                navigate={~p"/learn"}
-                class="inline-flex items-center justify-center rounded-md border border-[#4F7FA8]/40 bg-white px-6 py-3 text-sm font-medium text-[#0B2E4F] transition-colors hover:bg-[#EAF3F8]"
-              >
-                Start Learning
-              </.link>
+     <%!-- ============ SECTION 1 — HERO ============ --%>
+        <section class="relative overflow-hidden bg-[#FAFAF7]">
+          <%!-- background photo, right side --%>
+          <div class="pointer-events-none absolute inset-0" aria-hidden="true">
+            <img
+              src={~p"/images/nac/2026.JPG"}
+              alt=""
+              class="absolute inset-y-0 right-0 h-full w-full object-cover object-center lg:w-[68%]"
+            />
+            <%!-- mobile: wash the photo out so text stays legible --%>
+            <div class="absolute inset-0 bg-[#FAFAF7]/80 lg:hidden"></div>
+            <%!-- desktop: solid on the left, fading to a clear photo on the right --%>
+            <div class="absolute inset-0 hidden bg-gradient-to-r from-[#FAFAF7] from-35% via-[#FAFAF7]/60 via-40% to-transparent lg:block">
+            </div>
+            <%!-- soft fade into the next section --%>
+            <div class="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#FAFAF7] to-transparent">
             </div>
           </div>
 
-          <%!-- right-side visual: open book / soft light composition, built from
-               layered shapes + a heroicon rather than a generic stock photo --%>
-          <div class="relative mx-auto flex h-[360px] w-full max-w-md items-center justify-center sm:h-[420px]">
-            <div class="absolute h-72 w-72 rounded-full bg-gradient-to-b from-[#EAF3F8] to-transparent sm:h-80 sm:w-80">
-            </div>
-            <div class="absolute top-6 h-40 w-px bg-gradient-to-b from-[#4F7FA8]/0 via-[#4F7FA8]/40 to-[#4F7FA8]/0">
-            </div>
+          <div class="relative mx-auto max-w-[1280px] px-6 py-24 sm:px-8 lg:py-36">
+            <div class="max-w-xl">
+              <p class="text-xs font-semibold uppercase tracking-[0.14em] text-[#1769AA]">
+                New Apostolic Church Knowledge Platform
+              </p>
+              <h1 class="mt-5 text-4xl font-semibold leading-[1.1] tracking-tight text-[#0B2E4F] sm:text-5xl lg:text-[3.25rem]">
+                Learn. Understand.<br class="hidden sm:block" /> Grow in Faith.
+              </h1>
+              <p class="mt-6 text-base leading-relaxed text-[#4B5563] sm:text-lg">
+                OpenForum brings together trusted biblical knowledge, New Apostolic Church
+                doctrine, Catechism, questions and answers, audio, video and other approved
+                learning resources in one accessible platform.
+              </p>
 
-            <div class="relative flex flex-col items-center">
-              <svg
-                viewBox="0 0 220 140"
-                class="h-auto w-64 drop-shadow-sm sm:w-72"
-                aria-hidden="true"
-              >
-                <path
-                  d="M10 30 C 60 10, 100 10, 110 28 L 110 120 C 100 104, 60 104, 10 122 Z"
-                  fill="#0B2E4F"
-                />
-                <path
-                  d="M210 30 C 160 10, 120 10, 110 28 L 110 120 C 120 104, 160 104, 210 122 Z"
-                  fill="#1769AA"
-                />
-                <line x1="110" y1="28" x2="110" y2="120" stroke="#FAFAF7" stroke-width="1.5" />
-              </svg>
-              <div class="mt-6 flex items-center gap-2 rounded-full border border-[#4F7FA8]/20 bg-white px-4 py-2 shadow-sm">
-                <.icon name="hero-sparkles" class="h-4 w-4 text-[#B8964F]" />
-                <span class="text-xs font-medium text-[#6B7280]">Guided, trusted study</span>
+              <div class="mt-9 flex flex-wrap items-center gap-4">
+                <.link
+                  navigate={~p"/knowledge"}
+                  class="inline-flex items-center justify-center rounded-md bg-[#1769AA] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#0B2E4F]"
+                >
+                  Explore Knowledge
+                </.link>
+                <.link
+                  navigate={~p"/learn"}
+                  class="inline-flex items-center justify-center rounded-md border border-[#4F7FA8]/40 bg-white px-6 py-3 text-sm font-medium text-[#0B2E4F] transition-colors hover:bg-[#EAF3F8]"
+                >
+                  Start Learning
+                </.link>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
       <%!-- ============ SECTION 2 — EXPLORE KNOWLEDGE ============ --%>
       <section class="mx-auto max-w-[1280px] px-6 py-20 sm:px-8">

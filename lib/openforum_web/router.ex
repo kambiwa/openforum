@@ -66,6 +66,7 @@ defmodule OpenforumWeb.Router do
 
       live "/documents", Document.Index, :index
 
+
       live "/work_flows/:work_flow_id/steps", WorkFlowStepLive.Index, :index
       live "/work_flows/:work_flow_id/steps/new", WorkFlowStepLive.Index, :new
       live "/work_flows/:work_flow_id/steps/:id/edit", WorkFlowStepLive.Index, :edit
@@ -74,6 +75,9 @@ defmodule OpenforumWeb.Router do
       live "/users/settings", UserLive.Settings, :edit
       live "/users/settings/confirm-email/:token", UserLive.Settings, :confirm_email
     end
+
+    get "/documents/:id/preview", DocumentPreviewController, :show
+
 
     post "/users/update-password", UserSessionController, :update_password
   end

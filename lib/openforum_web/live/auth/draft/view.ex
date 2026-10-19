@@ -3,10 +3,10 @@ defmodule OpenforumWeb.Auth.Document.View do
   Read-only view of a single document, rendered inside the modal in
   `OpenforumWeb.Auth.Document.Index` when `live_action == :view`.
 
-  The document is shown as a letter on a page: logo letterhead top right,
-  large title, justified body, and a small footer (title, date, language).
-  Above the page sits a status banner that tells the current user what
-  action (if any) is pending on this document.
+  The document itself is shown as a PDF preview in an iframe, served by
+  `OpenforumWeb.DocumentPreviewController`. Above the preview sits a status
+  banner that tells the current user what action (if any) is pending on
+  this document.
 
   Required assigns: `:document` and `:current_user`.
 
@@ -15,14 +15,9 @@ defmodule OpenforumWeb.Auth.Document.View do
   """
   use OpenforumWeb, :live_component
 
-  @logo_alt "New Apostolic Church Zambia"
-
   @impl true
   def render(assigns) do
-    assigns =
-      assigns
-      |> assign(:logo_alt, @logo_alt)
-      |> assign(:pending, pending_action(assigns.document, assigns[:current_user]))
+    assigns = assign(assigns, :pending, pending_action(assigns.document, assigns[:current_user]))
 
     ~H"""
     <div id={"document-view-#{@document.id}"} class="flex flex-col gap-4">
@@ -56,45 +51,26 @@ defmodule OpenforumWeb.Auth.Document.View do
         </span>
       </div>
 
-      <%!-- The page --%>
-      <div class="max-h-[60vh] overflow-y-auto rounded-lg border border-[#E5E7EB] bg-[#F3F4F6] p-4">
-        <article class="mx-auto flex min-h-[40rem] max-w-[40rem] flex-col bg-white px-10 py-8 shadow-sm">
-          <%!-- Letterhead --%>
-          <header class="flex justify-end border-b border-[#E5E7EB] pb-4">
-            <img
-              src={~p"/images/nac/logo.jpg"}
-              alt={@logo_alt}
-              class="h-14 w-auto object-contain"
-            />
-          </header>
-           <%!-- <p class="text-lg font-bold color-[#0B2E4F]">New Apostolic Church Zambia</p> --%>
-          <%!-- Title --%>
-          <h2 class="mt-10 text-[1.5rem] font-medium text-[#252525]">{@document.title}</h2>
-
-          <p :if={@document.summary} class="mt-2 text-[0.8rem] italic text-[#6B7280]">
-            {@document.summary}
-          </p>
-
-          <%!-- Body --%>
-          <div class={[
-            "mt-8 flex-1 break-words text-justify text-[0.8rem] leading-relaxed text-[#252525]",
-            "[&_p]:mb-4 [&_strong]:font-bold [&_b]:font-bold [&_em]:italic",
-            "[&_h1]:mb-2 [&_h1]:text-base [&_h1]:font-bold [&_h2]:mb-2 [&_h2]:font-semibold",
-            "[&_ul]:mb-4 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:mb-4 [&_ol]:list-decimal [&_ol]:pl-6",
-            "[&_pre]:mb-4 [&_pre]:overflow-x-auto [&_pre]:whitespace-pre [&_pre]:rounded [&_pre]:bg-[#F3F4F6] [&_pre]:p-3 [&_pre]:text-xs",
-            "[&_img]:inline-block [&_img]:max-h-24 [&_a]:text-[#1769AA] [&_a]:underline"
-          ]}>
-            {safe_body(@document.body)}
-          </div>
-
-          <%!-- Footer: title, date, language --%>
-          <footer class="mt-10 border-t border-[#E5E7EB] pt-3 text-[0.6rem] leading-snug text-[#6B7280]">
-            <p class="font-semibold text-[#252525]">{@document.title}</p>
-            <p>{format_date(@document.updated_at)}</p>
-            <p>{language_label(@document)}</p>
-          </footer>
-        </article>
+      <%!-- PDF preview: no download param, so it renders inline --%>
+      <div class="overflow-hidden rounded-lg border border-[#E5E7EB] bg-[#F3F4F6]">
+        <iframe
+          id={"document-pdf-#{@document.id}"}
+          src={~p"/admin/documents/#{@document.id}/preview?v=#{version(@document)}"}
+          title={"Preview of #{@document.title}"}
+          class="h-[65vh] w-full"
+        >
+        </iframe>
       </div>
+
+      <p class="text-xs text-[#6B7280]">
+        PDF not showing?
+        <a
+          href={~p"/admin/documents/#{@document.id}/preview?download=1"}
+          class="text-[#1769AA] underline"
+        >
+          Download it
+        </a>
+      </p>
 
       <div class="flex items-center justify-end gap-3 border-t border-[#E5E7EB] pt-4">
         <button
@@ -214,28 +190,18 @@ defmodule OpenforumWeb.Auth.Document.View do
   defp author_name(%{author: %{first_name: f, last_name: l}}), do: "#{f} #{l}"
   defp author_name(_), do: "—"
 
-  # "6 October 2019"
-  defp format_date(nil), do: ""
-  defp format_date(dt), do: "#{dt.day} #{Calendar.strftime(dt, "%B %Y")}"
-
-  # Uses a :language field if the schema has one, otherwise defaults to English.
-  defp language_label(doc) do
-    case Map.get(doc, :language) do
-      lang when is_binary(lang) and lang != "" -> lang
-      _ -> "English"
-    end
-  end
-
   # "in_review" -> "In review"
   defp status_label(nil), do: "Unknown"
 
   defp status_label(status),
     do: status |> to_string() |> String.replace("_", " ") |> String.capitalize()
 
-  # NOTE: `raw/1` renders the stored HTML as-is. That's only safe if the body
-  # is sanitised on save (e.g. with HtmlSanitizeEx) or all authors are trusted.
-  # If you add HtmlSanitizeEx, change this to:
-  #   body |> HtmlSanitizeEx.basic_html() |> raw()
-  defp safe_body(nil), do: ""
-  defp safe_body(body), do: raw(body)
+  # Cache-buster for the PDF iframe: changes whenever the document is updated,
+  # so the browser re-fetches the preview after an edit.
+  defp version(%{updated_at: %DateTime{} = dt}), do: DateTime.to_unix(dt)
+
+  defp version(%{updated_at: %NaiveDateTime{} = dt}),
+    do: dt |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix()
+
+  defp version(_), do: 0
 end

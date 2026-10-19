@@ -12,6 +12,7 @@ defmodule Openforum.Application do
       Openforum.Repo,
       {DNSCluster, query: Application.get_env(:openforum, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Openforum.PubSub},
+      {ChromicPDF, on_demand: true},
       # Start a worker by calling: Openforum.Worker.start_link(arg)
       # {Openforum.Worker, arg},
       # Start to serve requests, typically the last entry

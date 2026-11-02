@@ -9,7 +9,6 @@ defmodule OpenforumWeb.Auth.Document.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    IO.inspect(socket.assigns.current_scope, label: "=========Current Scope in Document Index")
     socket =
       socket
       |> assign(:page_title, "My Documents")
@@ -100,6 +99,7 @@ defmodule OpenforumWeb.Auth.Document.Index do
   end
 
   def handle_event("view", %{"id" => id}, socket) do
+    IO.inspect(socket, label: "=======view")
     {:noreply,
      socket
      |> assign(:page_title, "View Document")

@@ -138,7 +138,7 @@ defmodule OpenforumWeb.Auth.AreaLeadLive.Index do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.admin_app flash={@flash} current_scope={@current_scope} current_page={:users}>
+    <Layouts.admin_app flash={@flash} current_scope={@current_scope} current_page={:area_leads}>
       <div class="flex flex-col gap-6 p-6">
         <%!-- ══ PAGE HEADER ══ --%>
         <div class="flex items-center justify-between">

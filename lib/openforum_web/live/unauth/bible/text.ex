@@ -5,6 +5,9 @@ defmodule Openforum.Bible.Text do
   File format (one file per book, verses as an ordered list per chapter):
 
       {"1": ["In the beginning...", "And the earth..."], "2": [...]}
+
+  On first read, a book is reshaped into `%{chapter_number => [%{number:, text:}]}`
+  and cached in `:persistent_term`, so later requests are a plain map lookup.
   """
 
   @translations [
@@ -21,11 +24,8 @@ defmodule Openforum.Bible.Text do
   @doc "Translation must be validated by the caller against `translation_ids/0`."
   def chapter(translation, slug, number) when translation in ["kjv", "web"] do
     with {:ok, book} <- load(translation, slug),
-         verses when is_list(verses) <- Map.get(book, Integer.to_string(number)) do
-      {:ok,
-       verses
-       |> Enum.with_index(1)
-       |> Enum.map(fn {text, n} -> %{number: n, text: text} end)}
+         verses when is_list(verses) <- Map.get(book, number) do
+      {:ok, verses}
     else
       _ -> :error
     end
@@ -35,19 +35,30 @@ defmodule Openforum.Bible.Text do
     key = {__MODULE__, translation, slug}
 
     case :persistent_term.get(key, nil) do
-      nil ->
-        path = Application.app_dir(:openforum, ["priv", "bible", translation, "#{slug}.json"])
+      nil -> read(key, translation, slug)
+      book -> {:ok, book}
+    end
+  end
 
-        with {:ok, bin} <- File.read(path),
-             {:ok, map} <- Jason.decode(bin) do
-          :persistent_term.put(key, map)
-          {:ok, map}
-        else
-          _ -> :error
-        end
+  defp read(key, translation, slug) do
+    path = Application.app_dir(:openforum, ["priv", "bible", translation, "#{slug}.json"])
 
-      map ->
-        {:ok, map}
+    with {:ok, bin} <- File.read(path),
+         {:ok, raw} <- Jason.decode(bin) do
+      book =
+        Map.new(raw, fn {ch, verses} ->
+          {String.to_integer(ch),
+           verses
+           |> Enum.with_index(1)
+           |> Enum.map(fn {text, n} -> %{number: n, text: text} end)}
+        end)
+
+      # Re-check so two racing first loads don't both `put`
+      # (replacing a persistent_term triggers a global GC pass).
+      if :persistent_term.get(key, nil) == nil, do: :persistent_term.put(key, book)
+      {:ok, book}
+    else
+      _ -> :error
     end
   end
 end

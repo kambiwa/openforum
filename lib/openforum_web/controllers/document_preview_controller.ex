@@ -1,15 +1,70 @@
 defmodule OpenforumWeb.Auth.DocumentPreviewController do
   use OpenforumWeb, :controller
 
+  require Logger
+
   alias Openforum.Context.Documents
 
-  @logo_path "priv/static/images/nac/logo.jpg"
+  # Bump this whenever the HTML, CSS or footer below changes, so cached PDFs rebuild.
+  @template_version 1
+
+  # Read and encoded once at compile time instead of on every request.
+  @logo_path Path.expand("../../../priv/static/images/nac/logo.jpg", __DIR__)
+  @external_resource @logo_path
+  @logo_data_uri "data:image/jpeg;base64," <> Base.encode64(File.read!(@logo_path))
 
   def show(conn, %{"id" => id}) do
+
     user = conn.assigns.current_scope.user
     document = Documents.get_document!(user, id)
+    etag = etag(document)
 
-    {:ok, pdf_base64} =
+    if etag in get_req_header(conn, "if-none-match") do
+      conn
+      |> put_resp_header("etag", etag)
+      |> put_resp_header("cache-control", "private, no-cache")
+      |> send_resp(304, "")
+    else
+      case fetch_pdf(document) do
+        {:ok, pdf} ->
+          send_pdf(conn, document, pdf, etag)
+
+        {:error, reason} ->
+          Logger.error("PDF generation failed for document #{document.id}: #{inspect(reason)}")
+          send_resp(conn, 500, "The PDF could not be generated. Please try again.")
+      end
+    end
+  end
+
+  defp send_pdf(conn, document, pdf, etag) do
+    disposition = if conn.params["download"], do: "attachment", else: "inline"
+
+    conn
+    |> put_resp_content_type("application/pdf")
+    |> put_resp_header(
+      "content-disposition",
+      ~s(#{disposition}; filename="#{slug(document.title)}.pdf")
+    )
+    # no-cache means "revalidate every time": the browser asks, we answer 304
+    # cheaply (no Chrome involved) when nothing changed.
+    |> put_resp_header("cache-control", "private, no-cache")
+    |> put_resp_header("etag", etag)
+    |> send_resp(200, pdf)
+  end
+
+  # ── PDF cache (one file per document + version, on disk) ────────────
+
+  defp fetch_pdf(document) do
+    path = cache_path(document)
+
+    case File.read(path) do
+      {:ok, pdf} -> {:ok, pdf}
+      {:error, _} -> render_pdf(document, path)
+    end
+  end
+
+  defp render_pdf(document, path) do
+    result =
       ChromicPDF.print_to_pdf({:html, html(document)},
         print_to_pdf: %{
           displayHeaderFooter: true,
@@ -24,16 +79,52 @@ defmodule OpenforumWeb.Auth.DocumentPreviewController do
         }
       )
 
-    disposition = if conn.params["download"], do: "attachment", else: "inline"
+    case result do
+      {:ok, base64} ->
+        pdf = Base.decode64!(base64)
+        store(document, path, pdf)
+        {:ok, pdf}
 
-    conn
-    |> put_resp_content_type("application/pdf")
-    |> put_resp_header(
-      "content-disposition",
-      ~s(#{disposition}; filename="#{slug(document.title)}.pdf")
-    )
-    |> send_resp(200, Base.decode64!(pdf_base64))
+      other ->
+        {:error, other}
+    end
   end
+
+  # A cache failure must never break the preview, so every step is non-bang.
+  defp store(document, path, pdf) do
+    dir = Path.dirname(path)
+    tmp = path <> "." <> Integer.to_string(System.unique_integer([:positive])) <> ".tmp"
+
+    with :ok <- File.mkdir_p(dir),
+         :ok <- File.write(tmp, pdf),
+         :ok <- File.rename(tmp, path) do
+      # Drop older versions of this document.
+      for old <- Path.wildcard(Path.join(dir, "#{document.id}-*.pdf")), old != path do
+        File.rm(old)
+      end
+
+      :ok
+    else
+      _ ->
+        File.rm(tmp)
+        :ok
+    end
+  end
+
+  defp cache_path(document) do
+    Path.join([System.tmp_dir!(), "openforum_pdf_cache", cache_name(document)])
+  end
+
+  defp cache_name(document), do: "#{document.id}-#{version(document)}-v#{@template_version}.pdf"
+
+  defp etag(document), do: ~s("#{cache_name(document)}")
+
+  defp version(%{updated_at: %DateTime{} = dt}), do: DateTime.to_unix(dt, :microsecond)
+
+  defp version(%{updated_at: %NaiveDateTime{} = dt}),
+    do: dt |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix(:microsecond)
+
+  defp version(_), do: 0
 
   # ── HTML (standalone: Tailwind classes are NOT available here) ──────
 
@@ -56,7 +147,7 @@ defmodule OpenforumWeb.Auth.DocumentPreviewController do
       .body a { color: #1769AA; }
     </style></head>
     <body>
-      <header><img src="#{logo_data_uri()}" alt="New Apostolic Church Zambia"></header>
+      <header><img src="#{@logo_data_uri}" alt="New Apostolic Church Zambia"></header>
       <h1 class="title">#{esc(doc.title)}</h1>
       #{if doc.summary, do: ~s(<p class="summary">#{esc(doc.summary)}</p>), else: ""}
       <div class="body">#{HtmlSanitizeEx.basic_html(doc.body || "")}</div>
@@ -74,11 +165,6 @@ defmodule OpenforumWeb.Auth.DocumentPreviewController do
       </div>
     </div>
     """
-  end
-
-  defp logo_data_uri do
-    path = Application.app_dir(:openforum, @logo_path |> String.replace_prefix("priv/", "priv/"))
-    "data:image/jpeg;base64," <> Base.encode64(File.read!(path))
   end
 
   defp esc(nil), do: ""

@@ -7,11 +7,22 @@
     <main class="bg-[#FAFAF7]">
       <%!-- ============ HEADER ============ --%>
       <section class="relative overflow-hidden bg-[#FAFAF7]">
-        <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-          <div class="absolute -right-24 top-0 h-[340px] w-[340px] rounded-full bg-[#EAF3F8]"></div>
-          <div class="absolute right-40 top-32 h-32 w-32 rounded-full border border-[#4F7FA8]/20">
+        <%!-- background photo, right side --%>
+          <div class="pointer-events-none absolute inset-0" aria-hidden="true">
+            <img
+              src={~p"/images/nac/bible.jpg"}
+              alt=""
+              class="absolute inset-y-0 right-0 h-full w-full object-cover object-center lg:w-[80%]"
+            />
+            <%!-- mobile: wash the photo out so text stays legible --%>
+            <div class="absolute inset-0 bg-[#FAFAF7]/80 lg:hidden"></div>
+            <%!-- desktop: solid on the left, fading to a clear photo on the right --%>
+            <div class="absolute inset-0 hidden bg-gradient-to-r from-[#FAFAF7] from-15% via-[#FAFAF7]/60 via-40% to-transparent lg:block">
+            </div>
+            <%!-- soft fade into the next section --%>
+            <div class="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#FAFAF7] to-transparent">
+            </div>
           </div>
-        </div>
 
         <div class="relative mx-auto max-w-[1280px] px-6 py-16 sm:px-8 lg:py-20">
           <p class="text-xs font-semibold uppercase tracking-[0.14em] text-[#1769AA]">

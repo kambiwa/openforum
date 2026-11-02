@@ -12,7 +12,12 @@ defmodule Openforum.Application do
       Openforum.Repo,
       {DNSCluster, query: Application.get_env(:openforum, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Openforum.PubSub},
-      {ChromicPDF, on_demand: true},
+      # {ChromicPDF, on_demand: true},
+      # {ChromicPDF, on_demand: true, discard_stderr: false},
+      {ChromicPDF,
+        on_demand: true,
+        discard_stderr: false,
+        chrome_executable: "C:/Tools/chrome-win64/Chrome.exe"},
       # Start a worker by calling: Openforum.Worker.start_link(arg)
       # {Openforum.Worker, arg},
       # Start to serve requests, typically the last entry

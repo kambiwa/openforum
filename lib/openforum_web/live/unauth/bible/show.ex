@@ -1,10 +1,7 @@
 defmodule OpenforumWeb.Unauth.Bible.Show do
   use OpenforumWeb, :live_view
 
-  # alias Openforum.Bible.{Books, Text}
-  alias Openforum.Bible.Books
-  alias Openforum.Bible.Text
-
+  alias Openforum.Bible.{Books, Text}
 
   @impl true
   def mount(_params, _session, socket) do
@@ -16,12 +13,13 @@ defmodule OpenforumWeb.Unauth.Bible.Show do
 
   @impl true
   def handle_params(%{"book" => slug, "chapter" => chapter} = params, _uri, socket) do
-    translation_id = if params["t"] in Text.translation_ids(), do: params["t"], else: Text.default()
+    translation_id =
+      if params["t"] in Text.translation_ids(), do: params["t"], else: Text.default()
 
     with %{} = book <- Books.get(slug),
          {number, ""} <- Integer.parse(chapter),
          true <- number >= 1 and number <= book.chapters do
-      {prev, next} = Books.adjacent(slug)
+      {prev, next} = Books.adjacent(slug, number)
 
       verses =
         case Text.chapter(translation_id, slug, number) do
@@ -52,5 +50,6 @@ defmodule OpenforumWeb.Unauth.Bible.Show do
     {:noreply, assign(socket, :mobile_menu_open, !socket.assigns.mobile_menu_open)}
   end
 
+  # Used by the template for the prev/next button labels.
   defp book_of(slug), do: Books.get(slug)
 end

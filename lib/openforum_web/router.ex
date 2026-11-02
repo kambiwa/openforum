@@ -65,7 +65,7 @@ defmodule OpenforumWeb.Router do
 
 
       live "/documents", Document.Index, :index
-
+      live "/content", AllDocument.Index, :index
 
       live "/work_flows/:work_flow_id/steps", WorkFlowStepLive.Index, :index
       live "/work_flows/:work_flow_id/steps/new", WorkFlowStepLive.Index, :new

@@ -2,7 +2,7 @@ defmodule Openforum.Bible.Books do
   @moduledoc "Static list of the 66 canonical books. Swap for a DB query later."
 
   # {name, testament, category, chapters}
-  @books [
+  @raw [
     # Old Testament
     {"Genesis", :old, "Law", 50},
     {"Exodus", :old, "Law", 40},
@@ -74,20 +74,26 @@ defmodule Openforum.Bible.Books do
     {"Revelation", :new, "Prophecy", 22}
   ]
 
-  def all do
-    @books
-    |> Enum.with_index(1)
-    |> Enum.map(fn {{name, testament, category, chapters}, order} ->
-      %{
-        order: order,
-        name: name,
-        slug: name |> String.downcase() |> String.replace(" ", "-"),
-        testament: testament,
-        category: category,
-        chapters: chapters
-      }
-    end)
-  end
+  # Built once at compile time, so lookups never rebuild the list.
+  @list @raw
+        |> Enum.with_index(1)
+        |> Enum.map(fn {{name, testament, category, chapters}, order} ->
+          %{
+            order: order,
+            name: name,
+            slug: name |> String.downcase() |> String.replace(" ", "-"),
+            testament: testament,
+            category: category,
+            chapters: chapters
+          }
+        end)
+
+  @by_slug Map.new(@list, &{&1.slug, &1})
+  @by_order Map.new(@list, &{&1.order, &1})
+
+  def all, do: @list
+
+  def get(slug), do: Map.get(@by_slug, slug)
 
   @doc "Groups an ordered book list into consecutive category groups."
   def group_by_category(books) do
@@ -98,26 +104,26 @@ defmodule Openforum.Bible.Books do
     end)
   end
 
-  def get(slug) do
-    Enum.find(all(), &(&1.slug == slug))
-  end
+  @doc """
+  Chapter-aware neighbours as `{slug, chapter}` tuples (or `nil` at the ends).
 
-  def adjacent(slug) do
-    books = all()
-    index = Enum.find_index(books, &(&1.slug == slug))
+  The slug must already be validated with `get/1`.
+  """
+  def adjacent(slug, chapter) do
+    %{order: order, chapters: total} = Map.fetch!(@by_slug, slug)
 
     prev =
-      if index > 0 do
-        Enum.at(books, index - 1)
-      else
-        nil
+      cond do
+        chapter > 1 -> {slug, chapter - 1}
+        b = Map.get(@by_order, order - 1) -> {b.slug, b.chapters}
+        true -> nil
       end
 
     next =
-      if index < length(books) - 1 do
-        Enum.at(books, index + 1)
-      else
-        nil
+      cond do
+        chapter < total -> {slug, chapter + 1}
+        b = Map.get(@by_order, order + 1) -> {b.slug, 1}
+        true -> nil
       end
 
     {prev, next}

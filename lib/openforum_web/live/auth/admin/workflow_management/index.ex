@@ -179,7 +179,6 @@ defmodule OpenforumWeb.Auth.WorkFlowLive.Index do
   end
 
   def handle_event("add_step", _params, socket) do
-    IO.inspect(socket, label: "============0909")
     {:noreply, assign(socket, :step, %WorkFlowStep{})}
   end
 

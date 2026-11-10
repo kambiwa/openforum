@@ -62,7 +62,7 @@ defmodule OpenforumWeb.Router do
       live "/district_apostle_areas", DistrictAreaLive.Index, :index
 
 
-
+      live "/approval-queue", ApprovalQueue.Index, :index
 
       live "/documents", Document.Index, :index
       live "/content", AllDocument.Index, :index

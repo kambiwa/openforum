@@ -41,6 +41,7 @@ defmodule OpenforumWeb.Auth.Document.FormComponent do
   end
 
   def handle_event("save", %{"content_item" => params} = full, socket) do
+    IO.inspect(socket, label: "==========7077")
     case Map.get(full, "form_action", "save") do
       "submit_for_review" -> do_submit_for_review(socket, params, full["note"])
       _ -> do_save(socket, params)

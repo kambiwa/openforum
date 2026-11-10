@@ -2,7 +2,7 @@ defmodule Openforum.Schema.ContentItem do
   use Ecto.Schema
   import Ecto.Changeset
 
-  @statuses ~w(document in_review approved published rejected)
+  @statuses ~w(document pending_review approved published rejected)
 
   schema "content_items" do
     field :title, :string

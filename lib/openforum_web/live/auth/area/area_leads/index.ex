@@ -272,7 +272,7 @@ defmodule OpenforumWeb.Auth.AreaLeadLive.Index do
           on_cancel={JS.push("close")}
         >
           <.live_component
-              module={OpenforumWeb.Auth.AreaLeads.FormComponent}
+              module={OpenforumWeb.Auth.AreaLead.FormComponent}
               id={@area_lead.id || :new}
               title={@page_title}
               action={@live_action}

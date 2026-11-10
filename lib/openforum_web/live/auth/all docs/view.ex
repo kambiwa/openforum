@@ -108,7 +108,7 @@ defmodule OpenforumWeb.Auth.AllDocument.View do
     end
   end
 
-  defp pending_action(%{status: "in_review"} = doc, user) do
+  defp pending_action(%{status: "pending_review"} = doc, user) do
     cond do
       reviewer?(user) and not author?(doc, user) ->
         action(
@@ -190,7 +190,7 @@ defmodule OpenforumWeb.Auth.AllDocument.View do
   defp author_name(%{author: %{first_name: f, last_name: l}}), do: "#{f} #{l}"
   defp author_name(_), do: "—"
 
-  # "in_review" -> "In review"
+  # "pending_review" -> "In review"
   defp status_label(nil), do: "Unknown"
 
   defp status_label(status),

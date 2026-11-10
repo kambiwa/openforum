@@ -88,7 +88,7 @@ defmodule OpenforumWeb.Auth.Document.Index do
      |> assign(:page_title, "New Document")
      |> assign(:document, %ContentItem{})
      |> assign(:live_action, :new)}
-  end 
+  end
 
   def handle_event("edit", %{"id" => id}, socket) do
     {:noreply,
@@ -99,7 +99,6 @@ defmodule OpenforumWeb.Auth.Document.Index do
   end
 
   def handle_event("view", %{"id" => id}, socket) do
-    IO.inspect(socket, label: "=======view")
     {:noreply,
      socket
      |> assign(:page_title, "View Document")
@@ -140,7 +139,6 @@ defmodule OpenforumWeb.Auth.Document.Index do
 
   defp fetch_filtered_documents(socket) do
     filters = %{search_filter: socket.assigns.search_filter, category_filter: socket.assigns.category_filter}
-
     data =
       Documents.list_documents(
         current_user(socket),

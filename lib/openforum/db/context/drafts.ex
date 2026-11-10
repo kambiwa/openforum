@@ -108,7 +108,7 @@ defmodule Openforum.Context.Documents do
 
   @doc """
   Logs the submit action, advances current_step_id to the first
-  :reviewer step, flips status to "in_review". A note is required
+  :reviewer step, flips status to "pending_review". A note is required
   (work_flow_step_actions.comments is NOT NULL).
   """
   def submit_document(%ContentItem{} = document, note, current_user) do
@@ -130,7 +130,7 @@ defmodule Openforum.Context.Documents do
 
         {:ok, updated} =
           document
-          |> Ecto.Changeset.change(%{current_step_id: reviewer_step.id, status: "in_review"})
+          |> Ecto.Changeset.change(%{current_step_id: reviewer_step.id, status: "pending_review"})
           |> Repo.update()
 
         updated

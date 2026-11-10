@@ -67,6 +67,8 @@ config :openforum, OpenforumWeb.Endpoint,
     ]
   ]
 
+config :openforum, chrome_no_sandbox: true
+
 # Enable dev routes for dashboard and mailbox
 config :openforum, dev_routes: true
 

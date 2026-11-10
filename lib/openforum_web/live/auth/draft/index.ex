@@ -88,7 +88,7 @@ defmodule OpenforumWeb.Auth.Document.Index do
      |> assign(:page_title, "New Document")
      |> assign(:document, %ContentItem{})
      |> assign(:live_action, :new)}
-  end
+  end 
 
   def handle_event("edit", %{"id" => id}, socket) do
     {:noreply,

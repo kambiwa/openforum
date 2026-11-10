@@ -15,6 +15,8 @@ defmodule OpenforumWeb.Auth.DocumentPreviewController do
 
   def show(conn, %{"id" => id}) do
 
+    IO.inspect(conn, label: "=======Current Scope")
+
     user = conn.assigns.current_scope.user
     document = Documents.get_document!(user, id)
     etag = etag(document)

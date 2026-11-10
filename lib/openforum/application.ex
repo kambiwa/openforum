@@ -6,32 +6,31 @@ defmodule Openforum.Application do
   use Application
 
   @impl true
-  def start(_type, _args) do
-    children = [
-      OpenforumWeb.Telemetry,
-      Openforum.Repo,
-      {DNSCluster, query: Application.get_env(:openforum, :dns_cluster_query) || :ignore},
-      {Phoenix.PubSub, name: Openforum.PubSub},
-      # {ChromicPDF, on_demand: true},
-      # {ChromicPDF, on_demand: true, discard_stderr: false},
-      {ChromicPDF,
-        on_demand: true,
-        discard_stderr: false,
-        chrome_executable: "C:/Tools/chrome-win64/Chrome.exe"},
-      # Start a worker by calling: Openforum.Worker.start_link(arg)
-      # {Openforum.Worker, arg},
-      # Start to serve requests, typically the last entry
-      OpenforumWeb.Endpoint
-    ]
+    def start(_type, _args) do
+      children = [
+        OpenforumWeb.Telemetry,
+        Openforum.Repo,
+        {DNSCluster, query: Application.get_env(:openforum, :dns_cluster_query) || :ignore},
+        {Phoenix.PubSub, name: Openforum.PubSub},
+        {ChromicPDF, chromic_pdf_opts()},
+        OpenforumWeb.Endpoint
+      ]
 
-    # See https://elixir.hexdocs.pm/Supervisor.html
-    # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: Openforum.Supervisor]
-    Supervisor.start_link(children, opts)
-  end
+          opts = [strategy: :one_for_one, name: Openforum.Supervisor]
+      Supervisor.start_link(children, opts)
+    end
 
-  # Tell Phoenix to update the endpoint configuration
-  # whenever the application is updated.
+
+    defp chromic_pdf_opts do
+      base = [on_demand: true, no_sandbox: Application.get_env(:openforum, :chrome_no_sandbox, false)]
+
+      case System.get_env("CHROME_PATH") do
+        nil -> base
+        path -> Keyword.put(base, :chrome_executable, path)
+      end
+    end
+
+
   @impl true
   def config_change(changed, _new, removed) do
     OpenforumWeb.Endpoint.config_change(changed, removed)

@@ -203,6 +203,12 @@ defmodule OpenforumWeb.Auth.Users.Index do
             <:col :let={user} label="Email">
               <span class="text-[#6B7280]">{user.email}</span>
             </:col>
+            <:col :let={user} label="Role">
+              <span :if={user.roles == []} class="text-[#9CA3AF]">No role assigned</span>
+              <span :if={user.roles != []} class="text-[#6B7280]">
+                {Enum.map_join(user.roles, ", ", & &1.name)}
+              </span>
+            </:col>
 
             <:action :let={user}>
               <button

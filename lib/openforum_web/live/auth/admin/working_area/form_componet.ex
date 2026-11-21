@@ -27,18 +27,20 @@ defmodule OpenforumWeb.Auth.WorkingAreas.FormComponent do
         phx-submit="save"
         class="mt-5 space-y-5"
       >
-
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <.input field={@form[:name]} type="text" label="Name" />
+          <.input field={@form[:order_index]} type="number" min="0" label="Display order" />
         </div>
 
         <.input field={@form[:description]} type="text" label="Description" />
         <.input
-          field={@form[:area_lead_id]}
+          field={@form[:parent_id]}
           type="select"
-          label="Area Lead"
-          options={@area_leads |> Enum.map(&{&1.name, &1.id})}
+          label="Parent working area"
+          prompt="No parent (root area)"
+          options={Enum.map(@parent_options, &{&1.name, &1.id})}
         />
+        <.input field={@form[:is_active]} type="checkbox" label="Active" />
 
         <div class="flex justify-end gap-2 border-t border-[#E5E7EB] pt-5">
           <.button

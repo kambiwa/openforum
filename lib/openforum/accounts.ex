@@ -16,6 +16,7 @@ defmodule Openforum.Accounts do
     status = filters[:status_filter] || filters["status_filter"] || ""
 
     User
+    |> preload(:roles)
     |> apply_search(search)
     |> apply_status(status)
     |> apply_order(order_by)
@@ -42,9 +43,7 @@ defmodule Openforum.Accounts do
   ## REGISTRATION
   ## ======================
 
-
   def register_user(attrs) do
-
     %User{}
     |> User.registration_changeset(attrs)
     |> Repo.insert()

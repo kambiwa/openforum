@@ -1,0 +1,65 @@
+<div class="openforum-learn">
+  <Layouts.unauth_app
+    flash={@flash}
+    current_scope={@current_scope}
+    mobile_menu_open={@mobile_menu_open}
+  >
+    <div class="flex flex-col gap-6 p-6">
+      <div class="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 class="text-[1.25rem] font-bold text-[#0B2E4F]">Publications</h1>
+          <p class="mt-0.5 text-[0.82rem] text-[#6B7280]">
+            Explore our collection of publications and resources.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div
+          :for={category <- @categories}
+          class={[
+            "rounded-xl border border-[#E5E7EB] bg-white p-5 transition hover:shadow-sm",
+            if(@active_category == category.name, do: "border-[#1769AA]", else: "")
+          ]}
+          phx-click={JS.push("select_category", value: %{category: category.name})}
+        >
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-[0.72rem] font-medium uppercase tracking-wide text-[#6B7280]">
+                {category.label}
+              </p>
+              <p class="mt-2 text-[1.9rem] font-bold leading-none text-[#0B2E4F]">{category.count}</p>
+            </div>
+            <span
+              class={[
+                "flex size-10 items-center justify-center rounded-lg",
+                if(@active_category == category.name, do: "bg-[#1769AA]", else: "bg-[#EAF3F8]")
+              ]}
+            >
+              <.icon name={category.icon} class="size-5" />
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div
+          :for={path <- @learning_paths}
+          class="overflow-hidden rounded-xl border border-[#E5E7EB] bg-white transition hover:shadow-sm"
+        >
+          <.link navigate={~p"/publications/#{path.slug}"}>
+            <img
+              src={path.image_url}
+              alt={path.title}
+              class="h-[150px] w-full object-cover"
+            />
+            <div class="p-5">
+              <h3 class="text-sm font-semibold text-[#0B2E4F]">{path.title}</h3>
+              <p class="mt-1 text-[0.75rem] text-[#6B7280]">{path.description}</p>
+            </div>
+          </.link>
+        </div>
+      </div>
+    </div>
+  </Layouts.unauth_app>
+</div>

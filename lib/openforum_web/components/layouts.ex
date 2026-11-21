@@ -49,6 +49,14 @@ defmodule OpenforumWeb.Layouts do
             </li>
 
             <li>
+              <.nav_link
+                href={~p"/publications"}
+                label="Publications"
+                active={@current_page == :publications}
+              />
+            </li>
+
+            <li>
               <.nav_link href={~p"/learn"} label="Learn" active={@current_page == :learn} />
             </li>
 
@@ -116,7 +124,11 @@ defmodule OpenforumWeb.Layouts do
           <div class="flex flex-col gap-1">
             <.nav_link href={~p"/"} label="Home" active={@current_page == :home} />
 
-            <.nav_link href={~p"/learn"} label="Learn" active={@current_page == :learn} />
+            <.nav_link
+              href={~p"/publications"}
+              label="Publications"
+              active={@current_page == :publications}
+            />
 
             <.nav_link href={~p"/bible"} label="Bible" active={@current_page == :bible} />
 
@@ -247,7 +259,11 @@ defmodule OpenforumWeb.Layouts do
                   </div>
                 </li>
 
-                <.admin_menu_item href={~p"/admin/profile"} icon="hero-user-circle" label="My Profile" />
+                <.admin_menu_item
+                  href={~p"/admin/profile"}
+                  icon="hero-user-circle"
+                  label="My Profile"
+                />
 
                 <.admin_menu_item href={~p"/admin/settings"} icon="hero-cog-6-tooth" label="Settings" />
 
@@ -273,7 +289,7 @@ defmodule OpenforumWeb.Layouts do
       </div>
 
       <%!-- ADMIN SIDEBAR --%>
-       <div class="drawer-side z-40">
+      <div class="drawer-side z-40">
         <label for="admin-sidebar" aria-label="Close sidebar" class="drawer-overlay"></label>
 
         <aside class="min-h-full w-72 bg-white border-r border-[#E5E7EB] flex flex-col">
@@ -346,7 +362,12 @@ defmodule OpenforumWeb.Layouts do
             <%!-- KNOWLEDGE --%>
             <.sidebar_group label="Knowledge" />
 
-            <.sidebar_link href={~p"/admin/bible"} icon="hero-book-open" label="Bible" active={@current_page == :bible} />
+            <.sidebar_link
+              href={~p"/admin/bible"}
+              icon="hero-book-open"
+              label="Bible"
+              active={@current_page == :bible}
+            />
 
             <.sidebar_link
               href={~p"/admin/doctrine"}
@@ -417,45 +438,15 @@ defmodule OpenforumWeb.Layouts do
               active={@current_page == :area_lead}
             />
 
-            <.sidebar_link
-              href={~p"/admin/congregations"}
-              icon="hero-home-modern"
-              label="Congregations"
-              active={@current_page == :congregations}
-            />
-
-            <.sidebar_link
-              href={~p"/admin/district-rector-areas"}
-              icon="hero-building-library"
-              label="District Rector Areas"
-              active={@current_page == :district_rector_areas}
-            />
-
-            <.sidebar_link
-              href={~p"/admin/apostle-areas"}
-              icon="hero-map-pin"
-              label="Apostle Areas"
-              active={@current_page == :apostle_areas}
-            />
-
-            <.sidebar_link
-              href={~p"/admin/lead-apostle-areas"}
-              icon="hero-map"
-              label="Lead Apostle Areas"
-              active={@current_page == :lead_apostle_areas}
-            />
-
-            <.sidebar_link
-              href={~p"/admin/district-apostle-areas"}
-              icon="hero-globe-europe-africa"
-              label="District Apostle Areas"
-              active={@current_page == :district_apostle_areas}
-            />
-
             <%!-- ACCESS MANAGEMENT --%>
             <.sidebar_group label="Access" />
 
-            <.sidebar_link href={~p"/admin/users"} icon="hero-users" label="Users" active={@current_page == :users} />
+            <.sidebar_link
+              href={~p"/admin/users"}
+              icon="hero-users"
+              label="Users"
+              active={@current_page == :users}
+            />
 
             <.sidebar_link
               href={~p"/admin/roles"}
@@ -774,7 +765,8 @@ defmodule OpenforumWeb.Layouts do
         "flex items-center gap-3 px-3 py-2.5 rounded-lg text-[0.82rem] border-l-[3px] transition-colors mb-1",
         if(@active,
           do: "font-semibold text-[#0B2E4F] bg-[#EAF3F8] border-[#1769AA]",
-          else: "font-medium text-[#4B5563] border-transparent hover:bg-[#F4F8FB] hover:text-[#1769AA]"
+          else:
+            "font-medium text-[#4B5563] border-transparent hover:bg-[#F4F8FB] hover:text-[#1769AA]"
         )
       ]}
     >
@@ -853,7 +845,7 @@ defmodule OpenforumWeb.Layouts do
   #  ROLE LABEL
   # ───────────────────────────────────────────────
 
-    defp role_label(%{roles: roles}) when is_list(roles) and roles != [] do
+  defp role_label(%{roles: roles}) when is_list(roles) and roles != [] do
     roles |> Enum.map(& &1.name) |> Enum.join(", ")
   end
 

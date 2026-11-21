@@ -2,9 +2,9 @@ defmodule Openforum.Accounts.User do
   use Ecto.Schema
   import Ecto.Changeset
 
-   alias OpenforumWeb.Schema.{Role, RoleAssignment}
+  alias OpenforumWeb.Schema.{Role, RoleAssignment, UserWorkingAreaMembership}
 
-   schema "users" do
+  schema "users" do
     field :first_name, :string
     field :last_name, :string
     field :email, :string
@@ -13,9 +13,13 @@ defmodule Openforum.Accounts.User do
     field :confirmed_at, :utc_datetime
     field :authenticated_at, :utc_datetime, virtual: true
 
+    belongs_to :working_area, OpenforumWeb.Schema.WorkingArea
 
+    has_many :working_area_memberships, UserWorkingAreaMembership
 
-   belongs_to :working_area, OpenForumWeb.Schema.WorkingArea
+    many_to_many :working_areas, OpenforumWeb.Schema.WorkingArea,
+      join_through: UserWorkingAreaMembership,
+      join_keys: [user_id: :id, working_area_id: :id]
 
     has_many :role_assignments, RoleAssignment
     many_to_many :roles, Role, join_through: RoleAssignment

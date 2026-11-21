@@ -50,17 +50,19 @@ defmodule OpenforumWeb.Router do
 
       live "/users", Users.Index, :index
       live "/working_areas", WorkingAreas.Index, :index
+      live "/working_areas/new", WorkingAreas.Index, :new
+      live "/working_areas/:id/edit", WorkingAreas.Index, :edit
       live "/work_flows", WorkFlowLive.Index, :index
       live "/work_flows/new", WorkFlowLive.Index, :new
       live "/work_flows/:id/edit", WorkFlowLive.Index, :edit
 
       live "/area_leads", AreaLeadLive.Index, :index
-      live "/congregations", CongregationLive.Index, :index
-      live "/district_areas", DistrictAreaLive.Index, :index
-      live "/apostle_areas", ApostleAreaLive.Index, :index
-      live "/lead_apostle_areas", LeadApostleAreaLive.Index, :index
-      live "/district_apostle_areas", DistrictAreaLive.Index, :index
-
+      # Legacy URLs remain as entry points to the generic hierarchy manager.
+      live "/congregations", WorkingAreas.Index, :index
+      live "/district_areas", WorkingAreas.Index, :index
+      live "/apostle_areas", WorkingAreas.Index, :index
+      live "/lead_apostle_areas", WorkingAreas.Index, :index
+      live "/district_apostle_areas", WorkingAreas.Index, :index
 
       live "/approval-queue", ApprovalQueue.Index, :index
 
@@ -78,7 +80,6 @@ defmodule OpenforumWeb.Router do
 
     get "/documents/:id/preview", DocumentPreviewController, :show
 
-
     post "/users/update-password", UserSessionController, :update_password
   end
 
@@ -90,6 +91,7 @@ defmodule OpenforumWeb.Router do
       live "/", Unauth.Landing.Index, :index
       live "/media", Unauth.Media.Index, :index
       live "/learn", Unauth.Learn.Index, :index
+      live "/publications", Unauth.Publications.Index, :index
       live "/bible", Unauth.Bible.Index, :index
       live "/catechism", Unauth.Catechism.Index, :index
       live "/questions-and-answers", Unauth.Questions_Answers.Index, :index

@@ -6,7 +6,7 @@ defmodule OpenforumWeb.Schema.AreaLead do
     field :name, :string
     field :description, :string
 
-    has_one :working_area, OpenforumWeb.Schema.WorkingArea
+    belongs_to :working_area, OpenforumWeb.Schema.WorkingArea
     timestamps()
   end
 

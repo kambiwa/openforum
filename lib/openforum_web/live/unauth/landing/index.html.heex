@@ -4,309 +4,452 @@
     current_scope={@current_scope}
     mobile_menu_open={@mobile_menu_open}
   >
-    <main class="bg-[#FAFAF7]">
-     <%!-- ============ SECTION 1 — HERO ============ --%>
-        <section class="relative overflow-hidden bg-[#FAFAF7]">
-          <%!-- background photo, right side --%>
-          <div class="pointer-events-none absolute inset-0" aria-hidden="true">
-            <img
-              src={~p"/images/nac/hall.jpg"}
-              alt=""
-              class="absolute inset-y-0 right-0 h-full w-full object-cover object-center lg:w-[100%]"
-            />
-            <%!-- mobile: wash the photo out so text stays legible --%>
-            <div class="absolute inset-0 bg-[#FAFAF7]/80 lg:hidden"></div>
-            <%!-- desktop: solid on the left, fading to a clear photo on the right --%>
-            <div class="absolute inset-0 hidden bg-gradient-to-r from-[#FAFAF7] from-35% via-[#FAFAF7]/60 via-40% to-transparent lg:block">
+    <main class="overflow-hidden bg-[#FAFAF7] text-[#252525]">
+      <%!-- 1. Hero --%>
+      <section class="relative isolate flex min-h-[620px] items-center overflow-hidden bg-[#0B2E4F] sm:min-h-[680px]">
+        <img
+          src={~p"/images/nac/hall.jpg"}
+          alt=""
+          aria-hidden="true"
+          class="absolute inset-0 -z-20 h-full w-full object-cover object-center"
+        />
+        <div class="absolute inset-0 -z-10 bg-gradient-to-r from-[#071E35]/95 via-[#0B2E4F]/85 to-[#0B2E4F]/40">
+        </div>
+        <div class="absolute inset-0 -z-10 bg-gradient-to-t from-[#071E35]/50 via-transparent to-[#071E35]/15">
+        </div>
+        <div
+          class="pointer-events-none absolute -right-20 top-16 -z-10 size-[28rem] rounded-full border border-white/10 sm:right-10 sm:top-20"
+          aria-hidden="true"
+        >
+        </div>
+        <div
+          class="pointer-events-none absolute -right-8 top-28 -z-10 size-[22rem] rounded-full border border-[#C9A227]/25 sm:right-20 sm:top-32"
+          aria-hidden="true"
+        >
+        </div>
+
+        <div class="mx-auto grid w-full max-w-[1440px] items-center gap-12 px-5 py-24 sm:px-8 lg:grid-cols-[1.1fr_0.9fr] lg:px-12 lg:py-32">
+          <div class="landing-reveal max-w-3xl">
+            <div class="flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.2em] text-white/75">
+              <span class="h-px w-10 bg-[#C9A227]"></span> New Apostolic Church Knowledge Platform
             </div>
-            <%!-- soft fade into the next section --%>
-            <div class="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#FAFAF7] to-transparent">
+            <h1 class="mt-7 max-w-3xl text-5xl font-semibold leading-[1.04] tracking-[-0.04em] text-white sm:text-6xl lg:text-7xl">
+              Knowledge that inspires.<br />
+              <span class="font-normal text-white/75">Faith that grows.</span>
+            </h1>
+            <p class="mt-7 max-w-2xl text-base leading-8 text-white/80 sm:text-lg">
+              Explore trusted biblical knowledge, New Apostolic Church teachings and learning
+              resources designed to deepen understanding and support spiritual growth.
+            </p>
+            <div class="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <.link
+                navigate={~p"/learn"}
+                class="group inline-flex min-h-12 items-center justify-center gap-3 bg-[#C9A227] px-6 text-sm font-semibold text-[#0B2E4F] transition duration-200 hover:bg-[#D8B746] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+              >
+                Explore Knowledge
+                <.icon
+                  name="hero-arrow-right"
+                  class="size-4 transition-transform group-hover:translate-x-1"
+                />
+              </.link>
+              <.link
+                navigate={~p"/learn"}
+                class="inline-flex min-h-12 items-center justify-center gap-2 border border-white/35 px-6 text-sm font-semibold text-white transition-colors hover:border-white hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+              >
+                <.icon name="hero-play-circle" class="size-5" /> Start Learning
+              </.link>
             </div>
           </div>
 
-          <div class="relative mx-auto max-w-[1280px] px-6 py-24 sm:px-8 lg:py-36">
-            <div class="max-w-xl">
-              <p class="text-xs font-semibold uppercase tracking-[0.14em] text-[#1769AA]">
-                New Apostolic Church Knowledge Platform
-              </p>
-              <h1 class="mt-5 text-4xl font-semibold leading-[1.1] tracking-tight text-[#0B2E4F] sm:text-5xl lg:text-[3.25rem]">
-                Learn. Understand.<br class="hidden sm:block" /> Grow in Faith.
-              </h1>
-              <p class="mt-6 text-base leading-relaxed text-[#4B5563] sm:text-lg">
-                OpenForum brings together trusted biblical knowledge, New Apostolic Church
-                doctrine, Catechism, questions and answers, audio, video and other approved
-                learning resources in one accessible platform.
-              </p>
-
-              <div class="mt-9 flex flex-wrap items-center gap-4">
-                <.link
-                  navigate={~p"/knowledge"}
-                  class="inline-flex items-center justify-center rounded-md bg-[#1769AA] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#0B2E4F]"
-                >
-                  Explore Knowledge
-                </.link>
-                <.link
-                  navigate={~p"/learn"}
-                  class="inline-flex items-center justify-center rounded-md border border-[#4F7FA8]/40 bg-white px-6 py-3 text-sm font-medium text-[#0B2E4F] transition-colors hover:bg-[#EAF3F8]"
-                >
-                  Start Learning
-                </.link>
-              </div>
+          <div class="landing-reveal hidden justify-end lg:flex" aria-hidden="true">
+            <div class="max-w-xs border-l border-[#C9A227] bg-[#071E35]/55 px-6 py-5 backdrop-blur-sm">
+              <.icon name="hero-book-open" class="size-6 text-[#D8B746]" />
+              <p class="mt-4 text-sm font-semibold tracking-wide text-white">OPENFORUM</p>
+              <p class="mt-1 text-sm leading-6 text-white/70">Knowledge. Faith. Understanding.</p>
             </div>
           </div>
-        </section>
+        </div>
+        <div class="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#C9A227]/70 to-transparent">
+        </div>
+      </section>
 
-      <%!-- ============ SECTION 2 — EXPLORE KNOWLEDGE ============ --%>
-      <section class="mx-auto max-w-[1280px] px-6 py-20 sm:px-8">
-        <div class="mx-auto max-w-2xl text-center">
-          <h2 class="text-3xl font-semibold tracking-tight text-[#0B2E4F]">Explore Knowledge</h2>
-          <p class="mt-4 text-base leading-relaxed text-[#6B7280]">
+      <%!-- 2. Knowledge categories --%>
+      <section class="mx-auto max-w-[1440px] px-5 py-20 sm:px-8 lg:px-12 lg:py-28">
+        <div class="landing-reveal flex flex-col justify-between gap-5 border-b border-[#DDE4E8] pb-8 md:flex-row md:items-end">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#1769AA]">
+              Explore the library
+            </p>
+            <h2 class="mt-3 text-3xl font-semibold tracking-[-0.03em] text-[#0B2E4F] sm:text-4xl">
+              Explore Knowledge
+            </h2>
+          </div>
+          <p class="max-w-xl text-base leading-7 text-[#6B7280]">
             Access trusted resources designed to support understanding, teaching and spiritual growth.
           </p>
         </div>
 
-        <div class="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-5">
-          <div
+        <div class="mt-8 grid grid-cols-1 gap-px border border-[#DDE4E8] bg-[#DDE4E8] sm:grid-cols-2 lg:grid-cols-5">
+          <.link
             :for={category <- @knowledge_categories}
-            class="group rounded-xl border border-[#E5E7EB] bg-white p-6 transition-all hover:border-[#4F7FA8]/30 hover:bg-[#EAF3F8]/40 hover:shadow-md"
+            navigate={~p"/learn"}
+            class="group flex min-h-64 flex-col bg-white p-6 transition-colors duration-200 hover:bg-[#F1F7FA] focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-[#1769AA] sm:p-7"
           >
-            <div class="flex h-11 w-11 items-center justify-center rounded-lg bg-[#EAF3F8]">
-              <.icon name={category.icon} class="h-5 w-5 text-[#1769AA]" />
+            <div class="flex items-center justify-between">
+              <.icon
+                name={category.icon}
+                class="size-6 text-[#1769AA] transition-transform duration-200 group-hover:-translate-y-1"
+              />
+              <.icon
+                name="hero-arrow-up-right"
+                class="size-4 text-[#AAB7C2] transition-colors group-hover:text-[#1769AA]"
+              />
             </div>
-            <h3 class="mt-4 text-base font-semibold text-[#0B2E4F]">{category.title}</h3>
-            <p class="mt-2 text-sm leading-relaxed text-[#6B7280]">{category.description}</p>
-          </div>
+            <h3 class="mt-10 text-lg font-semibold text-[#0B2E4F]">{category.title}</h3>
+            <p class="mt-2 text-sm leading-6 text-[#6B7280]">{category.description}</p>
+          </.link>
         </div>
       </section>
 
-      <%!-- ============ SECTION 3 — FEATURED LEARNING ============ --%>
-      <section class="bg-[#EAF3F8]">
-        <div class="mx-auto max-w-[1280px] px-6 py-20 sm:px-8">
-          <div class="mx-auto max-w-2xl text-center">
-            <h2 class="text-3xl font-semibold tracking-tight text-[#0B2E4F]">
-              Learn at Your Own Pace
-            </h2>
+      <%!-- 3. Featured learning --%>
+      <section class="border-y border-[#E3EAEE] bg-[#F0F5F7]">
+        <div class="mx-auto max-w-[1440px] px-5 py-20 sm:px-8 lg:px-12 lg:py-28">
+          <div class="landing-reveal flex flex-col justify-between gap-5 md:flex-row md:items-end">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#1769AA]">
+                Curated for discovery
+              </p>
+              <h2 class="mt-3 text-3xl font-semibold tracking-[-0.03em] text-[#0B2E4F] sm:text-4xl">
+                Learn at Your Own Pace
+              </h2>
+            </div>
+            <.link
+              navigate={~p"/learn"}
+              class="group inline-flex items-center gap-2 text-sm font-semibold text-[#1769AA] hover:text-[#0B2E4F]"
+            >
+              Browse learning paths
+              <.icon
+                name="hero-arrow-right"
+                class="size-4 transition-transform group-hover:translate-x-1"
+              />
+            </.link>
           </div>
 
-          <div class="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div class="mt-10 grid grid-cols-1 gap-4 lg:grid-cols-3">
             <article
-              :for={topic <- @featured_topics}
-              class="rounded-xl border border-[#E5E7EB] bg-white p-6 transition-shadow hover:shadow-md"
+              :for={{topic, index} <- Enum.with_index(@featured_topics)}
+              class={[
+                "landing-reveal group flex min-h-[280px] flex-col border border-[#DCE4E9] bg-white p-6 transition duration-200 hover:-translate-y-1 hover:border-[#9AB8CB] hover:shadow-[0_16px_35px_rgba(11,46,79,0.08)] sm:p-8",
+                index == 0 && "lg:col-span-2 lg:min-h-[320px] lg:bg-[#0B2E4F]"
+              ]}
             >
-              <span class="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#B8964F]">
-                {topic.label}
-              </span>
-              <h3 class="mt-3 text-lg font-semibold text-[#0B2E4F]">{topic.title}</h3>
-              <p class="mt-2 text-sm leading-relaxed text-[#6B7280]">{topic.description}</p>
-              <div class="mt-5 flex items-center justify-between border-t border-[#E5E7EB] pt-4">
-                <span class="text-xs text-[#6B7280]">{topic.duration}</span>
-                <.link
-                  navigate={~p"/knowledge"}
-                  class="inline-flex items-center gap-1 text-sm font-medium text-[#1769AA] hover:text-[#0B2E4F]"
-                >
-                  Explore Topic <.icon name="hero-arrow-right" class="h-3.5 w-3.5" />
-                </.link>
+              <div class="flex items-center justify-between">
+                <span class={[
+                  "text-[11px] font-semibold uppercase tracking-[0.17em] text-[#A98618]",
+                  index == 0 && "text-[#D8B746]"
+                ]}>{topic.label}</span>
+                <span class={[
+                  "flex size-10 items-center justify-center border border-[#DDE7EC] text-[#1769AA] transition-colors group-hover:border-[#1769AA]",
+                  index == 0 && "border-white/20 text-white/80 group-hover:border-[#C9A227]"
+                ]}>
+                  <.icon name="hero-book-open" class="size-5" />
+                </span>
+              </div>
+              <div class="mt-auto pt-10">
+                <h3 class={[
+                  "text-xl font-semibold tracking-tight text-[#0B2E4F] sm:text-2xl",
+                  index == 0 && "text-white sm:text-3xl"
+                ]}>
+                  {topic.title}
+                </h3>
+                <p class={[
+                  "mt-3 max-w-2xl text-sm leading-6 text-[#6B7280]",
+                  index == 0 && "text-white/70"
+                ]}>
+                  {topic.description}
+                </p>
+                <div class={[
+                  "mt-6 flex items-center justify-between border-t border-[#E5EAED] pt-4",
+                  index == 0 && "border-white/15"
+                ]}>
+                  <span class={[
+                    "text-xs text-[#6B7280]",
+                    index == 0 && "text-white/60"
+                  ]}>{topic.duration}</span>
+                  <.link
+                    navigate={~p"/learn"}
+                    class={[
+                      "inline-flex items-center gap-2 text-sm font-semibold text-[#1769AA] transition-colors hover:text-[#0B2E4F]",
+                      index == 0 && "text-[#E2C35D] hover:text-white"
+                    ]}
+                  >
+                    Explore Topic <.icon name="hero-arrow-right" class="size-4" />
+                  </.link>
+                </div>
               </div>
             </article>
           </div>
         </div>
       </section>
 
-      <%!-- ============ SECTION 4 — HOW OPENFORUM WORKS ============ --%>
-      <section class="mx-auto max-w-[1280px] px-6 py-20 sm:px-8">
-        <div class="mx-auto max-w-2xl text-center">
-          <h2 class="text-3xl font-semibold tracking-tight text-[#0B2E4F]">
+      <%!-- 4. Approval workflow --%>
+      <section class="mx-auto max-w-[1440px] px-5 py-20 sm:px-8 lg:px-12 lg:py-28">
+        <div class="landing-reveal mx-auto max-w-3xl text-center">
+          <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#1769AA]">
+            Accountability at every step
+          </p>
+          <h2 class="mt-3 text-3xl font-semibold tracking-[-0.03em] text-[#0B2E4F] sm:text-4xl">
             Knowledge You Can Trust
           </h2>
-          <p class="mt-4 text-base leading-relaxed text-[#6B7280]">
+          <p class="mx-auto mt-4 max-w-2xl text-base leading-7 text-[#6B7280]">
             OpenForum ensures that church learning content follows a structured and configurable
             review and approval process before publication.
           </p>
         </div>
 
         <div class="mt-14 hidden lg:block">
-          <div class="grid grid-cols-5 items-start gap-4">
+          <div class="grid grid-cols-5">
             <div
               :for={{step, index} <- Enum.with_index(@approval_steps, 1)}
-              class="relative flex flex-col items-center text-center"
+              class="landing-reveal relative flex flex-col items-center px-3 text-center"
             >
               <div
                 :if={index < length(@approval_steps)}
-                class="absolute left-1/2 top-6 h-px w-full bg-[#4F7FA8]/25"
+                class="absolute left-1/2 top-6 h-px w-full bg-[#D6E1E7]"
               >
               </div>
-              <div class="relative z-10 flex h-12 w-12 items-center justify-center rounded-full bg-[#0B2E4F] text-sm font-semibold text-white">
+              <div class="relative z-10 flex size-12 items-center justify-center rounded-full border border-[#C9A227] bg-[#FAFAF7] text-sm font-semibold text-[#0B2E4F] ring-8 ring-[#FAFAF7]">
                 {index}
               </div>
-              <.icon name={step.icon} class="mt-3 h-5 w-5 text-[#1769AA]" />
-              <p class="mt-2 max-w-[9rem] text-sm font-medium text-[#0B2E4F]">{step.title}</p>
+              <.icon name={step.icon} class="mt-5 size-5 text-[#1769AA]" />
+              <p class="mt-3 max-w-[11rem] text-sm font-semibold leading-5 text-[#0B2E4F]">
+                {step.title}
+              </p>
             </div>
           </div>
         </div>
 
-        <%!-- mobile: stacked vertical workflow --%>
-        <div class="mt-10 space-y-6 lg:hidden">
+        <div class="relative mt-10 space-y-7 lg:hidden">
+          <div class="absolute bottom-4 left-5 top-4 w-px bg-[#D6E1E7]"></div>
           <div
             :for={{step, index} <- Enum.with_index(@approval_steps, 1)}
-            class="flex items-center gap-4"
+            class="landing-reveal relative flex items-center gap-5"
           >
-            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#0B2E4F] text-sm font-semibold text-white">
+            <div class="relative z-10 flex size-10 shrink-0 items-center justify-center rounded-full border border-[#C9A227] bg-[#FAFAF7] text-sm font-semibold text-[#0B2E4F]">
               {index}
             </div>
-            <.icon name={step.icon} class="h-5 w-5 shrink-0 text-[#1769AA]" />
-            <p class="text-sm font-medium text-[#0B2E4F]">{step.title}</p>
+            <.icon name={step.icon} class="size-5 shrink-0 text-[#1769AA]" />
+            <p class="text-sm font-semibold text-[#0B2E4F]">{step.title}</p>
           </div>
         </div>
 
-        <p class="mx-auto mt-12 max-w-2xl text-center text-sm leading-relaxed text-[#6B7280]">
+        <p class="landing-reveal mx-auto mt-12 max-w-2xl text-center text-sm leading-6 text-[#6B7280]">
           Configurable approval levels help ensure that published content is accurate, trusted
           and aligned with approved church teachings.
         </p>
       </section>
 
-      <%!-- ============ SECTION 5 — MULTIMEDIA LEARNING ============ --%>
-      <section class="bg-[#F4F8FB]">
-        <div class="mx-auto max-w-[1280px] px-6 py-20 sm:px-8">
-          <div class="mx-auto max-w-2xl text-center">
-            <h2 class="text-3xl font-semibold tracking-tight text-[#0B2E4F]">
-              Learn Beyond the Written Word
-            </h2>
-            <p class="mt-4 text-base leading-relaxed text-[#6B7280]">
+      <%!-- 5. Multimedia --%>
+      <section class="bg-[#071E35] text-white">
+        <div class="mx-auto max-w-[1440px] px-5 py-20 sm:px-8 lg:px-12 lg:py-28">
+          <div class="landing-reveal flex flex-col justify-between gap-5 border-b border-white/15 pb-8 md:flex-row md:items-end">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#D8B746]">
+                Listen and watch
+              </p>
+              <h2 class="mt-3 text-3xl font-semibold tracking-[-0.03em] sm:text-4xl">
+                Learn Beyond the Written Word
+              </h2>
+            </div>
+            <p class="max-w-xl text-sm leading-6 text-white/65">
               Access approved teachings and learning resources through video, audio and other engaging formats.
             </p>
           </div>
 
-          <div class="mt-12 grid grid-cols-1 gap-8 lg:grid-cols-2">
-            <div class="overflow-hidden rounded-xl border border-[#E5E7EB] bg-white">
-              <div class="relative flex h-56 items-center justify-center bg-[#0B2E4F] sm:h-64">
-                <button
-                  type="button"
-                  class="flex h-14 w-14 items-center justify-center rounded-full bg-white/90 transition-transform hover:scale-105"
-                  aria-label="Play featured teaching"
+          <div class="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+            <article class="landing-reveal overflow-hidden border border-white/15 bg-white/[0.04]">
+              <div class="relative flex min-h-[260px] items-end overflow-hidden bg-gradient-to-br from-[#1769AA]/45 via-[#0B2E4F] to-[#071E35] p-7 sm:min-h-[340px] sm:p-10">
+                <div
+                  class="absolute -right-12 -top-20 size-72 rounded-full border border-white/10"
+                  aria-hidden="true"
                 >
-                  <.icon name="hero-play" class="h-6 w-6 text-[#0B2E4F]" />
-                </button>
+                </div>
+                <div
+                  class="absolute -right-1 top-[-3.5rem] size-52 rounded-full border border-[#C9A227]/25"
+                  aria-hidden="true"
+                >
+                </div>
+                <div
+                  class="absolute right-14 top-16 flex size-20 items-center justify-center rounded-full border border-white/20 bg-white/5 backdrop-blur-sm"
+                  aria-hidden="true"
+                >
+                  <.icon name="hero-play" class="size-7 text-[#E2C35D]" />
+                </div>
+                <div class="relative max-w-lg">
+                  <span class="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.17em] text-[#E2C35D]">
+                    <span class="size-1.5 rounded-full bg-[#C9A227]"></span> Featured Teaching
+                  </span>
+                  <h3 class="mt-4 text-2xl font-semibold leading-tight sm:text-3xl">
+                    Understanding Faith and the New Apostolic Church
+                  </h3>
+                  <p class="mt-3 text-sm text-white/60">28 min</p>
+                </div>
               </div>
-              <div class="p-6">
-                <span class="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#B8964F]">Featured Teaching</span>
-                <h3 class="mt-2 text-lg font-semibold text-[#0B2E4F]">
-                  Understanding Faith and the New Apostolic Church
-                </h3>
-                <p class="mt-1 text-xs text-[#6B7280]">28 min</p>
-              </div>
-            </div>
+            </article>
 
-            <div class="flex flex-col divide-y divide-[#E5E7EB] rounded-xl border border-[#E5E7EB] bg-white">
-              <div :for={resource <- @media_resources} class="flex items-center gap-4 px-6 py-5">
-                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#EAF3F8]">
-                  <.icon name="hero-musical-note" class="h-4 w-4 text-[#1769AA]" />
+            <div class="landing-reveal divide-y divide-white/10 border border-white/15 bg-white/[0.04]">
+              <div
+                :for={resource <- @media_resources}
+                class="group flex items-center gap-4 px-5 py-5 transition-colors hover:bg-white/[0.04] sm:px-6"
+              >
+                <div class="flex size-11 shrink-0 items-center justify-center border border-white/10 bg-white/[0.04] text-[#D8B746] transition-colors group-hover:border-[#C9A227]/60">
+                  <.icon name="hero-musical-note" class="size-5" />
                 </div>
                 <div class="min-w-0 flex-1">
-                  <p class="truncate text-sm font-medium text-[#0B2E4F]">{resource.title}</p>
-                  <p class="text-xs text-[#6B7280]">{resource.category} · {resource.duration}</p>
+                  <p class="truncate text-sm font-semibold text-white">{resource.title}</p>
+                  <p class="mt-1 text-xs text-white/55">
+                    {resource.category}
+                    <span class="px-1.5 text-white/30">·</span> {resource.duration}
+                  </p>
                 </div>
-                <button
-                  type="button"
-                  class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#4F7FA8]/30 text-[#1769AA] transition-colors hover:bg-[#EAF3F8]"
-                  aria-label={"Play " <> resource.title}
-                >
-                  <.icon name="hero-play" class="h-3.5 w-3.5" />
-                </button>
+                <.icon
+                  name="hero-arrow-up-right"
+                  class="size-4 shrink-0 text-white/35 transition-colors group-hover:text-[#D8B746]"
+                />
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <%!-- ============ SECTION 6 — OPEN AND ACCESSIBLE ============ --%>
+      <%!-- 6. Open knowledge --%>
       <section class="bg-white">
-        <div class="mx-auto max-w-[1280px] px-6 py-20 text-center sm:px-8">
-          <h2 class="text-3xl font-semibold tracking-tight text-[#0B2E4F]">
-            Open Knowledge for Everyone
-          </h2>
-          <p class="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-[#6B7280]">
-            OpenForum makes selected Bible, doctrine, Catechism, questions and answers, audio and
-            video resources available to everyone. No registration is required to begin exploring
-            and learning.
-          </p>
-
-          <div class="mx-auto mt-12 grid max-w-3xl grid-cols-1 gap-8 sm:grid-cols-3">
-            <div :for={benefit <- @access_benefits} class="flex flex-col items-center">
-              <.icon name={benefit.icon} class="h-6 w-6 text-[#1769AA]" />
-              <p class="mt-3 text-sm font-semibold text-[#0B2E4F]">{benefit.title}</p>
-              <p class="mt-1 text-xs leading-relaxed text-[#6B7280]">{benefit.description}</p>
-            </div>
-          </div>
-
-          <.link
-            navigate={~p"/knowledge"}
-            class="mt-12 inline-flex items-center justify-center rounded-md bg-[#1769AA] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#0B2E4F]"
-          >
-            Begin Exploring OpenForum
-          </.link>
-        </div>
-      </section>
-
-      <%!-- ============ SECTION 7 — CONTRIBUTORS ============ --%>
-      <section class="bg-[#EAF3F8]">
-        <div class="mx-auto max-w-[1280px] px-6 py-20 sm:px-8">
-          <div class="mx-auto max-w-2xl text-center">
-            <h2 class="text-3xl font-semibold tracking-tight text-[#0B2E4F]">
-              Contribute to the Conversation
+        <div class="mx-auto max-w-[1440px] px-5 py-20 sm:px-8 lg:px-12 lg:py-28">
+          <div class="landing-reveal mx-auto max-w-3xl text-center">
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#1769AA]">
+              Open to all
+            </p>
+            <h2 class="mt-3 text-3xl font-semibold tracking-[-0.03em] text-[#0B2E4F] sm:text-4xl">
+              Open Knowledge for Everyone
             </h2>
-            <p class="mt-4 text-base leading-relaxed text-[#6B7280]">
-              Authorized users can create and submit learning content, including documents,
-              images, audio and video, for review through the configured OpenForum approval workflow.
+            <p class="mx-auto mt-4 max-w-2xl text-base leading-7 text-[#6B7280]">
+              OpenForum makes selected Bible, doctrine, Catechism, questions and answers, audio and
+              video resources available to everyone. No registration is required to begin exploring
+              and learning.
             </p>
           </div>
 
-          <div class="mt-12 flex flex-wrap items-center justify-center gap-x-3 gap-y-4">
+          <div class="landing-reveal mx-auto mt-12 grid max-w-5xl grid-cols-1 border-y border-[#DDE4E8] sm:grid-cols-3">
             <div
-              :for={{step, index} <- Enum.with_index(@contributor_steps)}
-              class="flex items-center gap-3"
+              :for={benefit <- @access_benefits}
+              class="flex gap-4 border-b border-[#DDE4E8] px-4 py-6 last:border-b-0 sm:border-b-0 sm:border-r sm:px-6 sm:py-8 sm:last:border-r-0"
             >
-              <span class="rounded-full border border-[#4F7FA8]/30 bg-white px-4 py-2 text-sm font-medium text-[#0B2E4F]">
-                {step}
-              </span>
-              <.icon
-                :if={index < length(@contributor_steps) - 1}
-                name="hero-arrow-right"
-                class="h-4 w-4 text-[#4F7FA8]"
-              />
+              <div class="flex size-10 shrink-0 items-center justify-center bg-[#EAF3F8] text-[#1769AA]">
+                <.icon name={benefit.icon} class="size-5" />
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-[#0B2E4F]">{benefit.title}</p>
+                <p class="mt-1 text-xs leading-5 text-[#6B7280]">{benefit.description}</p>
+              </div>
             </div>
           </div>
 
-          <div class="mt-10 text-center">
+          <div class="landing-reveal mt-10 text-center">
             <.link
-              navigate={~p"/users/log-in"}
-              class="inline-flex items-center justify-center rounded-md bg-[#0B2E4F] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#1769AA]"
+              navigate={~p"/learn"}
+              class="group inline-flex min-h-12 items-center gap-3 bg-[#1769AA] px-6 text-sm font-semibold text-white transition-colors hover:bg-[#0B2E4F]"
             >
-              Sign In to Contribute
+              Begin Exploring OpenForum
+              <.icon
+                name="hero-arrow-right"
+                class="size-4 transition-transform group-hover:translate-x-1"
+              />
             </.link>
           </div>
         </div>
       </section>
 
-      <%!-- ============ SECTION 8 — FINAL CTA ============ --%>
-      <section class="bg-[#0B2E4F]">
-        <div class="mx-auto max-w-[1280px] px-6 py-20 text-center sm:px-8">
-          <h2 class="text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+      <%!-- 7. Contributors --%>
+      <section class="border-y border-[#DDE4E8] bg-[#F0F5F7]">
+        <div class="mx-auto max-w-[1440px] px-5 py-20 sm:px-8 lg:px-12 lg:py-24">
+          <div class="landing-reveal grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#1769AA]">
+                A shared responsibility
+              </p>
+              <h2 class="mt-3 text-3xl font-semibold tracking-[-0.03em] text-[#0B2E4F] sm:text-4xl">
+                Contribute to the Conversation
+              </h2>
+              <p class="mt-4 max-w-xl text-base leading-7 text-[#6B7280]">
+                Authorized users can create and submit learning content, including documents,
+                images, audio and video, for review through the configured OpenForum approval workflow.
+              </p>
+              <.link
+                navigate={~p"/users/log-in"}
+                class="group mt-7 inline-flex min-h-12 items-center gap-3 bg-[#0B2E4F] px-6 text-sm font-semibold text-white transition-colors hover:bg-[#1769AA]"
+              >
+                Sign In to Contribute
+                <.icon
+                  name="hero-arrow-right"
+                  class="size-4 transition-transform group-hover:translate-x-1"
+                />
+              </.link>
+            </div>
+
+            <ol class="border-l border-[#C9A227] pl-6 sm:pl-8">
+              <li
+                :for={{step, index} <- Enum.with_index(@contributor_steps, 1)}
+                class="landing-reveal relative flex items-center gap-4 border-b border-[#DDE4E8] py-4 last:border-b-0"
+              >
+                <span class="absolute -left-[1.88rem] flex size-6 items-center justify-center rounded-full border border-[#C9A227] bg-[#F0F5F7] text-[10px] font-semibold text-[#0B2E4F] sm:-left-[2.38rem]">{index}</span>
+                <span class="text-sm font-medium text-[#334155]">{step}</span>
+                <.icon
+                  :if={index < length(@contributor_steps)}
+                  name="hero-arrow-down"
+                  class="ml-auto size-4 text-[#9AAAB5]"
+                />
+              </li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <%!-- 8. Final CTA --%>
+      <section class="relative isolate overflow-hidden bg-[#0B2E4F]">
+        <div class="absolute inset-0 -z-10 bg-gradient-to-br from-[#1769AA]/30 via-transparent to-[#071E35]/70">
+        </div>
+        <div
+          class="absolute -right-16 -top-40 -z-10 size-[30rem] rounded-full border border-white/[0.07]"
+          aria-hidden="true"
+        >
+        </div>
+        <div
+          class="absolute -right-4 -top-28 -z-10 size-[22rem] rounded-full border border-[#C9A227]/20"
+          aria-hidden="true"
+        >
+        </div>
+        <div class="landing-reveal mx-auto max-w-[1440px] px-5 py-20 text-center sm:px-8 lg:px-12 lg:py-28">
+          <div class="mx-auto mb-6 h-px w-12 bg-[#C9A227]"></div>
+          <h2 class="text-4xl font-semibold tracking-[-0.035em] text-white sm:text-5xl">
             Explore. Learn. Grow.
           </h2>
-          <p class="mx-auto mt-4 max-w-xl text-base leading-relaxed text-white/75">
+          <p class="mx-auto mt-5 max-w-xl text-base leading-7 text-white/70">
             Discover trusted resources that support faith, understanding and lifelong learning.
           </p>
-
-          <div class="mt-9 flex flex-wrap items-center justify-center gap-4">
+          <div class="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
             <.link
-              navigate={~p"/knowledge"}
-              class="inline-flex items-center justify-center rounded-md bg-white px-6 py-3 text-sm font-medium text-[#0B2E4F] transition-colors hover:bg-[#EAF3F8]"
+              navigate={~p"/learn"}
+              class="group inline-flex min-h-12 items-center justify-center gap-3 bg-[#C9A227] px-6 text-sm font-semibold text-[#0B2E4F] transition-colors hover:bg-[#D8B746]"
             >
               Explore OpenForum
+              <.icon
+                name="hero-arrow-right"
+                class="size-4 transition-transform group-hover:translate-x-1"
+              />
             </.link>
             <.link
               navigate={~p"/users/register"}
-              class="inline-flex items-center justify-center rounded-md border border-white/30 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-white/10"
+              class="inline-flex min-h-12 items-center justify-center border border-white/30 px-6 text-sm font-semibold text-white transition-colors hover:border-white hover:bg-white/10"
             >
               Create an Account
             </.link>

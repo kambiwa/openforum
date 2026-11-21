@@ -1,9 +1,26 @@
 defmodule OpenforumWeb.Unauth.Media.Index do
   use OpenforumWeb, :live_view
 
+  alias Openforum.Context.Publications
+
   @impl true
   def mount(_params, _session, socket) do
-    items = media_items()
+    items =
+      Publications.list_public_media()
+      |> Enum.with_index()
+      |> Enum.map(fn {resource, index} ->
+        %{
+          id: resource.id,
+          featured: index == 0,
+          type: resource.media_type,
+          topic: (resource.category && resource.category.name) || "Media",
+          title: resource.title,
+          description: resource.description || "",
+          duration: duration_label(resource.duration_seconds),
+          file_url: resource.file_url,
+          thumbnail_url: resource.thumbnail_url
+        }
+      end)
 
     {:ok,
      socket
@@ -73,7 +90,18 @@ defmodule OpenforumWeb.Unauth.Media.Index do
   defp type_label("document"), do: "Document"
   defp type_label(_), do: "Media"
 
-  # ---------- static data (replace with DB queries later) ----------
+  defp duration_label(nil), do: ""
+
+  defp duration_label(seconds) when seconds < 60, do: "#{seconds} sec"
+
+  defp duration_label(seconds) do
+    minutes = div(seconds, 60)
+    remainder = rem(seconds, 60)
+
+    if remainder == 0,
+      do: "#{minutes} min",
+      else: "#{minutes}:#{String.pad_leading(to_string(remainder), 2, "0")}"
+  end
 
   defp content_categories do
     [
@@ -82,66 +110,6 @@ defmodule OpenforumWeb.Unauth.Media.Index do
       %{id: "audio", title: "Audio", icon: "hero-musical-note"},
       %{id: "presentation", title: "Presentations", icon: "hero-presentation-chart-bar"},
       %{id: "document", title: "Documents", icon: "hero-document-text"}
-    ]
-  end
-
-  defp media_items do
-    [
-      %{
-        id: 1,
-        featured: true,
-        type: "video",
-        topic: "Faith Foundations",
-        title: "Understanding Faith and the New Apostolic Church",
-        description:
-          "A guided introduction to the foundations of faith and the life of the Church.",
-        duration: "28 min"
-      },
-      %{
-        id: 2,
-        featured: false,
-        type: "audio",
-        topic: "Doctrine",
-        title: "The Nature of Grace",
-        description: "An audio teaching on grace and its place in New Apostolic doctrine.",
-        duration: "24 min"
-      },
-      %{
-        id: 3,
-        featured: false,
-        type: "audio",
-        topic: "Scripture",
-        title: "Living the Ten Commandments",
-        description: "Practical reflections on applying the Commandments in daily life.",
-        duration: "31 min"
-      },
-      %{
-        id: 4,
-        featured: false,
-        type: "video",
-        topic: "Church Life",
-        title: "District Apostle Area Address",
-        description: "An address to the district Apostle area on faith and fellowship.",
-        duration: "42 min"
-      },
-      %{
-        id: 5,
-        featured: false,
-        type: "presentation",
-        topic: "Catechism",
-        title: "Catechism Overview",
-        description: "A slide presentation summarising the key chapters of the Catechism.",
-        duration: "35 slides"
-      },
-      %{
-        id: 6,
-        featured: false,
-        type: "document",
-        topic: "Scripture",
-        title: "Bible Study Guide: The Gospels",
-        description: "A structured study guide for individual and group Bible study.",
-        duration: "14 min read"
-      }
     ]
   end
 

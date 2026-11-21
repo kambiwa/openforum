@@ -24,6 +24,11 @@ config :openforum,
   ecto_repos: [Openforum.Repo],
   generators: [timestamp_type: :utc_datetime]
 
+config :mime, :types, %{
+  "audio/mp4" => ["m4a"],
+  "audio/ogg" => ["oga", "ogg"]
+}
+
 # Configure the endpoint
 config :openforum, OpenforumWeb.Endpoint,
   url: [host: "localhost"],

@@ -21,6 +21,7 @@ defmodule OpenforumWeb.Datatable.Table do
 
   slot :col, required: true do
     attr :label, :string
+    attr :icon, :string, doc: "optional explicit heroicon name for the column heading"
     attr :status_field, :atom, doc: "render this field as a styled status badge"
   end
 
@@ -38,21 +39,27 @@ defmodule OpenforumWeb.Datatable.Table do
       <div class="overflow-x-auto">
         <table class="w-full border-collapse text-[0.83rem]">
           <thead>
-            <tr class="bg-[#F4F8FB]">
+            <tr class="bg-[#0B2E4F]">
               <th
                 :for={col <- @col}
                 scope="col"
-                class="whitespace-nowrap border-b border-[#E5E7EB] px-5 py-3 text-left text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-[#6B7280]"
+                class="whitespace-nowrap border-b border-[#1769AA] px-5 py-3 text-left text-[0.68rem] font-semibold uppercase tracking-[0.1em] text-white/85"
               >
-                {col[:label]}
+                <span class="inline-flex items-center gap-2">
+                  <.icon name={col[:icon] || column_icon(col[:label])} class="size-4 text-[#D8B746]" />
+                  {col[:label]}
+                </span>
               </th>
 
               <th
                 :if={@has_actions?}
                 scope="col"
-                class="whitespace-nowrap border-b border-[#E5E7EB] px-5 py-3 text-left text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-[#6B7280]"
+                class="whitespace-nowrap border-b border-[#1769AA] px-5 py-3 text-left text-[0.68rem] font-semibold uppercase tracking-[0.1em] text-white/85"
               >
-                {@actions_label}
+                <span class="inline-flex items-center gap-2">
+                  <.icon name="hero-ellipsis-horizontal" class="size-4 text-[#D8B746]" />
+                  {@actions_label}
+                </span>
               </th>
             </tr>
           </thead>
@@ -139,6 +146,47 @@ defmodule OpenforumWeb.Datatable.Table do
       </div>
     </div>
     """
+  end
+
+  defp column_icon(nil), do: "hero-table-cells"
+
+  defp column_icon(label) do
+    label = String.downcase(label)
+
+    cond do
+      String.contains?(label, ["title", "name", "profile"]) ->
+        "hero-identification"
+
+      String.contains?(label, ["category", "topic"]) ->
+        "hero-folder"
+
+      String.contains?(label, ["email"]) ->
+        "hero-envelope"
+
+      String.contains?(label, ["role", "permission"]) ->
+        "hero-shield-check"
+
+      String.contains?(label, ["status"]) ->
+        "hero-check-circle"
+
+      String.contains?(label, ["date", "updated", "published", "submitted"]) ->
+        "hero-calendar-days"
+
+      String.contains?(label, ["step"]) ->
+        "hero-arrows-right-left"
+
+      String.contains?(label, ["description", "summary"]) ->
+        "hero-bars-3-bottom-left"
+
+      String.contains?(label, ["author", "user"]) ->
+        "hero-user"
+
+      String.contains?(label, ["count", "total", "steps"]) ->
+        "hero-hashtag"
+
+      true ->
+        "hero-table-cells"
+    end
   end
 
   defp status_badge(assigns) do

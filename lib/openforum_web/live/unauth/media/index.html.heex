@@ -6,21 +6,22 @@
   >
     <main class="bg-[#FAFAF7]">
       <%!-- ============ SECTION 1 — PAGE HEADER ============ --%>
-      <section class="relative overflow-hidden bg-[#FAFAF7]">
+      <section class="relative isolate overflow-hidden border-b border-[#C9A227]/60 bg-[#0B2E4F]">
         <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-          <div class="absolute -right-24 top-0 h-[340px] w-[340px] rounded-full bg-[#EAF3F8]"></div>
-          <div class="absolute right-40 top-32 h-32 w-32 rounded-full border border-[#4F7FA8]/20">
+          <div class="absolute -right-24 top-0 h-[340px] w-[340px] rounded-full border border-white/10">
+          </div>
+          <div class="absolute right-40 top-32 h-32 w-32 rounded-full border border-[#C9A227]/25">
           </div>
         </div>
 
         <div class="relative mx-auto max-w-[1280px] px-6 py-16 sm:px-8 lg:py-20">
-          <p class="text-xs font-semibold uppercase tracking-[0.14em] text-[#1769AA]">
+          <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#D8B746]">
             Media Library
           </p>
-          <h1 class="mt-4 max-w-2xl text-4xl font-semibold leading-[1.1] tracking-tight text-[#0B2E4F] sm:text-5xl">
+          <h1 class="mt-4 max-w-2xl text-4xl font-semibold leading-[1.1] tracking-[-0.04em] text-white sm:text-5xl">
             Learn Beyond the Written Word
           </h1>
-          <p class="mt-5 max-w-xl text-base leading-relaxed text-[#6B7280] sm:text-lg">
+          <p class="mt-5 max-w-xl text-base leading-relaxed text-white/75 sm:text-lg">
             Approved videos, audio teachings, presentations and documents, all reviewed through the
             OpenForum approval workflow.
           </p>
@@ -41,7 +42,7 @@
                 placeholder="Search teachings, topics or speakers"
                 phx-debounce="300"
                 autocomplete="off"
-                class="w-full rounded-md border border-[#4F7FA8]/30 bg-white py-3 pl-12 pr-4 text-sm text-[#0B2E4F] placeholder:text-[#6B7280] focus:border-[#1769AA] focus:outline-none focus:ring-2 focus:ring-[#1769AA]/20"
+                class="w-full border border-white/30 bg-white/95 py-3 pl-12 pr-4 text-sm text-[#0B2E4F] placeholder:text-[#6B7280] focus:border-[#C9A227] focus:outline-none focus:ring-2 focus:ring-[#C9A227]/30"
               />
             </div>
           </form>
@@ -50,17 +51,33 @@
 
       <%!-- ============ SECTION 2 — FEATURED TEACHING ============ --%>
       <section :if={@featured_item} class="mx-auto max-w-[1280px] px-6 pb-16 sm:px-8">
-        <div class="grid overflow-hidden rounded-xl border border-[#E5E7EB] bg-white lg:grid-cols-2">
+        <div class="grid overflow-hidden border border-[#E5E7EB] bg-white lg:grid-cols-2">
           <div class="relative flex h-56 items-center justify-center bg-[#0B2E4F] sm:h-72 lg:h-auto">
             <div class="pointer-events-none absolute -left-10 -top-10 h-40 w-40 rounded-full bg-[#1769AA]/30">
             </div>
-            <button
-              type="button"
+            <img
+              :if={@featured_item.thumbnail_url}
+              src={@featured_item.thumbnail_url}
+              alt=""
+              class="absolute inset-0 h-full w-full object-cover"
+            />
+            <a
+              href={@featured_item.file_url}
+              target="_blank"
+              rel="noopener noreferrer"
               class="relative flex h-16 w-16 items-center justify-center rounded-full bg-white/90 transition-transform hover:scale-105"
-              aria-label={"Play " <> @featured_item.title}
+              aria-label={"Open " <> @featured_item.title}
             >
-              <.icon name="hero-play" class="h-7 w-7 text-[#0B2E4F]" />
-            </button>
+              <.icon
+                name={
+                  if(@featured_item.type == "video",
+                    do: "hero-play",
+                    else: type_icon(@featured_item.type)
+                  )
+                }
+                class="h-7 w-7 text-[#0B2E4F]"
+              />
+            </a>
           </div>
           <div class="flex flex-col justify-center p-8 lg:p-10">
             <span class="text-[11px] font-semibold uppercase tracking-[0.1em] text-[#B8964F]">
@@ -83,12 +100,14 @@
               </span>
             </div>
             <div class="mt-7">
-              <button
-                type="button"
-                class="inline-flex items-center justify-center gap-2 rounded-md bg-[#1769AA] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#0B2E4F]"
+              <a
+                href={@featured_item.file_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center justify-center gap-2 bg-[#C9A227] px-6 py-3 text-sm font-semibold text-[#0B2E4F] transition-colors hover:bg-[#D8B746]"
               >
-                <.icon name="hero-play" class="h-4 w-4" /> Watch Now
-              </button>
+                <.icon name="hero-arrow-up-right" class="h-4 w-4" /> Open resource
+              </a>
             </div>
           </div>
         </div>
@@ -98,7 +117,9 @@
       <section class="bg-[#F4F8FB]">
         <div class="mx-auto max-w-[1280px] px-6 py-20 sm:px-8">
           <div class="mx-auto max-w-2xl text-center">
-            <h2 class="text-3xl font-semibold tracking-tight text-[#0B2E4F]">Browse the Library</h2>
+            <h2 class="text-3xl font-semibold tracking-tight text-[#0B2E4F]">
+              Browse the Library
+            </h2>
             <p class="mt-4 text-base leading-relaxed text-[#6B7280]">
               Filter by format to find the resources that suit the way you learn.
             </p>
@@ -136,13 +157,16 @@
           >
             <article
               :for={item <- @content_items}
-              class="group flex flex-col overflow-hidden rounded-xl border border-[#E5E7EB] bg-white transition-shadow hover:shadow-md"
+              class="group flex flex-col overflow-hidden border border-[#E5E7EB] bg-white transition-shadow hover:shadow-md"
             >
               <div class="relative flex h-40 items-center justify-center bg-[#EAF3F8]">
                 <div class="flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-sm transition-transform group-hover:scale-105">
                   <.icon name={type_icon(item.type)} class="h-6 w-6 text-[#1769AA]" />
                 </div>
-                <span class="absolute right-3 top-3 rounded-full bg-white px-3 py-1 text-[11px] font-medium text-[#0B2E4F]">
+                <span
+                  :if={item.duration != ""}
+                  class="absolute right-3 top-3 rounded-full bg-white px-3 py-1 text-[11px] font-medium text-[#0B2E4F]"
+                >
                   {item.duration}
                 </span>
               </div>
@@ -156,12 +180,14 @@
                 </p>
                 <div class="mt-5 flex items-center justify-between border-t border-[#E5E7EB] pt-4">
                   <span class="text-xs text-[#6B7280]">{type_label(item.type)}</span>
-                  <button
-                    type="button"
+                  <a
+                    href={item.file_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     class="inline-flex items-center gap-1 text-sm font-medium text-[#1769AA] hover:text-[#0B2E4F]"
                   >
-                    Open <.icon name="hero-arrow-right" class="h-3.5 w-3.5" />
-                  </button>
+                    Open <.icon name="hero-arrow-up-right" class="h-3.5 w-3.5" />
+                  </a>
                 </div>
               </div>
             </article>
@@ -170,7 +196,7 @@
           <%!-- empty state --%>
           <div
             :if={@content_items == []}
-            class="mx-auto mt-10 max-w-md rounded-xl border border-[#E5E7EB] bg-white p-10 text-center"
+            class="mx-auto mt-10 max-w-md border border-[#E5E7EB] bg-white p-10 text-center"
           >
             <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#EAF3F8]">
               <.icon name="hero-magnifying-glass" class="h-5 w-5 text-[#1769AA]" />
@@ -248,10 +274,16 @@
           </p>
           <div class="mt-9 flex flex-wrap items-center justify-center gap-4">
             <.link
-              navigate={~p"/users/log-in"}
+              navigate={
+                if @current_scope && @current_scope.user,
+                  do: ~p"/admin/media",
+                  else: ~p"/users/log-in"
+              }
               class="inline-flex items-center justify-center rounded-md bg-white px-6 py-3 text-sm font-medium text-[#0B2E4F] transition-colors hover:bg-[#EAF3F8]"
             >
-              Sign In to Contribute
+              {if @current_scope && @current_scope.user,
+                do: "Manage Media",
+                else: "Sign In to Contribute"}
             </.link>
             <.link
               navigate={~p"/knowledge"}

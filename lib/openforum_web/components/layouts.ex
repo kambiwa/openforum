@@ -83,6 +83,8 @@ defmodule OpenforumWeb.Layouts do
 
           <%!-- DESKTOP ACTIONS --%>
           <div class="hidden xl:flex items-center gap-2">
+            <.theme_toggle id="public-theme-toggle-desktop" />
+
             <a
               href={~p"/search"}
               aria-label="Search OpenForum"
@@ -107,13 +109,16 @@ defmodule OpenforumWeb.Layouts do
           </div>
 
           <%!-- MOBILE MENU BUTTON --%>
-          <button
-            aria-label="Toggle navigation menu"
-            phx-click="toggle_mobile_menu"
-            class="xl:hidden w-10 h-10 rounded-lg flex items-center justify-center text-[#0B2E4F] hover:bg-[#EAF3F8] transition-colors"
-          >
-            <.icon name="hero-bars-3" class="size-6" />
-          </button>
+          <div class="flex items-center gap-2 xl:hidden">
+            <.theme_toggle id="public-theme-toggle-mobile" />
+            <button
+              aria-label="Toggle navigation menu"
+              phx-click="toggle_mobile_menu"
+              class="flex size-10 items-center justify-center text-[#0B2E4F] transition-colors hover:bg-[#EAF3F8]"
+            >
+              <.icon name="hero-bars-3" class="size-6" />
+            </button>
+          </div>
         </nav>
 
         <%!-- MOBILE NAVIGATION --%>
@@ -215,6 +220,8 @@ defmodule OpenforumWeb.Layouts do
 
           <%!-- TOP ACTIONS --%>
           <div class="flex items-center gap-2">
+            <.theme_toggle id="admin-theme-toggle" />
+
             <button
               aria-label="Notifications"
               class="relative w-9 h-9 rounded-lg text-[#6B7280] flex items-center justify-center hover:bg-[#EAF3F8] hover:text-[#1769AA] transition-colors"
@@ -558,6 +565,41 @@ defmodule OpenforumWeb.Layouts do
 
         destroyed() {
           this.el.removeEventListener("change", this.onChange)
+        }
+      }
+    </script>
+    """
+  end
+
+  attr :id, :string, required: true
+
+  def theme_toggle(assigns) do
+    ~H"""
+    <button
+      id={@id}
+      type="button"
+      phx-hook=".ThemeToggle"
+      aria-label="Toggle light and dark theme"
+      title="Toggle light and dark theme"
+      class="flex size-10 shrink-0 items-center justify-center border border-[#E5E7EB] text-[#0B2E4F] transition duration-200 hover:bg-[#EAF3F8] hover:text-[#1769AA] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1769AA]"
+    >
+      <.icon name="hero-moon" class="size-4 dark:hidden" />
+      <.icon name="hero-sun" class="hidden size-4 dark:block" />
+    </button>
+    <script :type={Phoenix.LiveView.ColocatedHook} name=".ThemeToggle">
+      export default {
+        mounted() {
+          this.onClick = () => {
+            const currentTheme = document.documentElement.getAttribute("data-theme") || "light"
+            this.el.dataset.phxTheme = currentTheme === "dark" ? "light" : "dark"
+            this.el.dispatchEvent(new Event("phx:set-theme", { bubbles: true }))
+          }
+
+          this.el.addEventListener("click", this.onClick)
+        },
+
+        destroyed() {
+          this.el.removeEventListener("click", this.onClick)
         }
       }
     </script>

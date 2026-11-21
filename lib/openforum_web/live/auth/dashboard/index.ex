@@ -16,8 +16,27 @@ defmodule OpenforumWeb.Auth.Dashboard.Index do
       |> assign(:pending_approvals, Dashboard.pending_for(user))
       |> assign(:recent_activity, Dashboard.recent_activity())
       |> assign(:quick_actions, quick_actions())
+      |> assign(:analytics, Dashboard.analytics())
+      |> assign(:system_health, Dashboard.system_health())
+      |> assign(:system_time, DateTime.utc_now())
+
+    if connected?(socket) do
+      Process.send_after(self(), :dashboard_clock_tick, 1_000)
+      Process.send_after(self(), :dashboard_health_tick, 30_000)
+    end
 
     {:ok, socket}
+  end
+
+  @impl true
+  def handle_info(:dashboard_clock_tick, socket) do
+    Process.send_after(self(), :dashboard_clock_tick, 1_000)
+    {:noreply, assign(socket, :system_time, DateTime.utc_now())}
+  end
+
+  def handle_info(:dashboard_health_tick, socket) do
+    Process.send_after(self(), :dashboard_health_tick, 30_000)
+    {:noreply, assign(socket, :system_health, Dashboard.system_health())}
   end
 
   # NOTE: make sure these hrefs match your router.
@@ -68,6 +87,26 @@ defmodule OpenforumWeb.Auth.Dashboard.Index do
       secs < 86_400 -> "#{div(secs, 3_600)} hr ago"
       secs < 172_800 -> "Yesterday"
       true -> "#{div(secs, 86_400)} days ago"
+    end
+  end
+
+  defp service_status(:healthy), do: "Operational"
+  defp service_status(_), do: "Needs attention"
+
+  defp status_tone(:healthy), do: "bg-emerald-500"
+  defp status_tone(_), do: "bg-rose-500"
+
+  defp format_uptime(seconds) when seconds < 60, do: "#{seconds}s"
+
+  defp format_uptime(seconds) do
+    days = div(seconds, 86_400)
+    hours = div(rem(seconds, 86_400), 3_600)
+    minutes = div(rem(seconds, 3_600), 60)
+
+    cond do
+      days > 0 -> "#{days}d #{hours}h"
+      hours > 0 -> "#{hours}h #{minutes}m"
+      true -> "#{minutes}m"
     end
   end
 end

@@ -6,32 +6,32 @@
   >
     <main class="bg-[#FAFAF7]">
       <%!-- ============ HEADER ============ --%>
-      <section class="relative overflow-hidden bg-[#FAFAF7]">
+      <section class="relative isolate overflow-hidden border-b border-[#C9A227]/60 bg-[#0B2E4F]">
         <%!-- background photo, right side --%>
-          <div class="pointer-events-none absolute inset-0" aria-hidden="true">
-            <img
-              src={~p"/images/nac/bible.jpg"}
-              alt=""
-              class="absolute inset-y-0 right-0 h-full w-full object-cover object-center lg:w-[80%]"
-            />
-            <%!-- mobile: wash the photo out so text stays legible --%>
-            <div class="absolute inset-0 bg-[#FAFAF7]/80 lg:hidden"></div>
-            <%!-- desktop: solid on the left, fading to a clear photo on the right --%>
-            <div class="absolute inset-0 hidden bg-gradient-to-r from-[#FAFAF7] from-15% via-[#FAFAF7]/60 via-40% to-transparent lg:block">
-            </div>
-            <%!-- soft fade into the next section --%>
-            <div class="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#FAFAF7] to-transparent">
-            </div>
+        <div class="pointer-events-none absolute inset-0" aria-hidden="true">
+          <img
+            src={~p"/images/nac/bible.jpg"}
+            alt=""
+            class="absolute inset-y-0 right-0 h-full w-full object-cover object-center lg:w-[80%]"
+          />
+          <%!-- mobile: wash the photo out so text stays legible --%>
+          <div class="absolute inset-0 bg-[#071E35]/75 lg:hidden"></div>
+          <%!-- desktop: solid on the left, fading to a clear photo on the right --%>
+          <div class="absolute inset-0 hidden bg-gradient-to-r from-[#071E35]/95 from-15% via-[#0B2E4F]/80 via-50% to-[#0B2E4F]/20 lg:block">
           </div>
+          <%!-- soft fade into the next section --%>
+          <div class="absolute inset-0 bg-gradient-to-t from-[#071E35]/45 via-transparent to-[#071E35]/15">
+          </div>
+        </div>
 
         <div class="relative mx-auto max-w-[1280px] px-6 py-16 sm:px-8 lg:py-20">
-          <p class="text-xs font-semibold uppercase tracking-[0.14em] text-[#1769AA]">
+          <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#D8B746]">
             The Holy Bible
           </p>
-          <h1 class="mt-4 max-w-2xl text-4xl font-semibold leading-[1.1] tracking-tight text-[#0B2E4F] sm:text-5xl">
+          <h1 class="mt-4 max-w-2xl text-4xl font-semibold leading-[1.1] tracking-[-0.04em] text-white sm:text-5xl">
             Read the Scriptures
           </h1>
-          <p class="mt-5 max-w-xl text-base leading-relaxed text-[#6B7280] sm:text-lg">
+          <p class="mt-5 max-w-xl text-base leading-relaxed text-white/75 sm:text-lg">
             Sixty-six books across the Old and New Testaments. Choose a book to begin reading.
           </p>
 
@@ -76,7 +76,11 @@
       </section>
 
       <%!-- ============ OLD TESTAMENT ============ --%>
-      <section :if={@old_groups != []} id="old-testament" class="mx-auto max-w-[1280px] px-6 pb-16 sm:px-8">
+      <section
+        :if={@old_groups != []}
+        id="old-testament"
+        class="mx-auto max-w-[1280px] px-6 pb-16 sm:px-8"
+      >
         <div class="flex items-end justify-between border-b border-[#E5E7EB] pb-4">
           <h2 class="text-3xl font-semibold tracking-tight text-[#0B2E4F]">Old Testament</h2>
           <span class="text-sm text-[#6B7280]">{@old_count} books</span>
@@ -90,7 +94,7 @@
             <.link
               :for={book <- group.books}
               navigate={~p"/bible/#{book.slug}/1"}
-              class="group rounded-xl border border-[#E5E7EB] bg-white p-4 transition-all hover:border-[#4F7FA8]/30 hover:bg-[#EAF3F8]/40 hover:shadow-md"
+              class="group border border-[#E5E7EB] bg-white p-4 transition-all hover:border-[#4F7FA8]/30 hover:bg-[#EAF3F8]/40 hover:shadow-md"
             >
               <p class="text-base font-semibold text-[#0B2E4F]">{book.name}</p>
               <p class="mt-1 text-xs text-[#6B7280]">
@@ -117,7 +121,7 @@
               <.link
                 :for={book <- group.books}
                 navigate={~p"/bible/#{book.slug}/1"}
-                class="group rounded-xl border border-[#E5E7EB] bg-white p-4 transition-all hover:border-[#4F7FA8]/30 hover:bg-[#EAF3F8]/40 hover:shadow-md"
+                class="group border border-[#E5E7EB] bg-white p-4 transition-all hover:border-[#4F7FA8]/30 hover:bg-[#EAF3F8]/40 hover:shadow-md"
               >
                 <p class="text-base font-semibold text-[#0B2E4F]">{book.name}</p>
                 <p class="mt-1 text-xs text-[#6B7280]">
@@ -131,7 +135,7 @@
 
       <%!-- ============ EMPTY STATE ============ --%>
       <section :if={@result_count == 0} class="mx-auto max-w-[1280px] px-6 pb-20 sm:px-8">
-        <div class="mx-auto max-w-md rounded-xl border border-[#E5E7EB] bg-white p-10 text-center">
+        <div class="mx-auto max-w-md border border-[#E5E7EB] bg-white p-10 text-center">
           <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#EAF3F8]">
             <.icon name="hero-magnifying-glass" class="h-5 w-5 text-[#1769AA]" />
           </div>

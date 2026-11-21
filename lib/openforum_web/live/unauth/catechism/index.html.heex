@@ -6,37 +6,40 @@
   >
     <main class="bg-[#FAFAF7]">
       <%!-- ============ SECTION 1 — HEADER ============ --%>
-      <section class="relative overflow-hidden bg-[#FAFAF7]">
-          <%!-- background photo, right side --%>
-          <div class="pointer-events-none absolute inset-0" aria-hidden="true">
-            <img
-              src={~p"/images/nac/catechism.jpg"}
-              alt=""
-              class="absolute inset-y-0 right-0 h-full w-full object-cover object-center lg:w-[60%]"
-            />
-            <%!-- mobile: wash the photo out so text stays legible --%>
-            <div class="absolute inset-0 bg-[#FAFAF7]/80 lg:hidden"></div>
-            <%!-- desktop: solid on the left, fading to a clear photo on the right --%>
-            <div class="absolute inset-0 hidden bg-gradient-to-r from-[#FAFAF7] from-15% via-[#FAFAF7]/60 via-40% to-transparent lg:block">
-            </div>
-            <%!-- soft fade into the next section --%>
-            <div class="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#FAFAF7] to-transparent">
-            </div>
+      <section class="relative isolate overflow-hidden border-b border-[#C9A227]/60 bg-[#0B2E4F]">
+        <%!-- background photo, right side --%>
+        <div class="pointer-events-none absolute inset-0" aria-hidden="true">
+          <img
+            src={~p"/images/nac/catechism.jpg"}
+            alt=""
+            class="absolute inset-y-0 right-0 h-full w-full object-cover object-center lg:w-[60%]"
+          />
+          <%!-- mobile: wash the photo out so text stays legible --%>
+          <div class="absolute inset-0 bg-[#071E35]/75 lg:hidden"></div>
+          <%!-- desktop: solid on the left, fading to a clear photo on the right --%>
+          <div class="absolute inset-0 hidden bg-gradient-to-r from-[#071E35]/95 from-15% via-[#0B2E4F]/80 via-50% to-[#0B2E4F]/20 lg:block">
           </div>
+          <%!-- soft fade into the next section --%>
+          <div class="absolute inset-0 bg-gradient-to-t from-[#071E35]/45 via-transparent to-[#071E35]/15">
+          </div>
+        </div>
 
         <div class="relative mx-auto max-w-[1280px] px-6 py-14 sm:px-8 lg:py-16">
           <div class="max-w-2xl">
-            <h1 class="text-4xl font-semibold leading-[1.1] tracking-tight text-[#0B2E4F] sm:text-5xl">
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#D8B746]">
+              Church teaching
+            </p>
+            <h1 class="mt-4 text-4xl font-semibold leading-[1.1] tracking-[-0.04em] text-white sm:text-5xl">
               The Catechism of the New Apostolic Church
             </h1>
-            <p class="mt-5 max-w-xl text-base leading-relaxed text-[#6B7280] sm:text-lg">
+            <p class="mt-5 max-w-xl text-base leading-relaxed text-white/75 sm:text-lg">
               The doctrinal reference book of the New Apostolic Church. Choose a chapter to see
               what it covers.
             </p>
             <div class="mt-8 flex flex-wrap items-center gap-4">
               <.link
                 navigate={~p"/questions-answers"}
-                class="inline-flex items-center justify-center gap-2 rounded-md bg-[#1769AA] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#0B2E4F]"
+                class="inline-flex items-center justify-center gap-2 bg-[#C9A227] px-6 py-3 text-sm font-semibold text-[#0B2E4F] transition-colors hover:bg-[#D8B746]"
               >
                 <.icon name="hero-arrow-down-tray" class="h-4 w-4" /> Download the PDF
               </.link>
@@ -57,7 +60,7 @@
       <section class="mx-auto max-w-[1280px] px-6 pb-20 sm:px-8">
         <div class="grid grid-cols-1 gap-10 lg:grid-cols-[300px_1fr]">
           <%!-- mobile: collapsible chapter list --%>
-          <details class="rounded-xl border border-[#E5E7EB] bg-white lg:hidden">
+          <details class="border border-[#E5E7EB] bg-white lg:hidden">
             <summary class="cursor-pointer list-none px-4 py-3 text-sm font-medium text-[#0B2E4F]">
               Chapters
             </summary>
@@ -68,7 +71,7 @@
 
           <%!-- desktop: sticky chapter list --%>
           <aside class="hidden lg:block">
-            <div class="sticky top-6 rounded-xl border border-[#E5E7EB] bg-white p-3">
+            <div class="sticky top-6 border border-[#E5E7EB] bg-white p-3">
               <h2 class="px-3 pb-2 pt-1 text-sm font-semibold text-[#0B2E4F]">Contents</h2>
               <.chapter_nav chapters={@chapters} active_id={@active_id} />
             </div>
@@ -77,7 +80,7 @@
           <%!-- chapter panel --%>
           <article
             id="chapter-panel"
-            class="min-w-0 rounded-xl border border-[#E5E7EB] bg-white p-6 sm:p-10"
+            class="min-w-0 border border-[#E5E7EB] bg-white p-6 sm:p-10"
           >
             <p :if={@current.number} class="text-sm font-medium text-[#B8964F]">
               Chapter {@current.number}
@@ -104,7 +107,7 @@
                 href={@current.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                class="inline-flex items-center justify-center gap-2 rounded-md bg-[#1769AA] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#0B2E4F]"
+                class="inline-flex items-center justify-center gap-2 bg-[#C9A227] px-5 py-2.5 text-sm font-semibold text-[#0B2E4F] transition-colors hover:bg-[#D8B746]"
               >
                 Read this chapter on nak.org
                 <.icon name="hero-arrow-top-right-on-square" class="h-4 w-4" />
@@ -144,8 +147,7 @@
         <div class="mx-auto max-w-[1280px] px-6 py-12 text-center sm:px-8">
           <p class="mx-auto max-w-2xl text-sm leading-relaxed text-[#6B7280]">
             The Catechism is published by the New Apostolic Church International. Chapter
-            summaries here are brief overviews; the complete text is available at
-            <a
+            summaries here are brief overviews; the complete text is available at <a
               href={@source_url}
               target="_blank"
               rel="noopener noreferrer"

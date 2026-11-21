@@ -67,13 +67,17 @@ defmodule OpenforumWeb.Router do
       live "/approval-queue", ApprovalQueue.Index, :index
 
       live "/documents", Document.Index, :index
+      live "/media", Admin.Media.Index, :index
+      live "/media/new", Admin.Media.Index, :new
       live "/content", AllDocument.Index, :index
+      live "/published", Published.Index, :index
 
       live "/work_flows/:work_flow_id/steps", WorkFlowStepLive.Index, :index
       live "/work_flows/:work_flow_id/steps/new", WorkFlowStepLive.Index, :new
       live "/work_flows/:work_flow_id/steps/:id/edit", WorkFlowStepLive.Index, :edit
       live "/roles", RolesPermissions.Index, :index
       live "/profile", ProfileLive, :edit
+      live "/settings", Admin.Settings.Index, :index
 
       live "/users/settings", UserLive.Settings, :edit
       live "/users/settings/confirm-email/:token", UserLive.Settings, :confirm_email
@@ -104,6 +108,8 @@ defmodule OpenforumWeb.Router do
       live "/users/reset-password", UserLive.ResetPassword, :request
       live "/users/reset-password/:token", UserLive.ResetPassword, :reset
     end
+
+    get "/publications/:id/preview", Auth.DocumentPreviewController, :show_published
 
     post "/users/log-in", UserSessionController, :create
     delete "/users/log-out", UserSessionController, :delete

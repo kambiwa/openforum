@@ -1,148 +1,343 @@
 <Layouts.admin_app flash={@flash} current_scope={@current_scope} current_page={:dashboard}>
-  <div class="flex flex-col gap-6 p-6">
-    <%!-- Header --%>
-    <div class="flex flex-wrap items-end justify-between gap-3">
-      <div>
-        <h1 class="text-[1.25rem] font-bold text-[#0B2E4F]">
-          Welcome back, {@current_scope.user.first_name}
-        </h1>
-        <p class="mt-0.5 text-[0.82rem] text-[#6B7280]">
-          Here's what's happening across OpenForum today.
-        </p>
-      </div>
-
-      <div class="flex flex-wrap gap-1.5">
-        <span
-          :for={role <- @current_scope.user.roles}
-          class="rounded-full bg-[#EAF3F8] px-2.5 py-1 text-[0.7rem] font-medium text-[#1769AA]"
-        >
-          {role.name}
-        </span>
-      </div>
-    </div>
-
-    <%!-- Stat cards --%>
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-      <div
-        :for={s <- @stats}
-        class="rounded-xl border border-[#E5E7EB] bg-white p-5 transition hover:shadow-sm"
-      >
-        <div class="flex items-start justify-between">
-          <div>
-            <p class="text-[0.72rem] font-medium uppercase tracking-wide text-[#6B7280]">
-              {s.label}
-            </p>
-            <p class="mt-2 text-[1.9rem] font-bold leading-none text-[#0B2E4F]">{s.value}</p>
+  <div class="min-h-full bg-[#F3F6F8] p-5 lg:p-8">
+    <div class="mx-auto flex max-w-[1600px] flex-col gap-7">
+      <%!-- Dashboard header --%>
+      <div class="grid gap-5 xl:grid-cols-[1fr_auto] xl:items-end">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-[#1769AA]">
+            OpenForum overview
+          </p>
+          <h1 class="mt-2 text-3xl font-semibold tracking-[-0.04em] text-[#0B2E4F] sm:text-4xl">
+            Welcome back, {@current_scope.user.first_name}
+          </h1>
+          <p class="mt-2 text-sm leading-6 text-[#64748B]">
+            A clear view of your content, approvals, and platform health.
+          </p>
+          <div class="mt-4 flex flex-wrap gap-2">
+            <span
+              :for={role <- @current_scope.user.roles}
+              class="border border-[#D5E1E8] bg-white px-3 py-1 text-xs font-medium text-[#1769AA]"
+            >
+              {role.name}
+            </span>
           </div>
-          <span class={["flex size-10 items-center justify-center rounded-lg", tone_classes(s.tone)]}>
-            <.icon name={s.icon} class="size-5" />
-          </span>
         </div>
-        <p class="mt-3 text-[0.75rem] text-[#6B7280]">{s.change}</p>
-      </div>
-    </div>
 
-    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-      <%!-- Pending approvals --%>
-      <div class="overflow-hidden rounded-xl border border-[#E5E7EB] bg-white lg:col-span-2">
-        <div class="flex items-center justify-between border-b border-[#E5E7EB] px-5 py-4">
+        <div class="flex items-center gap-4 border border-[#DCE5EA] bg-white px-5 py-4 shadow-[0_8px_24px_rgba(11,46,79,0.04)]">
+          <span class="flex size-11 items-center justify-center bg-[#0B2E4F] text-[#D8B746]">
+            <.icon name="hero-clock" class="size-5" />
+          </span>
           <div>
-            <h3 class="text-sm font-semibold text-[#0B2E4F]">Pending Approval</h3>
-            <p class="text-[0.75rem] text-[#6B7280]">Waiting on your review</p>
+            <p class="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6B7280]">
+              System time · UTC
+            </p>
+            <p
+              id="dashboard-system-time"
+              class="mt-0.5 font-mono text-xl font-semibold tabular-nums text-[#0B2E4F]"
+            >
+              {Calendar.strftime(@system_time, "%H:%M:%S")}
+            </p>
+            <p class="text-xs text-[#64748B]">
+              {Calendar.strftime(@system_time, "%A, %d %B %Y")}
+            </p>
           </div>
-          <.link
-            navigate={~p"/admin/approval-queue"}
-            class="text-[0.78rem] font-medium text-[#1769AA] hover:text-[#0B2E4F]"
+        </div>
+      </div>
+
+      <%!-- Stat cards --%>
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div
+          :for={s <- @stats}
+          class="border border-[#DCE5EA] bg-white p-5 transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(11,46,79,0.07)]"
+        >
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-[0.72rem] font-medium uppercase tracking-wide text-[#6B7280]">
+                {s.label}
+              </p>
+              <p class="mt-2 text-[1.9rem] font-bold leading-none text-[#0B2E4F]">{s.value}</p>
+            </div>
+            <span class={[
+              "flex size-10 items-center justify-center rounded-lg",
+              tone_classes(s.tone)
+            ]}>
+              <.icon name={s.icon} class="size-5" />
+            </span>
+          </div>
+          <p class="mt-3 text-[0.75rem] text-[#6B7280]">{s.change}</p>
+        </div>
+      </div>
+
+      <%!-- Analytics --%>
+      <section class="grid gap-5 xl:grid-cols-2" aria-label="Content analytics">
+        <article class="border border-[#DCE5EA] bg-white p-5 sm:p-6">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-[0.16em] text-[#1769AA]">
+                Content pipeline
+              </p>
+              <h2 class="mt-1 text-lg font-semibold text-[#0B2E4F]">Content by status</h2>
+              <p class="mt-1 text-sm text-[#64748B]">
+                Distribution across the review and publication stages.
+              </p>
+            </div>
+            <span class="flex size-9 items-center justify-center border border-[#DCE5EA] text-[#1769AA]">
+              <.icon name="hero-chart-pie" class="size-4" />
+            </span>
+          </div>
+
+          <div class="mt-6 grid items-center gap-6 sm:grid-cols-[180px_1fr]">
+            <div class="relative mx-auto size-44">
+              <svg
+                viewBox="0 0 42 42"
+                role="img"
+                aria-label="Content status distribution"
+                class="size-full -rotate-90"
+              >
+                <circle cx="21" cy="21" r="15.915" fill="none" stroke="#EDF1F4" stroke-width="7" />
+                <circle
+                  :for={segment <- @analytics.status_pie}
+                  cx="21"
+                  cy="21"
+                  r="15.915"
+                  fill="none"
+                  stroke={segment.color}
+                  stroke-width="7"
+                  stroke-dasharray={"#{segment.percent} #{100 - segment.percent}"}
+                  stroke-dashoffset={-segment.offset}
+                />
+              </svg>
+              <div class="absolute inset-0 flex flex-col items-center justify-center">
+                <span class="text-3xl font-semibold tracking-tight text-[#0B2E4F]">{@analytics.total_content}</span>
+                <span class="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#6B7280]">Total items</span>
+              </div>
+            </div>
+
+            <ul class="grid gap-3 sm:grid-cols-2">
+              <li :for={segment <- @analytics.status_pie} class="flex items-center gap-2.5">
+                <span class="size-2.5 shrink-0" style={"background-color: #{segment.color}"}></span>
+                <span class="min-w-0 flex-1 text-sm text-[#526579]">{segment.label}</span>
+                <span class="text-sm font-semibold tabular-nums text-[#0B2E4F]">{segment.count}</span>
+              </li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="border border-[#DCE5EA] bg-white p-5 sm:p-6">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <p class="text-xs font-semibold uppercase tracking-[0.16em] text-[#1769AA]">
+                Publishing activity
+              </p>
+              <h2 class="mt-1 text-lg font-semibold text-[#0B2E4F]">Uploads over six months</h2>
+              <p class="mt-1 text-sm text-[#64748B]">
+                New documents and media resources added each month.
+              </p>
+            </div>
+            <span class="flex size-9 items-center justify-center border border-[#DCE5EA] text-[#1769AA]">
+              <.icon name="hero-chart-bar" class="size-4" />
+            </span>
+          </div>
+
+          <div class="mt-5">
+            <svg
+              viewBox="0 0 520 160"
+              role="img"
+              aria-label="Monthly uploads bar chart"
+              class="h-44 w-full overflow-visible"
+            >
+              <line x1="10" y1="132" x2="510" y2="132" stroke="#DCE5EA" stroke-width="1" />
+              <g :for={month <- @analytics.monthly_activity}>
+                <rect
+                  x={month.x}
+                  y={month.y}
+                  width="42"
+                  height={month.height}
+                  fill="#1769AA"
+                  class="transition-all duration-300 hover:fill-[#C9A227]"
+                >
+                  <title>{"#{month.count} uploads in #{month.label}"}</title>
+                </rect>
+                <text x={month.x + 21} y="153" text-anchor="middle" fill="#718096" font-size="11">
+                  {month.label}
+                </text>
+                <text
+                  x={month.x + 21}
+                  y={month.y - 7}
+                  text-anchor="middle"
+                  fill="#0B2E4F"
+                  font-size="10"
+                  font-weight="600"
+                >
+                  {month.count}
+                </text>
+              </g>
+            </svg>
+            <div class="mt-1 flex items-center gap-2 text-xs text-[#64748B]">
+              <span class="size-2 bg-[#1769AA]"></span> New items added
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <%!-- System health --%>
+      <section class="border border-[#DCE5EA] bg-white" aria-label="System health">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-[#E8EDF0] px-5 py-4 sm:px-6">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.16em] text-[#1769AA]">
+              Platform status
+            </p>
+            <h2 class="mt-1 text-lg font-semibold text-[#0B2E4F]">System health</h2>
+          </div>
+          <p class="text-xs text-[#718096]">
+            Checked {Calendar.strftime(@system_health.checked_at, "%H:%M:%S UTC")}
+          </p>
+        </div>
+        <div class="grid divide-y divide-[#E8EDF0] sm:grid-cols-2 sm:divide-x sm:divide-y-0 xl:grid-cols-4">
+          <div class="flex items-center gap-3 px-5 py-4 sm:px-6">
+            <span class={["size-2.5 shrink-0", status_tone(:healthy)]}></span>
+            <div>
+              <p class="text-xs text-[#718096]">Application</p><p class="mt-0.5 text-sm font-semibold text-[#0B2E4F]">
+                Operational
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 px-5 py-4 sm:px-6">
+            <span class={["size-2.5 shrink-0", status_tone(@system_health.database)]}></span>
+            <div>
+              <p class="text-xs text-[#718096]">Database</p><p class="mt-0.5 text-sm font-semibold text-[#0B2E4F]">
+                {service_status(@system_health.database)}
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 px-5 py-4 sm:px-6">
+            <span class={["size-2.5 shrink-0", status_tone(@system_health.storage)]}></span>
+            <div>
+              <p class="text-xs text-[#718096]">Upload storage</p><p class="mt-0.5 text-sm font-semibold text-[#0B2E4F]">
+                {service_status(@system_health.storage)}
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center justify-between gap-3 px-5 py-4 sm:px-6">
+            <div>
+              <p class="text-xs text-[#718096]">Server uptime</p><p class="mt-0.5 text-sm font-semibold text-[#0B2E4F]">
+                {format_uptime(@system_health.uptime_seconds)}
+              </p>
+            </div>
+            <div class="text-right">
+              <p class="text-xs text-[#718096]">Runtime memory</p><p class="mt-0.5 text-sm font-semibold tabular-nums text-[#0B2E4F]">
+                {@system_health.memory_mb} MB
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <%!-- Pending approvals --%>
+        <div class="overflow-hidden rounded-xl border border-[#E5E7EB] bg-white lg:col-span-2">
+          <div class="flex items-center justify-between border-b border-[#E5E7EB] px-5 py-4">
+            <div>
+              <h3 class="text-sm font-semibold text-[#0B2E4F]">Pending Approval</h3>
+              <p class="text-[0.75rem] text-[#6B7280]">Waiting on your review</p>
+            </div>
+            <.link
+              navigate={~p"/admin/approval-queue"}
+              class="text-[0.78rem] font-medium text-[#1769AA] hover:text-[#0B2E4F]"
+            >
+              View all →
+            </.link>
+          </div>
+
+          <ul :if={@pending_approvals != []} class="divide-y divide-[#F1F5F9]">
+            <li
+              :for={item <- @pending_approvals}
+              class="flex items-center gap-4 px-5 py-4 hover:bg-[#F8FAFC]"
+            >
+              <span class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+                <.icon name="hero-document-text" class="size-4" />
+              </span>
+
+              <div class="min-w-0 flex-1">
+                <p class="truncate text-[0.85rem] font-medium text-[#252525]">{item.title}</p>
+                <p class="truncate text-[0.75rem] text-[#6B7280]">
+                  {item.category && item.category.name}
+                  <span :if={item.current_step}> · {item.current_step.name}</span>
+                  · by {full_name(item.author)}
+                </p>
+              </div>
+
+              <div class="flex shrink-0 flex-col items-end gap-1">
+                <span class="text-[0.72rem] text-[#6B7280]">{time_ago(item.updated_at)}</span>
+                <.link
+                  navigate={~p"/admin/approval-queue"}
+                  class="rounded-md bg-[#EAF3F8] px-2.5 py-1 text-[0.72rem] font-medium text-[#1769AA] hover:bg-[#4F7FA8]/20"
+                >
+                  Review
+                </.link>
+              </div>
+            </li>
+          </ul>
+
+          <div :if={@pending_approvals == []} class="flex flex-col items-center gap-2 px-5 py-12">
+            <span class="flex size-10 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+              <.icon name="hero-check" class="size-5" />
+            </span>
+            <p class="text-sm font-medium text-[#0B2E4F]">You're all caught up</p>
+            <p class="text-[0.78rem] text-[#6B7280]">Nothing is waiting for your review.</p>
+          </div>
+        </div>
+
+        <%!-- Recent activity --%>
+        <div class="overflow-hidden rounded-xl border border-[#E5E7EB] bg-white">
+          <div class="border-b border-[#E5E7EB] px-5 py-4">
+            <h3 class="text-sm font-semibold text-[#0B2E4F]">Recent Activity</h3>
+            <p class="text-[0.75rem] text-[#6B7280]">Latest workflow actions</p>
+          </div>
+
+          <ul :if={@recent_activity != []} class="divide-y divide-[#F1F5F9]">
+            <li :for={a <- @recent_activity} class="flex gap-3 px-5 py-4">
+              <span class={[
+                "flex size-8 shrink-0 items-center justify-center rounded-full",
+                activity_icon_classes(a.action)
+              ]}>
+                <.icon name={activity_icon(a.action)} class="size-4" />
+              </span>
+              <div class="min-w-0">
+                <p class="text-[0.82rem] text-[#252525]">
+                  <span class="font-medium">{full_name(a)}</span>
+                  {activity_verb(a.action)}
+                  <span class="font-medium">"{a.title}"</span>
+                </p>
+                <p class="mt-0.5 text-[0.72rem] text-[#6B7280]">{time_ago(a.at)}</p>
+              </div>
+            </li>
+          </ul>
+
+          <p
+            :if={@recent_activity == []}
+            class="px-5 py-12 text-center text-[0.8rem] text-[#6B7280]"
           >
-            View all →
+            No activity yet.
+          </p>
+        </div>
+      </div>
+
+      <%!-- Quick actions --%>
+      <div>
+        <h3 class="mb-3 text-sm font-semibold text-[#0B2E4F]">Quick Actions</h3>
+        <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <.link
+            :for={q <- @quick_actions}
+            navigate={q.href}
+            class="group flex items-center gap-3 rounded-xl border border-[#E5E7EB] bg-white px-4 py-3.5 transition hover:border-[#1769AA] hover:shadow-sm"
+          >
+            <span class="flex size-9 items-center justify-center rounded-lg bg-[#EAF3F8] text-[#1769AA] group-hover:bg-[#1769AA] group-hover:text-white">
+              <.icon name={q.icon} class="size-4" />
+            </span>
+            <span class="text-[0.82rem] font-medium text-[#0B2E4F]">{q.label}</span>
           </.link>
         </div>
-
-        <ul :if={@pending_approvals != []} class="divide-y divide-[#F1F5F9]">
-          <li
-            :for={item <- @pending_approvals}
-            class="flex items-center gap-4 px-5 py-4 hover:bg-[#F8FAFC]"
-          >
-            <span class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
-              <.icon name="hero-document-text" class="size-4" />
-            </span>
-
-            <div class="min-w-0 flex-1">
-              <p class="truncate text-[0.85rem] font-medium text-[#252525]">{item.title}</p>
-              <p class="truncate text-[0.75rem] text-[#6B7280]">
-                {item.category && item.category.name}
-                <span :if={item.current_step}> · {item.current_step.name}</span>
-                · by {full_name(item.author)}
-              </p>
-            </div>
-
-            <div class="flex shrink-0 flex-col items-end gap-1">
-              <span class="text-[0.72rem] text-[#6B7280]">{time_ago(item.updated_at)}</span>
-              <.link
-                navigate={~p"/admin/approval-queue"}
-                class="rounded-md bg-[#EAF3F8] px-2.5 py-1 text-[0.72rem] font-medium text-[#1769AA] hover:bg-[#4F7FA8]/20"
-              >
-                Review
-              </.link>
-            </div>
-          </li>
-        </ul>
-
-        <div :if={@pending_approvals == []} class="flex flex-col items-center gap-2 px-5 py-12">
-          <span class="flex size-10 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
-            <.icon name="hero-check" class="size-5" />
-          </span>
-          <p class="text-sm font-medium text-[#0B2E4F]">You're all caught up</p>
-          <p class="text-[0.78rem] text-[#6B7280]">Nothing is waiting for your review.</p>
-        </div>
-      </div>
-
-      <%!-- Recent activity --%>
-      <div class="overflow-hidden rounded-xl border border-[#E5E7EB] bg-white">
-        <div class="border-b border-[#E5E7EB] px-5 py-4">
-          <h3 class="text-sm font-semibold text-[#0B2E4F]">Recent Activity</h3>
-          <p class="text-[0.75rem] text-[#6B7280]">Latest workflow actions</p>
-        </div>
-
-        <ul :if={@recent_activity != []} class="divide-y divide-[#F1F5F9]">
-          <li :for={a <- @recent_activity} class="flex gap-3 px-5 py-4">
-            <span class={[
-              "flex size-8 shrink-0 items-center justify-center rounded-full",
-              activity_icon_classes(a.action)
-            ]}>
-              <.icon name={activity_icon(a.action)} class="size-4" />
-            </span>
-            <div class="min-w-0">
-              <p class="text-[0.82rem] text-[#252525]">
-                <span class="font-medium">{full_name(a)}</span>
-                {activity_verb(a.action)}
-                <span class="font-medium">"{a.title}"</span>
-              </p>
-              <p class="mt-0.5 text-[0.72rem] text-[#6B7280]">{time_ago(a.at)}</p>
-            </div>
-          </li>
-        </ul>
-
-        <p :if={@recent_activity == []} class="px-5 py-12 text-center text-[0.8rem] text-[#6B7280]">
-          No activity yet.
-        </p>
-      </div>
-    </div>
-
-    <%!-- Quick actions --%>
-    <div>
-      <h3 class="mb-3 text-sm font-semibold text-[#0B2E4F]">Quick Actions</h3>
-      <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <.link
-          :for={q <- @quick_actions}
-          navigate={q.href}
-          class="group flex items-center gap-3 rounded-xl border border-[#E5E7EB] bg-white px-4 py-3.5 transition hover:border-[#1769AA] hover:shadow-sm"
-        >
-          <span class="flex size-9 items-center justify-center rounded-lg bg-[#EAF3F8] text-[#1769AA] group-hover:bg-[#1769AA] group-hover:text-white">
-            <.icon name={q.icon} class="size-4" />
-          </span>
-          <span class="text-[0.82rem] font-medium text-[#0B2E4F]">{q.label}</span>
-        </.link>
       </div>
     </div>
   </div>

@@ -6,37 +6,40 @@
   >
     <main class="bg-[#FAFAF7]">
       <%!-- ============ SECTION 1 — HEADER ============ --%>
-      <section class="relative overflow-hidden bg-[#FAFAF7]">
-          <%!-- background photo, right side --%>
-          <div class="pointer-events-none absolute inset-0" aria-hidden="true">
-            <img
-              src={~p"/images/nac/chalice.jpg"}
-              alt=""
-              class="absolute inset-y-0 right-0 h-full w-full object-cover object-center lg:w-[60%]"
-            />
-            <%!-- mobile: wash the photo out so text stays legible --%>
-            <div class="absolute inset-0 bg-[#FAFAF7]/80 lg:hidden"></div>
-            <%!-- desktop: solid on the left, fading to a clear photo on the right --%>
-            <div class="absolute inset-0 hidden bg-gradient-to-r from-[#FAFAF7] from-15% via-[#FAFAF7]/60 via-40% to-transparent lg:block">
-            </div>
-            <%!-- soft fade into the next section --%>
-            <div class="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#FAFAF7] to-transparent">
-            </div>
+      <section class="relative isolate overflow-hidden border-b border-[#C9A227]/60 bg-[#0B2E4F]">
+        <%!-- background photo, right side --%>
+        <div class="pointer-events-none absolute inset-0" aria-hidden="true">
+          <img
+            src={~p"/images/nac/chalice.jpg"}
+            alt=""
+            class="absolute inset-y-0 right-0 h-full w-full object-cover object-center lg:w-[60%]"
+          />
+          <%!-- mobile: wash the photo out so text stays legible --%>
+          <div class="absolute inset-0 bg-[#071E35]/75 lg:hidden"></div>
+          <%!-- desktop: solid on the left, fading to a clear photo on the right --%>
+          <div class="absolute inset-0 hidden bg-gradient-to-r from-[#071E35]/95 from-15% via-[#0B2E4F]/80 via-50% to-[#0B2E4F]/20 lg:block">
           </div>
+          <%!-- soft fade into the next section --%>
+          <div class="absolute inset-0 bg-gradient-to-t from-[#071E35]/45 via-transparent to-[#071E35]/15">
+          </div>
+        </div>
 
         <div class="relative mx-auto max-w-[1280px] px-6 py-16 sm:px-8 lg:py-20">
           <div class="max-w-2xl">
-            <h1 class="text-4xl font-semibold leading-[1.1] tracking-tight text-[#0B2E4F] sm:text-5xl">
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[#D8B746]">
+              Guided discovery
+            </p>
+            <h1 class="mt-4 text-4xl font-semibold leading-[1.1] tracking-[-0.04em] text-white sm:text-5xl">
               Start Learning
             </h1>
-            <p class="mt-5 max-w-lg text-base leading-relaxed text-[#6B7280] sm:text-lg">
+            <p class="mt-5 max-w-lg text-base leading-relaxed text-white/75 sm:text-lg">
               Follow a guided learning path through Scripture, doctrine, the Catechism and
               common questions. Each path is made of short lessons you can take at your own pace.
             </p>
             <div class="mt-8 flex flex-wrap items-center gap-4">
               <a
                 href="#paths"
-                class="inline-flex items-center justify-center rounded-md bg-[#1769AA] px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-[#0B2E4F]"
+                class="inline-flex items-center justify-center bg-[#C9A227] px-6 py-3 text-sm font-semibold text-[#0B2E4F] transition-colors hover:bg-[#D8B746]"
               >
                 Browse Learning Paths
               </a>
@@ -99,7 +102,7 @@
         <div class="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           <article
             :for={path <- @visible_paths}
-            class="flex flex-col rounded-xl border border-[#E5E7EB] bg-white p-6 transition-shadow hover:shadow-md"
+            class="flex flex-col border border-[#E5E7EB] bg-white p-6 transition-shadow hover:shadow-md"
           >
             <div class="flex items-center justify-between">
               <div class="flex h-11 w-11 items-center justify-center rounded-lg bg-[#EAF3F8]">

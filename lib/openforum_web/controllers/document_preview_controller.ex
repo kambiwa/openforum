@@ -4,6 +4,7 @@ defmodule OpenforumWeb.Auth.DocumentPreviewController do
   require Logger
 
   alias Openforum.Context.Documents
+  alias Openforum.Context.Publications
 
   # Bump this whenever the HTML, CSS or footer below changes, so cached PDFs rebuild.
   @template_version 1
@@ -14,7 +15,6 @@ defmodule OpenforumWeb.Auth.DocumentPreviewController do
   @logo_data_uri "data:image/jpeg;base64," <> Base.encode64(File.read!(@logo_path))
 
   def show(conn, %{"id" => id}) do
-
     IO.inspect(conn, label: "=======Current Scope")
 
     user = conn.assigns.current_scope.user
@@ -38,7 +38,41 @@ defmodule OpenforumWeb.Auth.DocumentPreviewController do
     end
   end
 
-  defp send_pdf(conn, document, pdf, etag) do
+  def show_published(conn, %{"id" => id}) do
+    case Publications.get_published_content(id) do
+      nil ->
+        send_resp(conn, 404, "Publication not found")
+
+      document ->
+        etag = etag(document)
+
+        if etag in get_req_header(conn, "if-none-match") do
+          conn
+          |> put_resp_header("etag", etag)
+          |> put_resp_header("cache-control", "public, max-age=0, must-revalidate")
+          |> send_resp(304, "")
+        else
+          case fetch_pdf(document) do
+            {:ok, pdf} ->
+              conn
+              |> send_pdf(document, pdf, etag, "public, max-age=0, must-revalidate")
+
+            {:error, reason} ->
+              Logger.error(
+                "Publication PDF generation failed for #{document.id}: #{inspect(reason)}"
+              )
+
+              send_resp(
+                conn,
+                500,
+                "The publication PDF could not be generated. Please try again."
+              )
+          end
+        end
+    end
+  end
+
+  defp send_pdf(conn, document, pdf, etag, cache_control \\ "private, no-cache") do
     disposition = if conn.params["download"], do: "attachment", else: "inline"
 
     conn
@@ -49,7 +83,7 @@ defmodule OpenforumWeb.Auth.DocumentPreviewController do
     )
     # no-cache means "revalidate every time": the browser asks, we answer 304
     # cheaply (no Chrome involved) when nothing changed.
-    |> put_resp_header("cache-control", "private, no-cache")
+    |> put_resp_header("cache-control", cache_control)
     |> put_resp_header("etag", etag)
     |> send_resp(200, pdf)
   end

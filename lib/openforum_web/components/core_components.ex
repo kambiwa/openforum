@@ -72,7 +72,7 @@ defmodule OpenforumWeb.CoreComponents do
         @kind == :info && "!bg-emerald-500 !text-white !border-emerald-500",
         @kind == :error && "alert-error"
       ]}>
-      <div class="flash-progress"></div>
+        <div class="flash-progress"></div>
         <.icon
           :if={@kind == :info}
           name="hero-check-circle"
@@ -145,20 +145,16 @@ defmodule OpenforumWeb.CoreComponents do
         <div class="flex min-h-full items-center justify-center p-4">
           <div
             id={"#{@id}-container"}
-            style="background: #fff; border: 1px solid #E8E2D9; border-top: 3px solid #4675c1;
-                  border-radius: 0.75rem; padding: 1.5rem; width: 100%; max-width: 42rem;
-                  box-shadow: 0 20px 60px rgba(0,0,0,0.12);"
+            class="theme-modal-panel w-full max-w-2xl rounded-xl border border-[#E5E7EB] border-t-[3px] border-t-[#1769AA] bg-white p-6 shadow-[0_20px_60px_rgba(0,0,0,0.12)]"
             phx-click-away={@on_cancel}
             phx-window-keydown={@on_cancel}
             phx-key="escape"
           >
-            <div style="display: flex; justify-content: flex-end; margin-bottom: 0.75rem;">
+            <div class="mb-3 flex justify-end">
               <button
                 phx-click={@on_cancel}
-                style="background: none; border: none; cursor: pointer; color: #afc7f0; padding: 0.25rem;"
-                onmouseover="this.style.color='#374151'"
-                onmouseout="this.style.color='#9ca3af'"
                 aria-label="Close"
+                class="theme-modal-close border-0 bg-transparent p-1 text-[#1769AA] transition-colors hover:text-[#0B2E4F]"
               >
                 <.icon name="hero-x-mark" class="size-5" />
               </button>
@@ -367,19 +363,19 @@ defmodule OpenforumWeb.CoreComponents do
 
   ## Examples
 
-```heex
+  ```heex
   <.input field={@form[:email]} type="email" />
   <.input name="my-input" errors={["oh no!"]} />
-```
+  ```
 
   ## Select type
 
   When using `type="select"`, you must pass the `options` and optionally
   a `value` to mark which option should be preselected.
 
-```heex
+  ```heex
   <.input field={@form[:user_type]} type="select" options={["Admin": "admin", "User": "user"]} />
-```
+  ```
 
   For more information on what kind of data can be passed to `options` see
   [`options_for_select`](https://phoenix-html.hexdocs.pm/Phoenix.HTML.Form.html#options_for_select/2).

@@ -10,6 +10,7 @@ defmodule Openforum.Accounts.UserToken do
   # since someone with access to the email may take over the account.
   @magic_link_validity_in_minutes 15
   @change_email_validity_in_days 7
+  @password_reset_validity_in_hours 24
   @session_validity_in_days 14
 
   schema "users_tokens" do
@@ -60,6 +61,7 @@ defmodule Openforum.Accounts.UserToken do
       from token in by_token_and_context_query(token, "session"),
         join: user in assoc(token, :user),
         where: token.inserted_at > ago(@session_validity_in_days, "day"),
+        where: user.is_active == true,
         select: {%{user | authenticated_at: token.authenticated_at}, token.inserted_at}
 
     {:ok, query}
@@ -142,6 +144,26 @@ defmodule Openforum.Accounts.UserToken do
         query =
           from token in by_token_and_context_query(hashed_token, context),
             where: token.inserted_at > ago(@change_email_validity_in_days, "day")
+
+        {:ok, query}
+
+      :error ->
+        :error
+    end
+  end
+
+  @doc "Returns the query for a valid, unexpired password reset token."
+  def verify_password_reset_token_query(token) do
+    case Base.url_decode64(token, padding: false) do
+      {:ok, decoded_token} ->
+        hashed_token = :crypto.hash(@hash_algorithm, decoded_token)
+
+        query =
+          from token in by_token_and_context_query(hashed_token, "reset_password"),
+            join: user in assoc(token, :user),
+            where: token.inserted_at > ago(^@password_reset_validity_in_hours, "hour"),
+            where: token.sent_to == user.email and user.is_active == true,
+            select: user
 
         {:ok, query}
 

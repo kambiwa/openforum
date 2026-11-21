@@ -5,6 +5,8 @@ defmodule OpenforumWeb.Auth.Users.Index do
   alias OpenforumWeb.Pagination
   alias Openforum.Accounts.User
   alias Openforum.Accounts
+  alias Openforum.Repo
+  alias OpenforumWeb.UserAuth
 
   @impl true
   def mount(_params, _session, socket) do
@@ -44,6 +46,14 @@ defmodule OpenforumWeb.Auth.Users.Index do
     |> assign(:user, %User{})
   end
 
+  defp apply_action(socket, :view, %{"id" => id}) do
+    user = Accounts.get_user!(id) |> Repo.preload(:roles)
+
+    socket
+    |> assign(:page_title, "User Details")
+    |> assign(:user, user)
+  end
+
   defp apply_action(socket, :index, _params) do
     socket
     |> assign(:page_title, "Users")
@@ -81,6 +91,71 @@ defmodule OpenforumWeb.Auth.Users.Index do
      |> assign(:page_title, "Edit User")
      |> assign(:user, Accounts.get_user!(id))
      |> assign(:live_action, :edit)}
+  end
+
+  def handle_event("view", %{"id" => id}, socket) do
+    user = Accounts.get_user!(id) |> Repo.preload(:roles)
+
+    {:noreply,
+     socket
+     |> assign(:page_title, "User Details")
+     |> assign(:user, user)
+     |> assign(:live_action, :view)}
+  end
+
+  def handle_event("toggle_user_active", %{"id" => id}, socket) do
+    user = Accounts.get_user!(id)
+    current_user = socket.assigns.current_scope.user
+
+    cond do
+      user.id == current_user.id and user.is_active ->
+        {:noreply, put_flash(socket, :error, "You cannot deactivate your own account.")}
+
+      true ->
+        active? = not user.is_active
+
+        case Accounts.set_user_active(user, active?) do
+          {:ok, _updated_user, tokens} ->
+            UserAuth.disconnect_sessions(tokens)
+
+            message =
+              if active?,
+                do: "User activated successfully.",
+                else: "User deactivated successfully."
+
+            {:noreply, socket |> fetch_filtered_users() |> put_flash(:info, message)}
+
+          {:error, changeset} ->
+            {:noreply,
+             put_flash(
+               socket,
+               :error,
+               "Could not update user status: #{inspect(changeset.errors)}"
+             )}
+        end
+    end
+  end
+
+  def handle_event("delete_user", %{"id" => id}, socket) do
+    user = Accounts.get_user!(id)
+
+    if user.id == socket.assigns.current_scope.user.id do
+      {:noreply, put_flash(socket, :error, "You cannot delete your own account.")}
+    else
+      case Accounts.delete_user(user) do
+        {:ok, _deleted_user} ->
+          {:noreply,
+           socket |> fetch_filtered_users() |> put_flash(:info, "User deleted successfully.")}
+
+        {:error, _changeset} ->
+          {:noreply,
+           put_flash(
+             socket,
+             :error,
+             "Could not delete this user because related records still exist."
+           )}
+      end
+    end
   end
 
   @impl true
@@ -196,12 +271,26 @@ defmodule OpenforumWeb.Auth.Users.Index do
             <h2 class="text-[0.85rem] font-semibold text-[#0B2E4F]">All Users</h2>
           </div>
 
-          <Table.table id="tbl_users" rows={@data}>
-            <:col :let={user} label="Name">
-              <span class="font-medium text-[#252525]">{user.first_name} {user.last_name}</span>
+          <Table.table id="tbl_users" rows={@data} loading={@data_loader} striped>
+            <:col :let={user} label="Profile">
+              <img
+                :if={user.avatar_url}
+                src={user.avatar_url}
+                alt={"#{user.first_name} #{user.last_name}"}
+                class="size-10 rounded-full object-cover ring-2 ring-[#EAF3F8]"
+              />
+              <span
+                :if={!user.avatar_url}
+                class="flex size-10 items-center justify-center rounded-full bg-[#0B2E4F] text-xs font-bold uppercase text-white"
+              >
+                {user_initials(user)}
+              </span>
             </:col>
-            <:col :let={user} label="Email">
-              <span class="text-[#6B7280]">{user.email}</span>
+            <:col :let={user} label="First name">
+              <span class="font-medium text-[#252525]">{user.first_name}</span>
+            </:col>
+            <:col :let={user} label="Last name">
+              <span class="font-medium text-[#252525]">{user.last_name}</span>
             </:col>
             <:col :let={user} label="Role">
               <span :if={user.roles == []} class="text-[#9CA3AF]">No role assigned</span>
@@ -212,39 +301,44 @@ defmodule OpenforumWeb.Auth.Users.Index do
 
             <:action :let={user}>
               <button
+                type="button"
+                phx-click="view"
+                phx-value-id={user.id}
+                class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-medium text-[#34495E] transition-colors hover:bg-[#F4F8FB]"
+              >
+                <.icon name="hero-eye" class="size-4" /> View
+              </button>
+              <button
+                type="button"
                 phx-click="edit"
                 phx-value-id={user.id}
-                class="inline-flex items-center gap-1 rounded-md bg-[#EAF3F8] px-2.5 py-1 text-xs font-medium text-[#1769AA] transition-colors hover:bg-[#4F7FA8]/20"
+                class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-medium text-[#34495E] transition-colors hover:bg-[#F4F8FB]"
               >
-                <.icon name="hero-pencil-square" class="size-3" /> Edit
+                <.icon name="hero-pencil-square" class="size-4" /> Edit
+              </button>
+              <button
+                type="button"
+                phx-click="toggle_user_active"
+                phx-value-id={user.id}
+                class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-medium text-amber-700 transition-colors hover:bg-amber-50"
+              >
+                <.icon
+                  name={if(user.is_active, do: "hero-no-symbol", else: "hero-check-circle")}
+                  class="size-4"
+                />
+                {if(user.is_active, do: "Deactivate", else: "Activate")}
+              </button>
+              <button
+                type="button"
+                phx-click="delete_user"
+                phx-value-id={user.id}
+                data-confirm={"Delete #{user.first_name} #{user.last_name}? This cannot be undone."}
+                class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-medium text-rose-600 transition-colors hover:bg-rose-50"
+              >
+                <.icon name="hero-trash" class="size-4" /> Delete
               </button>
             </:action>
           </Table.table>
-
-          <%!-- Loading spinner --%>
-          <div :if={@data_loader} class="p-10 text-center">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="mx-auto size-8 animate-spin text-[#1769AA]"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                class="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                stroke-width="4"
-              />
-              <path
-                class="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962
-                       7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              />
-            </svg>
-          </div>
 
           <%!-- Pagination --%>
           <div class="border-t border-[#E5E7EB]">
@@ -258,6 +352,62 @@ defmodule OpenforumWeb.Auth.Users.Index do
         </div>
 
         <%!-- ══ MODAL ══ --%>
+        <.modal
+          :if={@live_action == :view && @user}
+          id={"view-user-modal-#{@user.id}"}
+          show
+          on_cancel={JS.push("close")}
+        >
+          <div class="space-y-6 p-6">
+            <div class="flex items-center gap-4">
+              <img
+                :if={@user.avatar_url}
+                src={@user.avatar_url}
+                alt=""
+                class="size-16 rounded-full object-cover"
+              />
+              <span
+                :if={!@user.avatar_url}
+                class="flex size-16 items-center justify-center rounded-full bg-[#0B2E4F] text-lg font-bold text-white"
+              >
+                {user_initials(@user)}
+              </span>
+              <div>
+                <h2 class="text-lg font-bold text-[#0B2E4F]">
+                  {@user.first_name} {@user.last_name}
+                </h2>
+                <p class="text-sm text-[#6B7280]">{@user.email}</p>
+              </div>
+            </div>
+
+            <div class="space-y-3 border-t border-[#E5E7EB] pt-4">
+              <p class="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">
+                Assigned roles
+              </p>
+              <div class="flex flex-wrap gap-2">
+                <span
+                  :for={role <- @user.roles}
+                  class="rounded-full bg-[#EAF3F8] px-3 py-1 text-xs font-semibold text-[#1769AA]"
+                >
+                  {role.name}
+                </span>
+                <span :if={@user.roles == []} class="text-sm text-[#9CA3AF]">No roles assigned</span>
+              </div>
+              <p class="text-sm text-[#6B7280]">
+                Account status:
+                <span class={
+                  if(@user.is_active,
+                    do: "font-semibold text-emerald-700",
+                    else: "font-semibold text-rose-700"
+                  )
+                }>
+                  {if(@user.is_active, do: "Active", else: "Inactive")}
+                </span>
+              </p>
+            </div>
+          </div>
+        </.modal>
+
         <.modal
           :if={@live_action in [:new, :edit]}
           id={"crud-user-modal-#{(@user && @user.id) || :new}"}
@@ -276,5 +426,17 @@ defmodule OpenforumWeb.Auth.Users.Index do
       </div>
     </Layouts.admin_app>
     """
+  end
+
+  defp user_initials(user) do
+    initials =
+      [user.first_name, user.last_name]
+      |> Enum.map_join(fn
+        name when is_binary(name) and name != "" -> String.first(name)
+        _ -> ""
+      end)
+      |> String.upcase()
+
+    if initials == "", do: "?", else: initials
   end
 end

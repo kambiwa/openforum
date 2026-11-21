@@ -34,7 +34,7 @@ defmodule Openforum.Accounts do
   def get_user_by_email_and_password(email, password)
       when is_binary(email) and is_binary(password) do
     user = Repo.get_by(User, email: email)
-    if User.valid_password?(user, password), do: user
+    if User.valid_password?(user, password) and user.is_active, do: user
   end
 
   def get_user!(id), do: Repo.get!(User, id)
@@ -53,11 +53,58 @@ defmodule Openforum.Accounts do
     User.registration_changeset(user, attrs)
   end
 
-  def update_user(user, attrs) do
-    %User{}
-    |> User.update_changeset(user, attrs)
+  def update_user(%User{} = user, attrs) do
+    user
+    |> User.update_changeset(attrs)
     |> Repo.update()
   end
+
+  def change_user(%User{} = user, attrs \\ %{}) do
+    User.update_changeset(user, attrs)
+  end
+
+  def update_user_profile(%User{} = user, attrs) do
+    user
+    |> User.profile_changeset(attrs)
+    |> Repo.update()
+  end
+
+  def change_user_profile(%User{} = user, attrs \\ %{}) do
+    User.profile_changeset(user, attrs)
+  end
+
+  def set_user_active(%User{} = user, active?) when is_boolean(active?) do
+    case user |> Ecto.Changeset.change(is_active: active?) |> Repo.update() do
+      {:ok, updated_user} ->
+        tokens =
+          if active? do
+            []
+          else
+            token_query =
+              from(token in UserToken,
+                where: token.user_id == ^user.id and token.context == "session",
+                select: %{token: token.token}
+              )
+
+            Repo.all(token_query)
+          end
+
+        unless active? do
+          Repo.delete_all(
+            from(token in UserToken,
+              where: token.user_id == ^user.id and token.context == "session"
+            )
+          )
+        end
+
+        {:ok, updated_user, tokens}
+
+      error ->
+        error
+    end
+  end
+
+  def delete_user(%User{} = user), do: Repo.delete(user)
 
   ## ======================
   ## EMAIL (OPTIONAL KEEP)
@@ -95,6 +142,34 @@ defmodule Openforum.Accounts do
     user
     |> User.password_changeset(attrs)
     |> update_user_and_delete_all_tokens()
+  end
+
+  def deliver_user_reset_password_instructions(%User{} = user, url_fun)
+      when is_function(url_fun, 1) do
+    {encoded_token, user_token} = UserToken.build_email_token(user, "reset_password")
+    Repo.insert!(user_token)
+
+    UserNotifier.deliver_reset_password_instructions(user, url_fun.(encoded_token))
+  end
+
+  def valid_password_reset_token?(token) when is_binary(token) do
+    case UserToken.verify_password_reset_token_query(token) do
+      {:ok, query} -> Repo.exists?(query)
+      :error -> false
+    end
+  end
+
+  def valid_password_reset_token?(_token), do: false
+
+  def reset_user_password(token, attrs) when is_binary(token) do
+    with {:ok, query} <- UserToken.verify_password_reset_token_query(token),
+         %User{} = user <- Repo.one(query) do
+      user
+      |> User.password_changeset(attrs)
+      |> update_user_and_delete_all_tokens()
+    else
+      _ -> {:error, :invalid_token}
+    end
   end
 
   ## ======================
@@ -171,9 +246,9 @@ defmodule Openforum.Accounts do
   defp apply_status(query, ""), do: query
   defp apply_status(query, nil), do: query
 
-  defp apply_status(query, status) do
-    where(query, [f], f.status == ^status)
-  end
+  defp apply_status(query, "active"), do: where(query, [user], user.is_active == true)
+  defp apply_status(query, "inactive"), do: where(query, [user], user.is_active == false)
+  defp apply_status(query, _status), do: query
 
   defp apply_order(query, %{"sort_field" => field, "sort_direction" => direction}) do
     order = if direction == "asc", do: :asc, else: :desc

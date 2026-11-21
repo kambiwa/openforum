@@ -184,8 +184,15 @@ defmodule OpenforumWeb.Layouts do
 
   def admin_app(assigns) do
     ~H"""
-    <div class="drawer lg:drawer-open min-h-screen bg-[#F7F9FB]">
+    <div class="drawer admin-shell lg:drawer-open min-h-screen bg-[#F7F9FB]">
       <input id="admin-sidebar" type="checkbox" class="drawer-toggle" />
+      <input
+        id="admin-sidebar-collapse"
+        type="checkbox"
+        class="sr-only"
+        phx-hook=".AdminSidebarCollapse"
+        aria-label="Collapse admin sidebar"
+      />
 
       <%!-- MAIN CONTENT AREA --%>
       <div class="drawer-content flex flex-col min-w-0">
@@ -225,12 +232,12 @@ defmodule OpenforumWeb.Layouts do
               >
                 <.user_avatar user={@current_scope.user} />
 
-                <div class="hidden sm:block text-left">
-                  <p class="text-xs font-semibold text-[#252525]">
+                <div class="block min-w-0 max-w-24 text-left sm:max-w-40">
+                  <p class="truncate text-xs font-semibold text-[#252525]">
                     {@current_scope.user.first_name} {@current_scope.user.last_name}
                   </p>
 
-                  <p class="text-[0.68rem] text-[#6B7280]">
+                  <p class="truncate text-[0.68rem] text-[#6B7280]">
                     {role_label(@current_scope.user.roles)}
                   </p>
                 </div>
@@ -292,14 +299,14 @@ defmodule OpenforumWeb.Layouts do
       <div class="drawer-side z-40">
         <label for="admin-sidebar" aria-label="Close sidebar" class="drawer-overlay"></label>
 
-        <aside class="min-h-full w-72 bg-white border-r border-[#E5E7EB] flex flex-col">
+        <aside class="admin-sidebar min-h-full w-72 bg-white border-r border-[#E5E7EB] flex flex-col">
           <%!-- ADMIN BRAND --%>
-          <div class="h-16 px-5 flex items-center gap-3 border-b border-[#E5E7EB] shrink-0">
-            <div class="w-9 h-9 rounded-lg bg-[#0B2E4F] text-white flex items-center justify-center">
+          <div class="admin-sidebar-brand h-16 px-5 flex items-center gap-3 border-b border-[#E5E7EB] shrink-0">
+            <div class="admin-sidebar-brand-mark w-9 h-9 rounded-lg bg-[#0B2E4F] text-white flex items-center justify-center">
               <.icon name="hero-book-open" class="size-5" />
             </div>
 
-            <div>
+            <div class="admin-sidebar-brand-copy min-w-0 flex-1">
               <p class="font-bold text-sm tracking-tight text-[#0B2E4F]">
                 OpenForum
               </p>
@@ -308,162 +315,205 @@ defmodule OpenforumWeb.Layouts do
                 Administration
               </p>
             </div>
+
+            <label
+              for="admin-sidebar-collapse"
+              title="Collapse sidebar"
+              aria-label="Toggle sidebar width"
+              class="admin-sidebar-collapse-button hidden lg:flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-lg text-[#718096] transition hover:bg-[#EAF3F8] hover:text-[#1769AA]"
+            >
+              <.icon name="hero-chevron-double-left" class="admin-sidebar-collapse-icon size-4" />
+              <.icon name="hero-chevron-double-right" class="admin-sidebar-expand-icon size-4" />
+            </label>
           </div>
 
           <%!-- SIDEBAR NAVIGATION --%>
           <nav class="flex-1 px-3 py-5 overflow-y-auto">
-            <.sidebar_group label="Overview" />
-
-            <.sidebar_link
-              href={~p"/admin/dashboard"}
+            <.sidebar_group
+              label="Overview"
               icon="hero-squares-2x2"
-              label="Dashboard"
               active={@current_page == :dashboard}
-            />
+              open={@current_page == :dashboard}
+            >
+              <.sidebar_link
+                href={~p"/admin/dashboard"}
+                icon="hero-squares-2x2"
+                label="Dashboard"
+                active={@current_page == :dashboard}
+              />
+            </.sidebar_group>
 
-            <%!-- CONTENT --%>
-            <.sidebar_group label="Content" />
+            <.sidebar_group
+              label="Content"
+              icon="hero-folder-open"
+              active={@current_page in [:content, :documents, :approval_queue, :published, :media]}
+              open={@current_page in [:content, :documents, :approval_queue, :published, :media]}
+            >
+              <.sidebar_link
+                href={~p"/admin/content"}
+                icon="hero-document-text"
+                label="All Content"
+                active={@current_page == :content}
+              />
+              <.sidebar_link
+                href={~p"/admin/documents"}
+                icon="hero-pencil-square"
+                label="Documents"
+                active={@current_page == :documents}
+              />
+              <.sidebar_link
+                href={~p"/admin/approval-queue"}
+                icon="hero-clock"
+                label="Pending Approval"
+                active={@current_page == :approval_queue}
+              />
+              <.sidebar_link
+                href={~p"/admin/published"}
+                icon="hero-globe-alt"
+                label="Published"
+                active={@current_page == :published}
+              />
+              <.sidebar_link
+                href={~p"/admin/media"}
+                icon="hero-photo"
+                label="Media Library"
+                active={@current_page == :media}
+              />
+            </.sidebar_group>
 
-            <.sidebar_link
-              href={~p"/admin/content"}
-              icon="hero-document-text"
-              label="All Content"
-              active={@current_page == :content}
-            />
-
-            <.sidebar_link
-              href={~p"/admin/documents"}
-              icon="hero-pencil-square"
-              label="Documents"
-              active={@current_page == :documents}
-            />
-
-            <.sidebar_link
-              href={~p"/admin/approval-queue"}
-              icon="hero-clock"
-              label="Pending Approval"
-              active={@current_page == :approval_queue}
-            />
-
-            <.sidebar_link
-              href={~p"/admin/published"}
-              icon="hero-globe-alt"
-              label="Published"
-              active={@current_page == :published}
-            />
-
-            <.sidebar_link
-              href={~p"/admin/media"}
-              icon="hero-photo"
-              label="Media Library"
-              active={@current_page == :media}
-            />
-
-            <%!-- KNOWLEDGE --%>
-            <.sidebar_group label="Knowledge" />
-
-            <.sidebar_link
-              href={~p"/admin/bible"}
-              icon="hero-book-open"
-              label="Bible"
-              active={@current_page == :bible}
-            />
-
-            <.sidebar_link
-              href={~p"/admin/doctrine"}
+            <.sidebar_group
+              label="Knowledge"
               icon="hero-academic-cap"
-              label="Doctrine"
-              active={@current_page == :doctrine}
-            />
+              active={
+                @current_page in [
+                  :bible,
+                  :doctrine,
+                  :catechism,
+                  :questions_and_answers,
+                  :learning_paths
+                ]
+              }
+              open={
+                @current_page in [
+                  :bible,
+                  :doctrine,
+                  :catechism,
+                  :questions_and_answers,
+                  :learning_paths
+                ]
+              }
+            >
+              <.sidebar_link
+                href={~p"/admin/bible"}
+                icon="hero-book-open"
+                label="Bible"
+                active={@current_page == :bible}
+              />
+              <.sidebar_link
+                href={~p"/admin/doctrine"}
+                icon="hero-academic-cap"
+                label="Doctrine"
+                active={@current_page == :doctrine}
+              />
+              <.sidebar_link
+                href={~p"/admin/catechism"}
+                icon="hero-bookmark-square"
+                label="Catechism"
+                active={@current_page == :catechism}
+              />
+              <.sidebar_link
+                href={~p"/admin/questions-and-answers"}
+                icon="hero-question-mark-circle"
+                label="Questions & Answers"
+                active={@current_page == :questions_and_answers}
+              />
+              <.sidebar_link
+                href={~p"/admin/learning-paths"}
+                icon="hero-map"
+                label="Learning Paths"
+                active={@current_page == :learning_paths}
+              />
+            </.sidebar_group>
 
-            <.sidebar_link
-              href={~p"/admin/catechism"}
-              icon="hero-bookmark-square"
-              label="Catechism"
-              active={@current_page == :catechism}
-            />
-
-            <.sidebar_link
-              href={~p"/admin/questions-and-answers"}
-              icon="hero-question-mark-circle"
-              label="Questions & Answers"
-              active={@current_page == :questions_and_answers}
-            />
-
-            <.sidebar_link
-              href={~p"/admin/learning-paths"}
-              icon="hero-map"
-              label="Learning Paths"
-              active={@current_page == :learning_paths}
-            />
-
-            <%!-- WORKFLOW --%>
-            <.sidebar_group label="Workflow" />
-
-            <.sidebar_link
-              href={~p"/admin/work_flows"}
+            <.sidebar_group
+              label="Workflow"
               icon="hero-arrows-right-left"
-              label="Approval Workflows"
-              active={@current_page == :workflows}
-            />
+              active={@current_page in [:workflows, :reviews, :audit_logs]}
+              open={@current_page in [:workflows, :reviews, :audit_logs]}
+            >
+              <.sidebar_link
+                href={~p"/admin/work_flows"}
+                icon="hero-arrows-right-left"
+                label="Approval Workflows"
+                active={@current_page == :workflows}
+              />
+              <.sidebar_link
+                href={~p"/admin/reviews"}
+                icon="hero-check-badge"
+                label="Review History"
+                active={@current_page == :reviews}
+              />
+              <.sidebar_link
+                href={~p"/admin/audit-logs"}
+                icon="hero-clipboard-document-list"
+                label="Audit Trail"
+                active={@current_page == :audit_logs}
+              />
+            </.sidebar_group>
 
-            <.sidebar_link
-              href={~p"/admin/reviews"}
-              icon="hero-check-badge"
-              label="Review History"
-              active={@current_page == :reviews}
-            />
-
-            <.sidebar_link
-              href={~p"/admin/audit-logs"}
-              icon="hero-clipboard-document-list"
-              label="Audit Trail"
-              active={@current_page == :audit_logs}
-            />
-
-            <%!-- ORGANISATION --%>
-            <.sidebar_group label="Organisation" />
-
-            <.sidebar_link
-              href={~p"/admin/working_areas"}
+            <.sidebar_group
+              label="Organisation"
               icon="hero-building-office-2"
-              label="Working Areas"
-              active={@current_page == :working_areas}
-            />
+              active={@current_page in [:working_areas, :area_lead, :area_leads]}
+              open={@current_page in [:working_areas, :area_lead, :area_leads]}
+            >
+              <.sidebar_link
+                href={~p"/admin/working_areas"}
+                icon="hero-building-office-2"
+                label="Working Areas"
+                active={@current_page == :working_areas}
+              />
+              <.sidebar_link
+                href={~p"/admin/area_leads"}
+                icon="hero-users"
+                label="Area Leads"
+                active={@current_page in [:area_lead, :area_leads]}
+              />
+            </.sidebar_group>
 
-            <.sidebar_link
-              href={~p"/admin/area_leads"}
-              icon="hero-users"
-              label="Area Leads"
-              active={@current_page == :area_lead}
-            />
-
-            <%!-- ACCESS MANAGEMENT --%>
-            <.sidebar_group label="Access" />
-
-            <.sidebar_link
-              href={~p"/admin/users"}
-              icon="hero-users"
-              label="Users"
-              active={@current_page == :users}
-            />
-
-            <.sidebar_link
-              href={~p"/admin/roles"}
+            <.sidebar_group
+              label="Access"
               icon="hero-shield-check"
-              label="Roles & Permissions"
-              active={@current_page == :roles}
-            />
+              active={@current_page in [:users, :roles, :roles_permissions]}
+              open={@current_page in [:users, :roles, :roles_permissions]}
+            >
+              <.sidebar_link
+                href={~p"/admin/users"}
+                icon="hero-users"
+                label="Users"
+                active={@current_page == :users}
+              />
+              <.sidebar_link
+                href={~p"/admin/roles"}
+                icon="hero-shield-check"
+                label="Roles & Permissions"
+                active={@current_page in [:roles, :roles_permissions]}
+              />
+            </.sidebar_group>
 
-            <%!-- SYSTEM --%>
-            <.sidebar_group label="System" />
-
-            <.sidebar_link
-              href={~p"/admin/settings"}
+            <.sidebar_group
+              label="System"
               icon="hero-cog-6-tooth"
-              label="Settings"
               active={@current_page == :settings}
-            />
+              open={@current_page == :settings}
+            >
+              <.sidebar_link
+                href={~p"/admin/settings"}
+                icon="hero-cog-6-tooth"
+                label="Settings"
+                active={@current_page == :settings}
+              />
+            </.sidebar_group>
           </nav>
 
           <%!-- SIDEBAR FOOTER --%>
@@ -474,16 +524,43 @@ defmodule OpenforumWeb.Layouts do
               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[#6B7280] hover:bg-red-50 hover:text-red-600 transition-colors"
             >
               <.icon name="hero-arrow-right-on-rectangle" class="size-4" />
-              <span>Log out</span>
+              <span class="admin-sidebar-label">Log out</span>
             </.link>
 
-            <p class="text-[0.65rem] text-[#9CA3AF] mt-3 px-3">
+            <p class="admin-sidebar-copyright text-[0.65rem] text-[#9CA3AF] mt-3 px-3">
               © {Date.utc_today().year} OpenForum
             </p>
           </div>
         </aside>
       </div>
     </div>
+    <script :type={Phoenix.LiveView.ColocatedHook} name=".AdminSidebarCollapse">
+      export default {
+        mounted() {
+          const storageKey = "openforum-admin-sidebar-collapsed"
+
+          try {
+            this.el.checked = window.localStorage.getItem(storageKey) === "true"
+          } catch (_error) {
+            this.el.checked = false
+          }
+
+          this.onChange = () => {
+            try {
+              window.localStorage.setItem(storageKey, String(this.el.checked))
+            } catch (_error) {
+              // Keep the control usable when browser storage is unavailable.
+            }
+          }
+
+          this.el.addEventListener("change", this.onChange)
+        },
+
+        destroyed() {
+          this.el.removeEventListener("change", this.onChange)
+        }
+      }
+    </script>
     """
   end
 
@@ -743,12 +820,41 @@ defmodule OpenforumWeb.Layouts do
   # ───────────────────────────────────────────────
 
   attr :label, :string, required: true
+  attr :icon, :string, required: true
+  attr :active, :boolean, default: false
+  attr :open, :boolean, default: false
+  slot :inner_block, required: true
 
   defp sidebar_group(assigns) do
     ~H"""
-    <p class="text-[0.62rem] font-bold tracking-[0.18em] uppercase text-[#6B7280] px-3 mt-6 mb-2">
-      {@label}
-    </p>
+    <details class="admin-sidebar-section group/section" open={@open}>
+      <summary
+        title={@label}
+        aria-label={@label}
+        class={[
+          "admin-sidebar-section-summary mb-1 flex cursor-pointer list-none items-center gap-2.5 rounded-xl px-3 py-2.5 text-[0.69rem] font-bold uppercase tracking-[0.12em] transition-all duration-200 [&::-webkit-details-marker]:hidden",
+          if(@active,
+            do: "bg-[#EAF3F8] text-[#1769AA] shadow-sm shadow-[#0B2E4F]/5",
+            else: "text-[#718096] hover:bg-[#F4F8FB] hover:text-[#34495E]"
+          )
+        ]}
+      >
+        <.icon name={@icon} class="size-4 shrink-0" />
+        <span class="admin-sidebar-group min-w-0 flex-1 truncate">{@label}</span>
+        <span
+          :if={@active}
+          class="size-1.5 shrink-0 rounded-full bg-[#1769AA] shadow-[0_0_0_3px_rgba(23,105,170,0.12)]"
+        />
+        <.icon
+          name="hero-chevron-down"
+          class="admin-sidebar-section-chevron size-3 shrink-0 text-[#9AA8B5] transition-transform duration-200 group-open/section:rotate-180"
+        />
+      </summary>
+
+      <div class="admin-sidebar-section-links ml-3 border-l border-[#E5E7EB] pl-2">
+        {render_slot(@inner_block)}
+      </div>
+    </details>
     """
   end
 
@@ -761,10 +867,14 @@ defmodule OpenforumWeb.Layouts do
     ~H"""
     <a
       href={@href}
+      title={@label}
+      aria-label={@label}
+      aria-current={if(@active, do: "page")}
       class={[
-        "flex items-center gap-3 px-3 py-2.5 rounded-lg text-[0.82rem] border-l-[3px] transition-colors mb-1",
+        "admin-sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-[0.82rem] border-l-[3px] transition-colors mb-1",
         if(@active,
-          do: "font-semibold text-[#0B2E4F] bg-[#EAF3F8] border-[#1769AA]",
+          do:
+            "font-semibold text-[#0B2E4F] bg-[#EAF3F8] border-[#1769AA] shadow-sm shadow-[#0B2E4F]/5",
           else:
             "font-medium text-[#4B5563] border-transparent hover:bg-[#F4F8FB] hover:text-[#1769AA]"
         )
@@ -772,7 +882,7 @@ defmodule OpenforumWeb.Layouts do
     >
       <.icon name={@icon} class="size-4 shrink-0" />
 
-      <span class="truncate">
+      <span class="admin-sidebar-label min-w-0 truncate">
         {@label}
       </span>
     </a>
@@ -845,9 +955,9 @@ defmodule OpenforumWeb.Layouts do
   #  ROLE LABEL
   # ───────────────────────────────────────────────
 
-  defp role_label(%{roles: roles}) when is_list(roles) and roles != [] do
+  defp role_label(roles) when is_list(roles) and roles != [] do
     roles |> Enum.map(& &1.name) |> Enum.join(", ")
   end
 
-  defp role_label(_user), do: "—"
+  defp role_label(_roles), do: "No role assigned"
 end

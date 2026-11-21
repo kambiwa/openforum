@@ -73,6 +73,7 @@ defmodule OpenforumWeb.Router do
       live "/work_flows/:work_flow_id/steps/new", WorkFlowStepLive.Index, :new
       live "/work_flows/:work_flow_id/steps/:id/edit", WorkFlowStepLive.Index, :edit
       live "/roles", RolesPermissions.Index, :index
+      live "/profile", ProfileLive, :edit
 
       live "/users/settings", UserLive.Settings, :edit
       live "/users/settings/confirm-email/:token", UserLive.Settings, :confirm_email
@@ -100,6 +101,8 @@ defmodule OpenforumWeb.Router do
       live "/users/register", UserLive.Registration, :new
       live "/users/log-in", UserLive.Login, :new
       live "/users/log-in/:token", UserLive.Confirmation, :new
+      live "/users/reset-password", UserLive.ResetPassword, :request
+      live "/users/reset-password/:token", UserLive.ResetPassword, :reset
     end
 
     post "/users/log-in", UserSessionController, :create

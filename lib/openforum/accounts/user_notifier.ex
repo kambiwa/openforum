@@ -38,6 +38,20 @@ defmodule Openforum.Accounts.UserNotifier do
     """)
   end
 
+  def deliver_reset_password_instructions(user, url) do
+    deliver(user.email, "Reset your OpenForum password", """
+
+    Hi #{user.first_name},
+
+    We received a request to reset the password for your OpenForum account.
+    Set a new password using the link below. This link expires in 24 hours.
+
+    #{url}
+
+    If you did not request this change, you can ignore this email.
+    """)
+  end
+
   @doc """
   Deliver instructions to log in with a magic link.
   """

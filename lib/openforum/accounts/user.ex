@@ -8,6 +8,8 @@ defmodule Openforum.Accounts.User do
     field :first_name, :string
     field :last_name, :string
     field :email, :string
+    field :avatar_url, :string
+    field :is_active, :boolean, default: true
     field :password, :string, virtual: true, redact: true
     field :hashed_password, :string, redact: true
     field :confirmed_at, :utc_datetime
@@ -42,11 +44,12 @@ defmodule Openforum.Accounts.User do
   """
   def registration_changeset(user, attrs, opts \\ []) do
     user
-    |> cast(attrs, [:first_name, :last_name, :email, :password, :working_area_id])
+    |> cast(attrs, [:first_name, :last_name, :email, :password, :working_area_id, :avatar_url])
     |> validate_first_name()
     |> validate_last_name()
     |> validate_email(opts)
     |> validate_password(opts)
+    |> validate_length(:avatar_url, max: 500)
   end
 
   defp validate_first_name(changeset) do
@@ -63,10 +66,19 @@ defmodule Openforum.Accounts.User do
 
   def update_changeset(user, attrs) do
     user
-    |> cast(attrs, [:first_name, :last_name, :email, :working_area_id])
+    |> cast(attrs, [:first_name, :last_name, :email, :working_area_id, :avatar_url])
     |> validate_first_name()
     |> validate_last_name()
     |> validate_email([])
+    |> validate_length(:avatar_url, max: 500)
+  end
+
+  def profile_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:first_name, :last_name, :avatar_url])
+    |> validate_first_name()
+    |> validate_last_name()
+    |> validate_length(:avatar_url, max: 500)
   end
 
   @doc """

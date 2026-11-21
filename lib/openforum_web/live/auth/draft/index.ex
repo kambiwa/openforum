@@ -82,7 +82,6 @@ defmodule OpenforumWeb.Auth.Document.Index do
 
   @impl true
   def handle_event("new_document", _params, socket) do
-
     {:noreply,
      socket
      |> assign(:page_title, "New Document")
@@ -138,7 +137,11 @@ defmodule OpenforumWeb.Auth.Document.Index do
   end
 
   defp fetch_filtered_documents(socket) do
-    filters = %{search_filter: socket.assigns.search_filter, category_filter: socket.assigns.category_filter}
+    filters = %{
+      search_filter: socket.assigns.search_filter,
+      category_filter: socket.assigns.category_filter
+    }
+
     data =
       Documents.list_documents(
         current_user(socket),
@@ -193,7 +196,11 @@ defmodule OpenforumWeb.Auth.Document.Index do
             <div class="grid grid-cols-2 gap-4">
               <div class="flex flex-col gap-1.5">
                 <label class="text-xs font-medium text-[#0B2E4F]">Search</label>
-                <.input name="filter[search_filter]" placeholder="Search documents..." value={@search_filter} />
+                <.input
+                  name="filter[search_filter]"
+                  placeholder="Search documents..."
+                  value={@search_filter}
+                />
               </div>
 
               <div class="flex flex-col gap-1.5">
@@ -211,7 +218,7 @@ defmodule OpenforumWeb.Auth.Document.Index do
         </div>
 
         <div class="overflow-hidden rounded-xl border border-[#E5E7EB] bg-white">
-          <Table.table id="tbl_documents" rows={@data}>
+          <Table.table id="tbl_documents" rows={@data} striped>
             <:col :let={document} label="Title">
               <span class="font-medium text-[#252525]">{document.title}</span>
             </:col>
@@ -224,12 +231,10 @@ defmodule OpenforumWeb.Auth.Document.Index do
               <span class="text-[#6B7280]">{document.updated_at}</span>
             </:col>
 
-            <:col :let={document} label="Status">
-              <span class="text-[#6B7280]">{document.status}</span>
-            </:col>
+            <:col label="Status" status_field={:status}></:col>
 
             <:action :let={document}>
-             <button
+              <button
                 phx-click="view"
                 phx-value-id={document.id}
                 class="inline-flex items-center gap-1 rounded-md bg-[#EAF3F8] px-2.5 py-1 text-xs font-medium text-[#1769AA] hover:bg-[#4F7FA8]/20"
@@ -286,18 +291,18 @@ defmodule OpenforumWeb.Auth.Document.Index do
         </.modal>
 
         <.modal
-            :if={@live_action == :view && @document}
-            id={"document-view-modal-#{@document.id}"}
-            show
-            on_cancel={JS.push("close")}
-          >
-            <.live_component
-              module={OpenforumWeb.Auth.Document.View}
-              id={"view-#{@document.id}"}
-              document={@document}
-              current_user={@current_scope.user}
-            />
-          </.modal>
+          :if={@live_action == :view && @document}
+          id={"document-view-modal-#{@document.id}"}
+          show
+          on_cancel={JS.push("close")}
+        >
+          <.live_component
+            module={OpenforumWeb.Auth.Document.View}
+            id={"view-#{@document.id}"}
+            document={@document}
+            current_user={@current_scope.user}
+          />
+        </.modal>
       </div>
     </Layouts.admin_app>
     """

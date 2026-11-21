@@ -370,14 +370,12 @@ defmodule OpenforumWeb.Auth.WorkFlowLive.Index do
             <h2 class="text-[0.85rem] font-semibold text-[#0B2E4F]">All Workflows</h2>
           </div>
 
-          <Table.table id="tbl_work_flows" rows={@data}>
+          <Table.table id="tbl_work_flows" rows={@data} loading={@data_loader} striped>
             <:col :let={work_flow} label="Name">
               <span class="font-medium text-[#252525]">{work_flow.name}</span>
             </:col>
 
-            <:col :let={work_flow} label="Status">
-              <.status_badge status={work_flow.status} />
-            </:col>
+            <:col label="Status" status_field={:status}></:col>
 
             <:col :let={work_flow} label="Steps">
               <.steps_badge work_flow={work_flow} />
@@ -426,22 +424,6 @@ defmodule OpenforumWeb.Auth.WorkFlowLive.Index do
               </button>
             </:action>
           </Table.table>
-
-          <div :if={@data_loader} class="p-10 text-center">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="mx-auto size-8 animate-spin text-[#1769AA]"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-              <path
-                class="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              />
-            </svg>
-          </div>
 
           <div class="border-t border-[#E5E7EB]">
             <.live_component

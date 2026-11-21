@@ -2,6 +2,7 @@ defmodule OpenforumWeb.Auth.RolesPermissions.Index do
   use OpenforumWeb, :live_view
 
   alias Openforum.Context.Roles
+  alias Openforum.Repo
   alias OpenforumWeb.Schema.Role
 
   @impl true
@@ -106,7 +107,9 @@ defmodule OpenforumWeb.Auth.RolesPermissions.Index do
     case result do
       {:ok, role} ->
         roles = Roles.list_roles()
-        success_message = if modal == :edit, do: "Role updated successfully.", else: "Role created successfully."
+
+        success_message =
+          if modal == :edit, do: "Role updated successfully.", else: "Role created successfully."
 
         {:noreply,
          socket
@@ -117,7 +120,8 @@ defmodule OpenforumWeb.Auth.RolesPermissions.Index do
          |> put_flash(:info, success_message)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        error_message = if modal == :edit, do: "Could not update role.", else: "Could not create role."
+        error_message =
+          if modal == :edit, do: "Could not update role.", else: "Could not create role."
 
         {:noreply,
          socket
@@ -167,6 +171,7 @@ defmodule OpenforumWeb.Auth.RolesPermissions.Index do
 
         {:noreply,
          socket
+         |> refresh_current_user_roles(user_id)
          |> replace_role_in_list(role)
          |> assign_selected(role)
          |> assign(:assign_modal_open?, false)
@@ -184,6 +189,7 @@ defmodule OpenforumWeb.Auth.RolesPermissions.Index do
 
         {:noreply,
          socket
+         |> refresh_current_user_roles(user_id)
          |> replace_role_in_list(role)
          |> assign_selected(role)
          |> put_flash(:info, "User removed successfully.")}
@@ -221,5 +227,17 @@ defmodule OpenforumWeb.Auth.RolesPermissions.Index do
       end)
 
     assign(socket, :roles, roles)
+  end
+
+  defp refresh_current_user_roles(socket, user_id) do
+    current_user = socket.assigns.current_scope.user
+
+    if to_string(current_user.id) == to_string(user_id) do
+      current_user = Repo.preload(current_user, :roles, force: true)
+      current_scope = %{socket.assigns.current_scope | user: current_user}
+      assign(socket, :current_scope, current_scope)
+    else
+      socket
+    end
   end
 end

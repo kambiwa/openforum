@@ -5,7 +5,7 @@ defmodule OpenforumWeb.Auth.Users.FormComponet do
 
   @impl true
   def update(%{user: users} = assigns, socket) do
-    changeset = Accounts.change_user_registration(users)
+    changeset = user_changeset(assigns.action, users)
 
     {:ok,
      socket
@@ -40,7 +40,22 @@ defmodule OpenforumWeb.Auth.Users.FormComponet do
             phx-drop-target={@uploads.image.ref}
           >
             <div class="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#EAF3F8]">
-              <.icon name="hero-user" class="size-6 text-[#4F7FA8]" />
+              <img
+                :if={@uploads.image.entries == [] and @user.avatar_url}
+                src={@user.avatar_url}
+                alt="Current profile photo"
+                class="size-full object-cover"
+              />
+              <.live_img_preview
+                :for={entry <- @uploads.image.entries}
+                entry={entry}
+                class="size-full object-cover"
+              />
+              <.icon
+                :if={@uploads.image.entries == [] and is_nil(@user.avatar_url)}
+                name="hero-user"
+                class="size-6 text-[#4F7FA8]"
+              />
             </div>
             <div class="min-w-0 flex-1">
               <label
@@ -75,6 +90,9 @@ defmodule OpenforumWeb.Auth.Users.FormComponet do
               {error_to_string(err)}
             </p>
           </div>
+          <p :for={err <- upload_errors(@uploads.image)} class="text-xs text-red-600">
+            {error_to_string(err)}
+          </p>
         </div>
 
         <div class="grid grid-cols-2 gap-4">
@@ -83,7 +101,7 @@ defmodule OpenforumWeb.Auth.Users.FormComponet do
         </div>
 
         <.input field={@form[:email]} type="email" label="Email" />
-        <.input field={@form[:password]} type="password" label="Password" />
+        <.input :if={@action == :new} field={@form[:password]} type="password" label="Password" />
         <.input
           field={@form[:role]}
           type="select"
@@ -92,20 +110,20 @@ defmodule OpenforumWeb.Auth.Users.FormComponet do
         />
 
         <div class="flex justify-end gap-2 border-t border-[#E5E7EB] pt-5">
-          <.button
+          <button
             type="button"
             phx-click={JS.push("cancel", target: @myself)}
             class="inline-flex items-center justify-center rounded-md border border-[#4F7FA8]/40 bg-white px-5 py-2.5 text-sm font-medium text-[#0B2E4F] transition-colors hover:bg-[#EAF3F8]"
           >
             Cancel
-          </.button>
-          <.button
+          </button>
+          <button
             type="submit"
             phx-disable-with="Saving..."
             class="inline-flex items-center justify-center rounded-md bg-[#1769AA] px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#0B2E4F]"
           >
             Save
-          </.button>
+          </button>
         </div>
       </.form>
     </div>
@@ -115,15 +133,20 @@ defmodule OpenforumWeb.Auth.Users.FormComponet do
   @impl true
   def handle_event("validate", %{"user" => user_params}, socket) do
     changeset =
-      socket.assigns.user
-      |> Accounts.change_user_registration(user_params)
+      user_changeset(socket.assigns.action, socket.assigns.user, user_params)
       |> Map.put(:action, :validate)
 
     {:noreply, assign(socket, :form, to_form(changeset))}
   end
 
   def handle_event("save", %{"user" => user_params}, socket) do
-    save_user(socket, socket.assigns.action, user_params)
+    changeset = user_changeset(socket.assigns.action, socket.assigns.user, user_params)
+
+    if changeset.valid? do
+      save_user(socket, socket.assigns.action, user_params)
+    else
+      {:noreply, assign(socket, :form, to_form(%{changeset | action: :insert}))}
+    end
   end
 
   def handle_event("cancel", _params, socket) do
@@ -136,6 +159,8 @@ defmodule OpenforumWeb.Auth.Users.FormComponet do
   end
 
   defp save_user(socket, :new, user_params) do
+    user_params = put_uploaded_photo(socket, user_params)
+
     case Accounts.register_user(user_params) do
       {:ok, user} ->
         notify_parent({:saved, user})
@@ -151,6 +176,8 @@ defmodule OpenforumWeb.Auth.Users.FormComponet do
   end
 
   defp save_user(socket, :edit, user_params) do
+    user_params = put_uploaded_photo(socket, user_params)
+
     case Accounts.update_user(socket.assigns.user, user_params) do
       {:ok, user} ->
         notify_parent({:saved, user})
@@ -162,6 +189,29 @@ defmodule OpenforumWeb.Auth.Users.FormComponet do
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, :form, to_form(changeset))}
+    end
+  end
+
+  defp user_changeset(action, user), do: user_changeset(action, user, %{})
+  defp user_changeset(:edit, user, attrs), do: Accounts.change_user(user, attrs)
+  defp user_changeset(_action, user, attrs), do: Accounts.change_user_registration(user, attrs)
+
+  defp put_uploaded_photo(socket, user_params) do
+    case consume_uploaded_entries(socket, :image, fn %{path: temp_path}, entry ->
+           extension = Path.extname(entry.client_name) |> String.downcase()
+
+           filename =
+             "#{:crypto.strong_rand_bytes(18) |> Base.url_encode64(padding: false)}#{extension}"
+
+           upload_dir =
+             Path.join([:code.priv_dir(:openforum), "static", "uploads", "profile-photos"])
+
+           :ok = File.mkdir_p(upload_dir)
+           :ok = File.cp(temp_path, Path.join(upload_dir, filename))
+           {:ok, "/uploads/profile-photos/#{filename}"}
+         end) do
+      [photo_url | _] -> Map.put(user_params, "avatar_url", photo_url)
+      _ -> user_params
     end
   end
 
